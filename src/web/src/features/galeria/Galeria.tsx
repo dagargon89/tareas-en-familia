@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import type { Instancia, NivelUx } from '../../api/ApiClient.ts';
-import { diasEntre, fechaLocal } from '../../lib/fechas.ts';
+import { diasEntre, fechaLocal, lunesDe, sumarDias } from '../../lib/fechas.ts';
 import { sonar } from '../../lib/sonidos.ts';
 import { NIVELES, NOMBRE_NIVEL } from '../../niveles/nivel.ts';
 import { VOCABULARIO } from '../../niveles/vocabulario.ts';
@@ -14,7 +14,10 @@ import { FormPerfil } from '../padre/FormPerfil.tsx';
 import { PerfilesVista } from '../padre/Perfiles.tsx';
 import { PinPad } from '../acceso/PinPad.tsx';
 import { celebrar } from '../mi-dia/Celebracion.ts';
+import { WeekCalendar } from '../calendario/WeekCalendar.tsx';
 import { MiDiaVista } from '../mi-dia/MiDia.tsx';
+import { FormTareaPro } from '../mis-tareas/FormTareaPro.tsx';
+import { PanelVista } from '../padre/Panel.tsx';
 import { FormTarea } from '../padre/FormTarea.tsx';
 import { TareasVista } from '../padre/Tareas.tsx';
 import { FormEscolarPropia } from '../mis-tareas/FormEscolarPropia.tsx';
@@ -319,6 +322,44 @@ export function Galeria() {
               <button type="button" onClick={() => { setBandeja(BANDEJA); setAvisoBandeja(null); }} className="mt-3 rounded-boton px-4 py-2 text-etiqueta text-indigo-700 hover:bg-lavanda-100">
                 Reiniciar bandeja
               </button>
+            </div>
+          </Marco>
+        </Seccion>
+        <Seccion titulo="Sprint 5 · Semana, Pro y panel" nota="RF-14, RF-15 y RF-16">
+          <Marco titulo="/calendario (en modo padre, con el avatar de cada hija)" alto={620}>
+            <div className="p-4">
+              <WeekCalendar
+                semana={{
+                  desde: lunesDe(hoy),
+                  hasta: sumarDias(lunesDe(hoy), 6),
+                  dias: Array.from({ length: 7 }, (_, n) => {
+                    const fecha = sumarDias(lunesDe(hoy), n);
+                    const instancias = INSTANCIAS.filter((_, k) => (k + n) % 3 === 0).map((i, k) => ({ ...i, id: n * 10 + k, fecha, perfil_id: ((n + k) % 3) + 1 }));
+                    return { fecha, es_hoy: fecha === hoy, instancias, resumen: { total: instancias.length, hechas: 0, aprobadas: 0 } };
+                  }),
+                }}
+                hoy={hoy}
+                perfiles={PERFILES}
+                onSemana={() => undefined}
+              />
+            </div>
+          </Marco>
+          <Marco titulo="/mis-tareas/nueva (Pro: escuela, casa o actividad)" alto={760}>
+            <div className="p-4">
+              <FormTareaPro tarea={null} hoy={hoy} enviando={false} onGuardar={() => undefined} onCancelar={() => undefined} />
+            </div>
+          </Marco>
+          <Marco titulo="/padre · Panel" alto={760}>
+            <div className="p-4">
+              <PanelVista
+                perfiles={PERFILES}
+                panel={{
+                  semana_iso: '2026-W48',
+                  hijas: PERFILES.map((p, k) => ({ perfil: p, porcentaje_semana: [40, 75, 90][k], por_aprobar: [2, 1, 0][k], racha_semanas: [0, 3, 5][k], disponible: [30, 88, 140][k], proximas_entregas: k === 1 ? [{ ...INSTANCIAS[1], titulo: 'Maqueta del sistema solar', materia: 'Ciencias' }] : [] })),
+                  meta_familiar: META,
+                  canjes_pendientes: CANJES.filter((c) => c.estado === 'solicitado'),
+                }}
+              />
             </div>
           </Marco>
         </Seccion>

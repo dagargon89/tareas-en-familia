@@ -29,11 +29,14 @@ export default defineConfig({
     launchOptions,
   },
   projects: [
-    { name: 'tablet', use: { ...devices['Desktop Chrome'], viewport: { width: 768, height: 1024 } } },
-    { name: 'celular', use: { ...devices['Desktop Chrome'], viewport: { width: 360, height: 780 }, hasTouch: true } },
+    { name: 'tablet', testIgnore: 'build/**', use: { ...devices['Desktop Chrome'], viewport: { width: 768, height: 1024 } } },
+    { name: 'celular', testIgnore: 'build/**', use: { ...devices['Desktop Chrome'], viewport: { width: 360, height: 780 }, hasTouch: true } },
+    // Build de producción (vite preview :4173): rendimiento y terceros, en viewport de celular.
+    { name: 'build', testMatch: 'build/**', use: { ...devices['Desktop Chrome'], baseURL: 'http://localhost:4173', viewport: { width: 360, height: 780 }, hasTouch: true } },
   ],
   webServer: [
     { command: 'php spark serve --port 8080', cwd: '../api', url: 'http://localhost:8080/api/v1/salud', reuseExistingServer: true },
     { command: 'npm run dev -- --strictPort', url: 'http://localhost:5173/app/', reuseExistingServer: true },
+    { command: 'npm run build && npx vite preview --strictPort', url: 'http://localhost:4173/app/', reuseExistingServer: true, timeout: 120_000 },
   ],
 });

@@ -79,7 +79,7 @@ Reglas de E-18 a E-21 (RF-15, RF-19):
 - Exploradoras: 403 `PROHIBIDO` en las cuatro rutas.
 - Aventureras: solo `tipo = escolar`; cualquier otro tipo responde 403 `PROHIBIDO`. Pro: cualquier tipo (S5).
 - El servidor fija `perfil_id` (perfil activo), `creada_por = perfil` y `puntos = puntos_tarea_propia`; ignora esos campos si llegan en el cuerpo.
-- En una escolar propia el servidor usa siempre la categoría "Escuela" y `una_vez` desde hoy; `categoria_id` es opcional y solo lo usa Pro en tareas no escolares.
+- En una escolar propia el servidor usa siempre la categoría "Escuela" y `una_vez` desde hoy; `categoria_id` es opcional y solo lo usa Pro en tareas no escolares. Si Pro no lo envía (no tiene acceso a E-32), el servidor asigna la categoría por tipo: `casa` → "Casa", `actividad` → "Actividad". *Aclaración de comportamiento del 2026-11-23, posterior al freeze y sin cambio de forma: no requiere ADR.*
 - Editar o desactivar una tarea ajena, o una propia ya aprobada, responde 403 `PROHIBIDO` o 409 `ESTADO_INVALIDO` respectivamente.
 
 ### 2.3 Padre (modo padre)
