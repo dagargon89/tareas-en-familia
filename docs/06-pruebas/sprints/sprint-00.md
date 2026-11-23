@@ -2,7 +2,7 @@
 
 Fechas: 2026-11-22 a —
 
-Ramas: `s0/api-base` (T-S0-01 a T-S0-03) · `s0/web-base` (T-S0-04 y base de UI) · T-S0-05 bloqueada por H-03 y H-04.
+Ramas: `s0/api-base` (T-S0-01 a T-S0-03) · `s0/web-base` (T-S0-04 y base de UI) · `s0/despliegue` (T-S0-05; su activación espera H-03 y H-04).
 
 | Caso | RF | Estado | Evidencia | Fecha |
 |---|---|---|---|---|
@@ -23,6 +23,8 @@ Suite completa de la rama `s0/api-base` (2026-11-22): `cd src/api && composer te
 | T-S0-01 | Hecha | `tests/feature/Api/SistemaTest.php` (E-01, E-02, 404 `NO_ENCONTRADO`), `tests/unit/Libraries/ErrorApiTest.php` |
 | T-S0-02 | Hecha | `tests/feature/EsquemaTest.php` (134 columnas, PK, únicas y 16 FKs contra `03_esquema.json`; índices, motor, CHECK, vista y `activa_unica` contra `03_esquema.sql`), `tests/feature/SemillasTest.php` |
 | T-S0-03 | Hecha | CP-SEG-04 y CP-SEG-06, `tests/feature/Seguridad/CsrfTest.php`, `tests/unit/Seguridad/SesionConfigTest.php` |
+| T-S0-04 | Hecha (2026-11-23) | `npm run build` deja la SPA en `src/api/public/app` y CI4 la sirve en `/app/`: con `php spark serve`, `GET /app/` → 200; desplegada con `deploy_remoto.sh` y servida desde `public_html`, `GET /app/` y `GET /app/hoy` → 200 `text/html` y los assets con hash → 200 |
+| T-S0-05 | Implementada; activación pendiente de H-03 y H-04 | `.github/workflows/ci.yml` (api con cobertura, web, e2e, paquete), `.github/workflows/deploy.yml`, `scripts/empaquetar.sh`, `scripts/deploy_remoto.sh`, `scripts/verificar_cobertura.php`, comando `tareas:migrar` (`tests/feature/Despliegue/MigrarTest.php`) y doc 11. Validación: actionlint y shellcheck sin avisos; despliegue de punta a punta en un servidor simulado (ver hallazgo 10). Falta la aceptación real: push a `main` → `/api/v1/salud` por HTTPS y `cron.log` en el hosting |
 
 1. **`.gitignore` de la raíz no re-incluye los `.gitkeep` de `writable/`.** `src/api/writable/*` excluye los directorios y Git no puede re-incluir archivos dentro de un directorio excluido, así que `!src/api/writable/**/.gitkeep` no tiene efecto. Se versionaron con `git add -f` (`cache`, `logs`, `session`, `uploads`, `evidencias`, `respaldos`, más `writable/.htaccess` e `index.html`); una vez rastreados se conservan. Arreglo propuesto al integrar (no se tocó para no chocar con `s0/web-base`): `src/api/writable/*/*` + `!src/api/writable/*/.gitkeep`.
 2. **Doc 02 §7 usa `app.cookieSecure`**, que ya no existe en CI4 4.7: la variable es `cookie.secure` (`Config\Cookie`). `Cookie::$secure` vale `true` solo con `CI_ENVIRONMENT = production` y `.env` puede sobrescribirlo. Corregir el doc 02.
@@ -33,4 +35,8 @@ Suite completa de la rama `s0/api-base` (2026-11-22): `cd src/api && composer te
 7. **HSTS en `.htaccess` se condiciona a HTTPS** (`expr=%{HTTPS} == 'on'`), no al entorno: en el subdominio de pruebas con HTTPS los archivos estáticos lo enviarán aunque CI4 no esté en producción. Verificar en T-S0-05 que LiteSpeed aplica `Header always set` (CP-SEG-08).
 8. **PHPUnit 11**: `codeigniter4/appstarter` trae PHPUnit 10; se subió a `^11.5` según el stack de `CLAUDE.md`. `composer.json` fija `config.platform.php = 8.3.0`.
 9. **Raíz `/`** redirige a `/app/` (SPA). Fuera de `/api/*`, un 404 muestra la vista HTML de CI4 (con los mismos headers).
-
+10. **T-S0-05 probado en un servidor simulado (2026-11-23).** `scripts/empaquetar.sh` (1,4 MB, sin pruebas, `.env`, `writable/` ni PHPUnit) y `scripts/deploy_remoto.sh` contra una carpeta con la estructura del doc 02 §6, `.env` de producción y una base nueva en MariaDB 10.11. Resultados: primer despliegue con migraciones y catálogos; `public_html` servido con un enrutador que imita el `.htaccess` → `/api/v1/salud` 200 con los headers del doc 04, `/app/` y `/app/hoy` 200, `/.env` y `/.htaccess` 403, `/writable/logs/` 404, `/.well-known/` intacto, `Set-Cookie: tf_sesion … HttpOnly; SameSite=Lax`; instalación inicial con token (RF-20) 201; segundo despliegue con cambio atómico de `app-tareas` e `index.php`; `revertir` vuelve al release anterior conservando datos; con la base caída el despliegue sale con 1 y el release activo no cambia; `--conservar 2` borra los viejos; el candado impide dos despliegues a la vez; `tareas:programadas` desde `app-tareas` escribe en `compartido/writable/logs/cron.log`.
+11. **`spark migrate` sale con código 0 aunque falle** (CI4 4.7 atrapa la excepción y solo la imprime). Un despliegue no puede confiar en él: se agregó `php spark tareas:migrar` (migraciones + `CatalogoSeeder`), que sale con 1 ante cualquier error, y lo usan `deploy_remoto.sh` y el CI.
+12. **`index.php` publicado apunta a la ruta real del release**, no al enlace `app-tareas`: la caché de rutas de PHP (`realpath_cache`) podría seguir resolviendo el release anterior unos minutos tras el cambio. El enlace queda para el cron y la CLI.
+13. **Lo que falta para cerrar el S0** (doc 11 §2 y §3): subdominio y SSL (H-03), acceso SSH con la llave de despliegue (H-04), environment `pruebas` en GitHub con sus secretos y variables, `compartido/.env` en el servidor y el cron en hPanel. Con eso, el primer push a `main` despliega solo; luego se verifican H-01, H-02, H-07 y H-08 por SSH y los casos CP-SEG-08 y CP-NF-05 del S5 (doc 11 §5).
+14. **Node 22 fijado en `.nvmrc`** (lo usa el CI con `node-version-file`): con Node 24, 4 pruebas de `acceso` fallan por `AbortSignal`.

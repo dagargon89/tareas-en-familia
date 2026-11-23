@@ -4,7 +4,7 @@
 
 | Sprint | Archivo | Casos | PASS | Estado |
 |---|---|---|---|---|
-| S0 | `sprint-00.md` | 2 | 2 | 🟡 En curso (falta T-S0-04 y T-S0-05) |
+| S0 | `sprint-00.md` | 2 | 2 | 🟡 En curso (T-S0-05 lista; falta activarla en el hosting: H-03 y H-04) |
 | S1 | `sprint-01.md` | 20 | 20 | 🟢 Completo (S0 sigue abierto por T-S0-04/05) |
 | S2 | `sprint-02.md` | 20 | 20 | 🟢 Completo (CP-038 pasó al S3) |
 | S3 | `sprint-03.md` | 14 | 14 | 🟢 Completo |

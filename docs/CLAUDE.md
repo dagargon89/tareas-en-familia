@@ -66,10 +66,12 @@ CodeIgniter 4.7 + PHP 8.3 · MariaDB 10.11+ · React 19 + TypeScript + Vite 7 + 
 | Acción | Comando |
 |---|---|
 | API local | `cd src/api && php spark serve --port 8080` |
-| Migrar y sembrar | `php spark migrate --all && php spark db:seed CatalogoSeeder && php spark db:seed DemoSeeder` |
+| Migrar y sembrar | `php spark tareas:migrar && php spark db:seed DemoSeeder` (`tareas:migrar` = migraciones + `CatalogoSeeder`, sale con 1 si falla) |
 | Crear padre | `php spark usuarios:crear` |
 | Tareas programadas | `php spark tareas:programadas` |
 | Pruebas API | `composer test` |
 | Web local | `cd src/web && npm run dev` |
 | Pruebas web | `npm test`, `npm run e2e` |
 | Build | `npm run build` (sale a `src/api/public/app`) |
+| Empaquetar release | `scripts/empaquetar.sh <salida.tar.gz>` (después del build) |
+| Desplegar / revertir | Automático desde GitHub Actions; manual en el doc 11 §4 |
