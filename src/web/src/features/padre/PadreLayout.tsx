@@ -2,7 +2,7 @@ import { ChartColumn, Gift, Inbox, ListChecks, LogOut, Settings, Target, Users }
 import { useEffect } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router';
 import { useLogout, useSalirModoPadre, useSesion } from '../../hooks/useSesion.ts';
-import { aplicarNivel } from '../../niveles/nivel.ts';
+import { aplicarNivel, aplicarTema } from '../../niveles/nivel.ts';
 
 const SECCIONES = [
   { a: '/padre', texto: 'Panel', Icono: ChartColumn, fin: true },
@@ -23,7 +23,10 @@ export function PadreLayout() {
   const salir = useSalirModoPadre();
   const logout = useLogout();
 
-  useEffect(() => aplicarNivel('pro'), []);
+  useEffect(() => {
+    aplicarNivel('pro');
+    aplicarTema('claro');
+  }, []);
   useSesion(60_000);
 
   return (

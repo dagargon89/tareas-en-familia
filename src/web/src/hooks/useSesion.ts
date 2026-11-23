@@ -1,6 +1,6 @@
 import { queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
-import type { InstalacionEntrada, Sesion } from '../api/ApiClient.ts';
+import type { InstalacionEntrada, PerfilPublico, Sesion } from '../api/ApiClient.ts';
 import { ErrorApi, api } from '../api/HttpApiClient.ts';
 
 export const CLAVE_SESION = ['sesion'] as const;
@@ -107,6 +107,18 @@ export function useInstalar() {
     onSuccess: (sesion) => {
       qc.setQueryData(CLAVE_SESION, sesion);
       qc.setQueryData(CLAVE_INSTALACION, { requerida: false, requiere_token: false });
+    },
+  });
+}
+
+/** Preferencias de la hija (E-22, RF-18): actualiza el perfil activo en la sesión cacheada. */
+export function usePreferencias() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (p: { sonidos?: boolean; tema?: PerfilPublico['tema'] }) => api.preferencias(p),
+    onSuccess: (perfil) => {
+      qc.setQueryData<Sesion>(CLAVE_SESION, (s) => (s ? { ...s, perfil_activo: perfil } : s));
+      void qc.invalidateQueries({ queryKey: CLAVE_PERFILES });
     },
   });
 }

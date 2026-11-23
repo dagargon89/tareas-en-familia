@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { Navigate, useNavigate } from 'react-router';
 import type { PerfilPublico } from '../../api/ApiClient.ts';
 import { usePerfiles, useSesion } from '../../hooks/useSesion.ts';
-import { aplicarNivel } from '../../niveles/nivel.ts';
+import { aplicarNivel, aplicarTema } from '../../niveles/nivel.ts';
 import { Cargando } from '../../ui/Cargando.tsx';
 import { FormasVivas } from '../../ui/FormasVivas.tsx';
 import { AvatarSelector } from './AvatarSelector.tsx';
@@ -44,7 +44,10 @@ export function SelectorPerfil() {
   const perfiles = usePerfiles();
 
   // El selector es neutral: densidad media, sin el nivel de la última hija.
-  useEffect(() => aplicarNivel('aventureras'), []);
+  useEffect(() => {
+    aplicarNivel('aventureras');
+    aplicarTema('claro');
+  }, []);
 
   if (sesion?.perfil_activo) return <Navigate to="/hoy" replace />;
   if (perfiles.isPending) return <Cargando />;

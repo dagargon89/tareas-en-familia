@@ -7,6 +7,7 @@ import { ModoPadrePin } from './features/acceso/ModoPadrePin.tsx';
 import { SelectorPerfil } from './features/acceso/SelectorPerfil.tsx';
 import { HijaLayout } from './features/hija/HijaLayout.tsx';
 import { MiDia } from './features/mi-dia/MiDia.tsx';
+import { Premios } from './features/premios/Premios.tsx';
 import { MisLogros } from './features/progreso/MisLogros.tsx';
 import { EditarTareaPropia, MisTareas } from './features/mis-tareas/MisTareas.tsx';
 import { PadreLayout } from './features/padre/PadreLayout.tsx';
@@ -27,7 +28,7 @@ export const router = createBrowserRouter(
       element: <RequierePerfil><HijaLayout /></RequierePerfil>,
       children: [
         { path: '/hoy', element: <MiDia /> },
-        { path: '/premios', element: <EnConstruccion pantalla="Premios" sprint="Sprint 4" /> },
+        { path: '/premios', element: <Premios /> },
         { path: '/logros', element: <MisLogros /> },
         { path: '/calendario', element: <EnConstruccion pantalla="Semana" sprint="Sprint 5" /> },
         // RF-19: Aventureras y Pro crean sus escolares; las Exploradoras regresan a Mi día.
@@ -44,9 +45,9 @@ export const router = createBrowserRouter(
         { path: 'aprobaciones', lazy: async () => ({ Component: (await import('./features/padre/Aprobaciones.tsx')).Aprobaciones }) },
         { path: 'tareas', lazy: async () => ({ Component: (await import('./features/padre/Tareas.tsx')).Tareas }) },
         { path: 'perfiles', lazy: async () => ({ Component: (await import('./features/padre/Perfiles.tsx')).Perfiles }) },
-        { path: 'premios', element: <EnConstruccion pantalla="Premios" sprint="Sprint 4" /> },
-        { path: 'metas', element: <EnConstruccion pantalla="Metas" sprint="Sprint 4" /> },
-        { path: 'ajustes', element: <EnConstruccion pantalla="Ajustes" sprint="Sprint 4" /> },
+        { path: 'premios', lazy: async () => ({ Component: (await import('./features/padre/Recompensas.tsx')).Recompensas }) },
+        { path: 'metas', lazy: async () => ({ Component: (await import('./features/padre/Metas.tsx')).Metas }) },
+        { path: 'ajustes', lazy: async () => ({ Component: (await import('./features/padre/Configuracion.tsx')).Configuracion }) },
       ],
     },
     // La galería solo existe en desarrollo; en el build de producción esta rama se elimina.
