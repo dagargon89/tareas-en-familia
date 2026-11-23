@@ -1,6 +1,6 @@
 # 11 · Despliegue y operación
 
-**Proyecto:** Tareas en Familia · **Versión:** 0.1 (subdominio de pruebas, T-S0-05) · **Fecha:** 2026-11-23
+**Proyecto:** Tareas en Familia · **Versión:** 0.2 (subdominio de pruebas activo, T-S0-05) · **Fecha:** 2026-11-23
 
 Esta versión cubre el despliegue automático al **subdominio de pruebas**. La Fase 3 la completa con producción, respaldos y la prueba de restauración.
 
@@ -35,7 +35,28 @@ En el servidor (doc 02 §6), con `DEPLOY_BASE` fuera de la carpeta pública:
 
 Las migraciones no se revierten: cada migración debe ser compatible con el release anterior para que `revertir` sea seguro.
 
-## 2. Configuración única en GitHub
+## 2. Entorno de pruebas actual (`task.scalegridtech.com`)
+
+| Dato | Valor |
+|---|---|
+| URL | `https://task.scalegridtech.com` (SSL de Let's Encrypt) |
+| SSH | `u575426443@82.180.175.69`, puerto `65002` (servidor `us-phx-web753`) |
+| `DEPLOY_BASE` | `/home/u575426443/tareas-pruebas` |
+| `DEPLOY_PUBLICO` | `/home/u575426443/domains/scalegridtech.com/public_html/task` |
+| `DEPLOY_PHP` | `/opt/alt/php83/usr/bin/php` (**obligatorio**: el `php` de la terminal es 8.2) |
+| Base de datos | `u575426443_tareas` (usuario `u575426443_tareas`), MariaDB 11.8.9, `localhost:3306` |
+| Cron | Uid `ablqOI2l8C`, cada minuto: `/opt/alt/php83/usr/bin/php /home/u575426443/tareas-pruebas/app-tareas/spark tareas:programadas` |
+| `.env` del servidor | `DEPLOY_BASE/compartido/.env` (600). Copia local fuera del repositorio: `~/.config/tareas-en-familia/pruebas.env` |
+
+Particularidades de Hostinger (CloudLinux con CageFS) encontradas al activar el entorno:
+
+- El `php` de la terminal es 8.2; el sitio corre 8.3.37. Toda la CLI (despliegue y cron) usa `/opt/alt/php83/usr/bin/php`.
+- No existe `/dev/fd`: los scripts no pueden usar sustitución de procesos (`<(…)`).
+- En la web, PHP deshabilita `exec`, `shell_exec`, `proc_open` y `symlink`; en la CLI están disponibles (los respaldos de la Fase 3 van por cron).
+- LiteSpeed agrega un segundo encabezado `Content-Security-Policy: upgrade-insecure-requests`; se combina con el del doc 04 sin conflicto.
+- La raíz del subdominio trae un `default.php` de relleno; `.htaccess` fija `DirectoryIndex index.php` para que no le gane a la app.
+
+## 3. Configuración única en GitHub
 
 En **Settings → Environments → New environment → `pruebas`**:
 
@@ -57,9 +78,9 @@ Llave de despliegue (en tu computadora; la privada solo va al secret):
 ssh-keygen -t ed25519 -f despliegue_tareas -N "" -C "github-actions tareas-en-familia"
 ```
 
-La pública (`despliegue_tareas.pub`) se agrega en **hPanel → Avanzado → Acceso SSH → Llaves SSH**. Mientras falte alguna variable o secret, el workflow termina con el aviso "Despliegue no configurado" y no hace nada.
+La pública (`despliegue_tareas.pub`) se agrega en **hPanel → Avanzado → Acceso SSH → Llaves SSH**. Mientras falte alguna variable o secret, el workflow termina con el aviso "Despliegue no configurado" y no hace nada. `SSH_KNOWN_HOSTS` se obtiene con `ssh-keyscan -p 65002 82.180.175.69`; huellas esperadas: ED25519 `SHA256:hvyf5Si5PjvmwKSG+jMrupxuc2vvXBN+Jcnmt1VlJlA`, ECDSA `SHA256:7ylP9YilJoDPkuqvPk8AeDQN5aVdH5ZINRPeOF+hG2s`, RSA `SHA256:TPdHOwWeOL4I0MdQ8hgn5P1mQe9SgVeXQqhfp9j/tss`.
 
-## 3. Configuración única en el servidor
+## 4. Configuración única en el servidor
 
 1. **hPanel → Dominios → Subdominios**: crear el subdominio de pruebas (H-03) y anotar su carpeta (`DEPLOY_PUBLICO`). Activar SSL.
 2. **hPanel → Avanzado → Configuración de PHP**: PHP 8.3 para el sitio (H-01). Por SSH, confirmar la CLI con `php -v` (o la ruta de `DEPLOY_PHP`).
@@ -98,7 +119,7 @@ La pública (`despliegue_tareas.pub`) se agrega en **hPanel → Avanzado → Acc
 
 7. Tras el primer despliegue, abrir `https://pruebas.ejemplo.com/app/`: pedirá "Configura la app" con el `instalacion.token` (RF-20).
 
-## 4. Operación
+## 5. Operación
 
 | Tarea | Cómo |
 |---|---|
@@ -107,7 +128,7 @@ La pública (`despliegue_tareas.pub`) se agrega en **hPanel → Avanzado → Acc
 | Ver el release activo | `bash DEPLOY_BASE/compartido/subidas/deploy_remoto.sh estado --base DEPLOY_BASE` |
 | Probar el despliegue en local | `scripts/empaquetar.sh /tmp/r.tar.gz` y `scripts/deploy_remoto.sh desplegar --base <carpeta> --paquete /tmp/r.tar.gz` |
 
-## 5. Verificación en el subdominio (cierra CP-SEG-08 y CP-NF-05)
+## 6. Verificación en el subdominio (cierra CP-SEG-08 y CP-NF-05)
 
 ```bash
 U=https://pruebas.ejemplo.com
