@@ -35,6 +35,18 @@ final class ArchivosPublicosTest extends CIUnitTestCase
         $this->assertStringContainsString('RewriteRule ^([\s\S]*)$ index.php/$1 [L,NC,QSA]', $htaccess);
     }
 
+    /**
+     * El service worker, su registro y el manifiesto no llevan hash: sin caché, una versión
+     * nueva del PWA se activa en la siguiente visita.
+     */
+    public function testHtaccessNoGuardaEnCacheLoQueNoLlevaHash(): void
+    {
+        $this->assertStringContainsString(
+            "<FilesMatch \"^(index\\.html|sw\\.js|registerSW\\.js|manifest\\.webmanifest)$\">\n\t\tHeader set Cache-Control \"no-cache\"",
+            $this->htaccess(),
+        );
+    }
+
     public function testHtaccessEnviaLosMismosHeadersQueElFiltro(): void
     {
         $htaccess = $this->htaccess();
