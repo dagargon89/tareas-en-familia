@@ -20,11 +20,11 @@ class CatalogoSeeder extends Seeder
      * @var list<array{nombre: string, icono: string, color: string}>
      */
     public const CATEGORIAS = [
-        ['nombre' => 'Casa', 'icono' => 'house', 'color' => 'ambar'],
-        ['nombre' => 'Escuela', 'icono' => 'book-open', 'color' => 'menta'],
-        ['nombre' => 'Actividad', 'icono' => 'trophy', 'color' => 'lavanda'],
-        ['nombre' => 'Hábito', 'icono' => 'repeat', 'color' => 'indigo'],
-        ['nombre' => 'Cuidado personal', 'icono' => 'heart', 'color' => 'rosa'],
+        ['nombre' => 'Casa', 'icono' => 'casa', 'color' => 'ambar'],
+        ['nombre' => 'Escuela', 'icono' => 'libro', 'color' => 'menta'],
+        ['nombre' => 'Actividad', 'icono' => 'trofeo', 'color' => 'lavanda'],
+        ['nombre' => 'Hábito', 'icono' => 'repetir', 'color' => 'indigo'],
+        ['nombre' => 'Cuidado personal', 'icono' => 'corazon', 'color' => 'rosa'],
     ];
 
     /**
@@ -72,42 +72,42 @@ class CatalogoSeeder extends Seeder
         return [
             [
                 'codigo' => 'primera_mision', 'nombre' => 'Primera misión',
-                'descripcion' => 'Completa tu primera misión aprobada.', 'icono' => 'star', 'color' => 'ambar',
+                'descripcion' => 'Completa tu primera misión aprobada.', 'icono' => 'estrella', 'color' => 'ambar',
                 'regla' => ['tipo' => 'tareas_aprobadas', 'min' => 1],
             ],
             [
                 'codigo' => 'misiones_10', 'nombre' => '10 misiones',
-                'descripcion' => 'Completa 10 misiones aprobadas.', 'icono' => 'medal', 'color' => 'indigo',
+                'descripcion' => 'Completa 10 misiones aprobadas.', 'icono' => 'medalla', 'color' => 'indigo',
                 'regla' => ['tipo' => 'tareas_aprobadas', 'min' => 10],
             ],
             [
                 'codigo' => 'misiones_50', 'nombre' => '50 misiones',
-                'descripcion' => 'Completa 50 misiones aprobadas.', 'icono' => 'trophy', 'color' => 'menta',
+                'descripcion' => 'Completa 50 misiones aprobadas.', 'icono' => 'trofeo', 'color' => 'menta',
                 'regla' => ['tipo' => 'tareas_aprobadas', 'min' => 50],
             ],
             [
                 'codigo' => 'misiones_100', 'nombre' => '100 misiones',
-                'descripcion' => 'Completa 100 misiones aprobadas.', 'icono' => 'crown', 'color' => 'lavanda',
+                'descripcion' => 'Completa 100 misiones aprobadas.', 'icono' => 'corona', 'color' => 'lavanda',
                 'regla' => ['tipo' => 'tareas_aprobadas', 'min' => 100],
             ],
             [
                 'codigo' => 'racha_2', 'nombre' => 'Racha de 2 semanas',
-                'descripcion' => 'Cumple tu racha 2 semanas seguidas.', 'icono' => 'flame', 'color' => 'rosa',
+                'descripcion' => 'Cumple tu racha 2 semanas seguidas.', 'icono' => 'fuego', 'color' => 'rosa',
                 'regla' => ['tipo' => 'racha_semanas', 'min' => 2],
             ],
             [
                 'codigo' => 'racha_4', 'nombre' => 'Racha de 4 semanas',
-                'descripcion' => 'Cumple tu racha 4 semanas seguidas.', 'icono' => 'sparkles', 'color' => 'ambar',
+                'descripcion' => 'Cumple tu racha 4 semanas seguidas.', 'icono' => 'brillo', 'color' => 'ambar',
                 'regla' => ['tipo' => 'racha_semanas', 'min' => 4],
             ],
             [
                 'codigo' => 'escolares_10', 'nombre' => '10 tareas escolares',
-                'descripcion' => 'Termina 10 tareas de la escuela.', 'icono' => 'book-open', 'color' => 'menta',
+                'descripcion' => 'Termina 10 tareas de la escuela.', 'icono' => 'libro', 'color' => 'menta',
                 'regla' => ['tipo' => 'tareas_por_tipo', 'tipo_tarea' => 'escolar', 'min' => 10],
             ],
             [
                 'codigo' => 'casa_10', 'nombre' => '10 tareas de casa',
-                'descripcion' => 'Termina 10 tareas de la casa.', 'icono' => 'house', 'color' => 'indigo',
+                'descripcion' => 'Termina 10 tareas de la casa.', 'icono' => 'casa', 'color' => 'indigo',
                 'regla' => ['tipo' => 'tareas_por_tipo', 'tipo_tarea' => 'casa', 'min' => 10],
             ],
         ];

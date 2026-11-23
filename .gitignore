@@ -24,3 +24,6 @@ Thumbs.db
 .idea/
 .vscode/
 *.log
+
+# Configuración local de PHPUnit (p. ej. otra base de pruebas)
+src/api/phpunit.xml

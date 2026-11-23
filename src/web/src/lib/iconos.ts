@@ -1,4 +1,5 @@
 import {
+  Clapperboard, Crown, Droplets, Flame, Heart, House, Medal, Repeat, Star, Tablet, Trees, Waves,
   Apple, Backpack, Bath, Bed, Bike, BookOpen, Brush, Calculator, Carrot, Dog, Drama, Dumbbell,
   FlaskConical, Footprints, Gamepad2, Gift, Globe, HandHeart, IceCream, Languages, Music, Palette,
   PawPrint, Pencil, Pizza, Popcorn, Puzzle, Shirt, ShowerHead, Smile, Sofa, Sparkles, Sprout, Ticket,
@@ -7,8 +8,9 @@ import {
 } from 'lucide-react';
 
 /**
- * Catálogo de 40 íconos para tareas y recompensas (doc 08 §5). La clave es lo que se
- * guarda en `tareas.icono` y `recompensas.icono`; nunca se guarda el nombre de Lucide.
+ * Catálogo único de 52 íconos (doc 08 §5) para tareas, categorías, insignias y recompensas. La clave es lo que se
+ * guarda en `tareas.icono`, `categorias.icono`, `insignias.icono` y `recompensas.icono`; nunca
+ * se guarda el nombre de Lucide. El backend valida contra la misma lista.
  */
 export const ICONOS = {
   cama: Bed,
@@ -51,6 +53,19 @@ export const ICONOS = {
   planta: Sprout,
   caminar: Footprints,
   brillo: Sparkles,
+  // Categorías, insignias y recompensas del catálogo inicial (CatalogoSeeder).
+  casa: House,
+  corazon: Heart,
+  repetir: Repeat,
+  estrella: Star,
+  medalla: Medal,
+  corona: Crown,
+  fuego: Flame,
+  cine: Clapperboard,
+  tableta: Tablet,
+  arboles: Trees,
+  nadar: Waves,
+  agua: Droplets,
 } satisfies Record<string, LucideIcon>;
 
 export type ClaveIcono = keyof typeof ICONOS;

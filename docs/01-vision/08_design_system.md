@@ -101,8 +101,12 @@ Con `prefers-reduced-motion: reduce` se desactivan confeti, rebotes y formas flo
 
 ## 5. Íconos y sonidos
 
-- Íconos: Lucide (MIT), incluidos en el bundle; catálogo de 40 íconos para tareas en `src/web/src/lib/iconos.ts`.
-- Avatares: 16 ilustraciones propias en SVG (animales y formas) en `src/web/public/avatares/`.
+- Íconos: Lucide (MIT), incluidos en el bundle. **Catálogo único de 52 claves** en español, la misma lista en frontend (`src/web/src/lib/iconos.ts`) y backend (validación de `icono` en tareas, categorías, insignias y recompensas). En la base se guarda la clave, nunca el nombre de Lucide:
+  `cama`, `libro`, `lapiz`, `calculadora`, `mochila`, `ropa`, `comida`, `bano`, `ducha`, `dientes`, `basura`, `perro`, `mascota`, `musica`, `arte`, `bici`, `ejercicio`, `trofeo`, `regalo`, `helado`, `videojuego`, `tele`, `palomitas`, `pizza`, `ciencia`, `mundo`, `idiomas`, `sillon`, `lavadora`, `manzana`, `verdura`, `sonrisa`, `tiempo`, `rompecabezas`, `teatro`, `boleto`, `ayudar`, `planta`, `caminar`, `brillo`, `casa`, `corazon`, `repetir`, `estrella`, `medalla`, `corona`, `fuego`, `cine`, `tableta`, `arboles`, `nadar`, `agua`.
+- Avatares: **21 claves** (`perfiles.avatar`), validadas también en el backend:
+  `gato`, `perro`, `conejo`, `ardilla`, `tortuga`, `pajaro`, `pez`, `caracol`, `catarina`, `flor`, `estrella`, `luna`, `sol`, `hoja`, `corazon`, `nube`, `indigo`, `ambar`, `menta`, `rosa`, `lavanda`.
+  Por ahora se dibujan con íconos de Lucide sobre la forma de color; las ilustraciones SVG propias (`src/web/public/avatares/`) las reemplazarán sin cambiar las claves.
+- Una prueba de frontend (`tests/unit/catalogo.test.ts`) verifica que todas las claves de los seeders existan en estos catálogos.
 - Sonidos: 4 archivos cortos en OGG y MP3 (completar, nivel nuevo, insignia, canje) de menos de 30 KB cada uno, con licencia libre registrada en `src/web/public/sonidos/LICENCIAS.md`.
 
 ## 6. Voz y textos
