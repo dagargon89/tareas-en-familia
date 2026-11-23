@@ -1,5 +1,6 @@
 // Contrato único de la API (doc 05 §3). Copia literal del documento: cualquier cambio
-// se hace primero en docs/05-contrato/05_contrato_api.md (congelado al cerrar el S2, ADR-008).
+// se hace primero en docs/05-contrato/05_contrato_api.md. CONGELADO el 2026-11-23 (ADR-008):
+// cambiarlo requiere un ADR de cambio de contrato.
 
 // ===== Tipos base =====
 export type NivelUx = 'exploradoras' | 'aventureras' | 'pro';

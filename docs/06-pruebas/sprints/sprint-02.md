@@ -42,3 +42,6 @@ Suite completa de `s2/api-tareas` (2026-11-23, tras integrar `main` con el catá
 8. **E-18 lista solo las propias activas**; editar o desactivar una propia ya desactivada responde 404. Al editar una propia se conservan sus puntos y su fecha de inicio; `puntos` del cuerpo se ignora.
 9. **Cron**: `tareas:programadas` corre "generar" a las 00:05, en la primera ejecución del día (marca en `writable/cache/generacion.ultima`) o con `--forzar`; registra en `writable/logs/cron.log`. `GET /yo/dia` llama a `GeneradorInstancias::asegurar(fecha)`.
 10. **Catálogo (cambio de `main`)**: `App\Domain\Catalogo` replica las 52 claves de `iconos.ts` y las 16 de `avatares.ts` (`CatalogoTest` las compara por regex). El servidor valida `icono` en tareas y `avatar` en E-24/E-25. **El doc 08 §5 dice "21 claves" de avatar** (agrega `indigo`, `ambar`, `menta`, `rosa`, `lavanda`), pero `avatares.ts` tiene 16; se siguió el código (16). Corregir uno de los dos.
+
+- RNF-09 / T-S2-01: el 100 % de cobertura de `App\Domain` no se pudo medir en local (PHP sin pcov ni xdebug). Las pruebas de `tests/unit/Domain/` recorren todas las ramas; la medición queda para el pipeline de CI (T-S0-05), con `shivammathur/setup-php` y `coverage: pcov`.
+- Contrato del doc 05 congelado el 2026-11-23 al cerrar este sprint (ADR-008).

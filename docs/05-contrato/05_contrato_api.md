@@ -1,6 +1,6 @@
 # 05 · Contrato de API
 
-**Proyecto:** Tareas en Familia · **Versión:** 1.0 (borrador; se congela al cerrar el Sprint 2, ADR-008) · **Fecha:** 2026-11-22
+**Proyecto:** Tareas en Familia · **Versión:** 1.0 · **Congelada el 2026-11-23** al cerrar el Sprint 2 (ADR-008). Cualquier cambio en endpoints, tipos o `ApiClient` requiere un ADR de cambio de contrato (Metodología v4 §11) · **Fecha:** 2026-11-22
 
 ## 1. Convenciones
 
