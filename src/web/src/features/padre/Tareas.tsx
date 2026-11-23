@@ -1,4 +1,4 @@
-import { Camera, EyeOff, Pencil, Plus } from 'lucide-react';
+import { Camera, EyeOff, Pencil, Plus, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 import type { PerfilPublico, Tarea } from '../../api/ApiClient.ts';
 import { usePerfilesAdmin } from '../../hooks/usePerfilesAdmin.ts';
@@ -7,6 +7,7 @@ import { detalleError } from '../../lib/errores.ts';
 import { fechaLocal } from '../../lib/fechas.ts';
 import { Boton } from '../../ui/Boton.tsx';
 import { Cargando } from '../../ui/Cargando.tsx';
+import { Chip } from '../../ui/Chip.tsx';
 import { Icono } from '../../ui/Icono.tsx';
 import { FormTarea } from './FormTarea.tsx';
 import { cuandoToca } from './validarTarea.ts';
@@ -16,15 +17,19 @@ interface VistaProps {
   perfiles: PerfilPublico[];
   perfilId: number | null;
   verInactivas: boolean;
+  soloDeEllas: boolean;
   colorDeCategoria: (id: number) => Parameters<typeof Icono>[0]['color'];
   onFiltrar: (perfilId: number | null) => void;
   onVerInactivas: (v: boolean) => void;
+  onSoloDeEllas: (v: boolean) => void;
   onNueva: () => void;
   onEditar: (t: Tarea) => void;
   onDesactivar: (t: Tarea) => void;
 }
 
-export function TareasVista({ tareas, perfiles, perfilId, verInactivas, colorDeCategoria, onFiltrar, onVerInactivas, onNueva, onEditar, onDesactivar }: VistaProps) {
+export function TareasVista({ tareas, perfiles, perfilId, verInactivas, soloDeEllas, colorDeCategoria, onFiltrar, onVerInactivas, onSoloDeEllas, onNueva, onEditar, onDesactivar }: VistaProps) {
+  const visibles = soloDeEllas ? tareas.filter((t) => t.creada_por === 'perfil') : tareas;
+  const deEllas = tareas.filter((t) => t.creada_por === 'perfil' && t.activa).length;
   const apodo = (id: number) => perfiles.find((p) => p.id === id)?.apodo ?? '—';
   const filtro = (activo: boolean) => `min-h-tactil rounded-boton px-4 text-etiqueta ${activo ? 'bg-indigo-600 text-blanco' : 'bg-superficie'}`;
   return (
@@ -44,23 +49,28 @@ export function TareasVista({ tareas, perfiles, perfilId, verInactivas, colorDeC
             {p.apodo}
           </button>
         ))}
+        <button type="button" aria-pressed={soloDeEllas} className={filtro(soloDeEllas)} onClick={() => onSoloDeEllas(!soloDeEllas)}>
+          <Sparkles className="mr-1 inline size-4" aria-hidden="true" />
+          Creadas por ellas{deEllas > 0 ? ` (${deEllas})` : ''}
+        </button>
         <label className="ml-auto flex items-center gap-2 text-etiqueta text-tinta-600">
           <input type="checkbox" checked={verInactivas} onChange={(e) => onVerInactivas(e.target.checked)} /> Ver desactivadas
         </label>
       </div>
-      {tareas.length === 0 ? (
+      {visibles.length === 0 ? (
         <p className="m-0 rounded-tarjeta bg-superficie p-6 text-cuerpo text-tinta-600">No hay tareas con este filtro.</p>
       ) : (
         <ul className="m-0 flex list-none flex-col gap-3 p-0">
-          {tareas.map((t) => (
+          {visibles.map((t) => (
             <li key={t.id} className={`flex flex-wrap items-center gap-4 rounded-tarjeta bg-superficie p-4 ${t.activa ? '' : 'opacity-60'}`}>
               <Icono clave={t.icono} color={colorDeCategoria(t.categoria_id)} />
               <div className="flex min-w-0 flex-1 flex-col">
-                <span className="text-titulo">
+                <span className="flex flex-wrap items-center gap-2 text-titulo">
                   {t.titulo} {t.requiere_foto && <Camera className="inline size-4 text-tinta-600" aria-label="pide foto" />}
+                  {t.creada_por === 'perfil' && <Chip tono="rosa">Creada por {apodo(t.perfil_id)}</Chip>}
                 </span>
                 <span className="text-etiqueta text-tinta-600">
-                  {apodo(t.perfil_id)} · {cuandoToca(t)} · {t.puntos} pts{t.creada_por === 'perfil' ? ' · creada por ella' : ''}
+                  {apodo(t.perfil_id)} · {cuandoToca(t)} · {t.puntos} pts
                 </span>
               </div>
               <div className="flex gap-1">
@@ -85,6 +95,7 @@ export function Tareas() {
   const hoy = fechaLocal();
   const [perfilId, setPerfilId] = useState<number | null>(null);
   const [verInactivas, setVerInactivas] = useState(false);
+  const [soloDeEllas, setSoloDeEllas] = useState(false);
   const [editando, setEditando] = useState<Tarea | 'nueva' | null>(null);
 
   const tareas = useTareasAdmin({ perfil_id: perfilId ?? undefined, activa: verInactivas ? undefined : true });
@@ -130,9 +141,11 @@ export function Tareas() {
       perfiles={activos}
       perfilId={perfilId}
       verInactivas={verInactivas}
+      soloDeEllas={soloDeEllas}
       colorDeCategoria={(id) => categorias.data.find((c) => c.id === id)?.color ?? 'lavanda'}
       onFiltrar={setPerfilId}
       onVerInactivas={setVerInactivas}
+      onSoloDeEllas={setSoloDeEllas}
       onNueva={() => setEditando('nueva')}
       onEditar={setEditando}
       onDesactivar={(t) => {

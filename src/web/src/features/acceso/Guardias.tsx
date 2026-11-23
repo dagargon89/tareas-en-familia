@@ -3,6 +3,7 @@ import { Navigate, useLocation } from 'react-router';
 import { useModoPadreVigente, useSesion } from '../../hooks/useSesion.ts';
 import { useSesionStore } from '../../stores/sesionStore.ts';
 import { Cargando } from '../../ui/Cargando.tsx';
+import { puedeCrearTareas } from '../mis-tareas/escolarPropia.ts';
 
 /** Requiere sesión de dispositivo (doc 02 §4.2); si no hay, va al login del padre. */
 export function RequiereSesion({ children }: { children: ReactNode }) {
@@ -13,7 +14,8 @@ export function RequiereSesion({ children }: { children: ReactNode }) {
 }
 
 /** Requiere perfil activo; aplica su nivel y sonidos a la interfaz. */
-export function RequierePerfil({ children, soloPro = false }: { children: ReactNode; soloPro?: boolean }) {
+/** `puedeCrear`: solo niveles que crean tareas propias (RF-19). */
+export function RequierePerfil({ children, puedeCrear = false }: { children: ReactNode; puedeCrear?: boolean }) {
   const { data, isPending } = useSesion();
   const perfil = data?.perfil_activo ?? null;
   const { setNivel, setSonidos } = useSesionStore();
@@ -28,7 +30,7 @@ export function RequierePerfil({ children, soloPro = false }: { children: ReactN
   if (isPending) return <Cargando />;
   if (!data?.usuario) return <Navigate to="/login" replace />;
   if (!perfil) return <Navigate to="/" replace />;
-  if (soloPro && perfil.nivel_ux !== 'pro') return <Navigate to="/hoy" replace />;
+  if (puedeCrear && !puedeCrearTareas(perfil.nivel_ux)) return <Navigate to="/hoy" replace />;
   return children;
 }
 

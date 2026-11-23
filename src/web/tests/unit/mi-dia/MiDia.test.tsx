@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, render as renderBase, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { createMemoryRouter, RouterProvider } from 'react-router';
+import { createMemoryRouter, MemoryRouter, RouterProvider } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Dia, Instancia } from '../../../src/api/ApiClient.ts';
 
@@ -91,6 +91,8 @@ describe('CP-032 · Tocar "Listo" celebra y llama marcarHecha', () => {
 });
 
 describe('MiDiaVista (RF-04, RF-05)', () => {
+  // La vista enlaza a "Mis tareas" (RF-19), así que necesita un router.
+  const render = (ui: React.ReactElement) => renderBase(ui, { wrapper: MemoryRouter });
   const props = { hoy: HOY, apodo: 'Sofi', nivel: 'aventureras' as const, marcando: null, aviso: null, onListo: vi.fn() };
 
   it('no deja ir más allá de 7 días atrás ni adelante', () => {
@@ -108,5 +110,16 @@ describe('MiDiaVista (RF-04, RF-05)', () => {
   it('día vacío usa el texto del nivel', () => {
     render(<MiDiaVista {...props} nivel="exploradoras" dia={dia([])} onCambiarDia={vi.fn()} />);
     expect(screen.getByText('¡Hoy no hay misiones! Día libre 🎈')).toBeInTheDocument();
+  });
+});
+
+describe('MiDiaVista · acceso a escolares propias (RF-19)', () => {
+  const props = { hoy: HOY, apodo: 'Sofi', marcando: null, aviso: null, onListo: vi.fn(), onCambiarDia: vi.fn(), dia: dia([]) };
+  it('Aventureras ven "Agregar tarea de la escuela"; Exploradoras no', () => {
+    const { unmount } = renderBase(<MiDiaVista {...props} nivel="aventureras" />, { wrapper: MemoryRouter });
+    expect(screen.getByRole('link', { name: /agregar tarea de la escuela/i })).toHaveAttribute('href', '/mis-tareas/nueva');
+    unmount();
+    renderBase(<MiDiaVista {...props} nivel="exploradoras" />, { wrapper: MemoryRouter });
+    expect(screen.queryByRole('link', { name: /agregar tarea de la escuela/i })).not.toBeInTheDocument();
   });
 });

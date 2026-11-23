@@ -1,6 +1,6 @@
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { BookOpen, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { useRef, useState } from 'react';
-import { useSearchParams } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 import type { Dia, Instancia, NivelUx } from '../../api/ApiClient.ts';
 import { useMarcarHecha, useMiDia } from '../../hooks/useMiDia.ts';
 import { useSesion } from '../../hooks/useSesion.ts';
@@ -11,6 +11,7 @@ import { VOCABULARIO } from '../../niveles/vocabulario.ts';
 import { useSesionStore } from '../../stores/sesionStore.ts';
 import { Cargando } from '../../ui/Cargando.tsx';
 import { celebrar } from './Celebracion.ts';
+import { puedeCrearTareas } from '../mis-tareas/escolarPropia.ts';
 import { TaskCard } from './TaskCard.tsx';
 
 /** RF-04: se puede ir hasta 7 días atrás y 7 adelante. */
@@ -55,6 +56,17 @@ export function MiDiaVista({ dia, hoy, apodo, nivel, marcando, aviso, onCambiarD
         <button type="button" onClick={() => onCambiarDia(hoy)} className="self-center rounded-boton px-4 py-1 text-etiqueta text-indigo-700 hover:bg-lavanda-100">
           Volver a hoy
         </button>
+      )}
+
+      {puedeCrearTareas(nivel) && (
+        <div className="flex flex-wrap gap-2">
+          <Link to="/mis-tareas/nueva" className="inline-flex min-h-tactil flex-1 items-center justify-center gap-2 rounded-boton bg-lavanda-100 px-5 text-etiqueta text-indigo-700">
+            <Plus className="size-5" aria-hidden="true" /> Agregar tarea de la escuela
+          </Link>
+          <Link to="/mis-tareas" className="inline-flex min-h-tactil items-center justify-center gap-2 rounded-boton px-4 text-etiqueta text-indigo-700 hover:bg-lavanda-100">
+            <BookOpen className="size-5" aria-hidden="true" /> Mis tareas
+          </Link>
+        </div>
       )}
 
       {total > 0 && (

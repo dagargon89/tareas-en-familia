@@ -17,6 +17,8 @@ import { celebrar } from '../mi-dia/Celebracion.ts';
 import { MiDiaVista } from '../mi-dia/MiDia.tsx';
 import { FormTarea } from '../padre/FormTarea.tsx';
 import { TareasVista } from '../padre/Tareas.tsx';
+import { FormEscolarPropia } from '../mis-tareas/FormEscolarPropia.tsx';
+import { MisTareasVista } from '../mis-tareas/MisTareas.tsx';
 import { ParentApprovalItem } from '../padre/ParentApprovalItem.tsx';
 import { RewardCard } from '../premios/RewardCard.tsx';
 import { BadgeGrid } from '../progreso/BadgeGrid.tsx';
@@ -55,6 +57,7 @@ export function Galeria() {
   const { nivel, setNivel } = useSesionStore();
   const hoy = fechaLocal();
   const [fechaDia, setFechaDia] = useState(hoy);
+  const [soloDeEllas, setSoloDeEllas] = useState(false);
   const [instancias, setInstancias] = useState<Instancia[]>(INSTANCIAS);
   const [fallos, setFallos] = useState(0);
   const [pinMsg, setPinMsg] = useState<string | null>(null);
@@ -177,6 +180,19 @@ export function Galeria() {
           </Marco>
         </Seccion>
 
+        <Seccion titulo="RF-19 · Tareas escolares propias" nota="Aventureras y Pro agregan lo que les dejaron en la escuela; el padre lo ve con la marca «Creada por…»">
+          <Marco titulo="/mis-tareas" alto={460}>
+            <div className="p-4">
+              <MisTareasVista tareas={TAREAS.filter((t) => t.creada_por === 'perfil')} hoy={hoy} aviso={null} onEditar={() => undefined} onDesactivar={() => undefined} />
+            </div>
+          </Marco>
+          <Marco titulo="/mis-tareas/nueva" alto={900}>
+            <div className="p-4">
+              <FormEscolarPropia tarea={null} hoy={hoy} enviando={false} onGuardar={() => undefined} onCancelar={() => undefined} />
+            </div>
+          </Marco>
+        </Seccion>
+
         <Seccion titulo="Sprint 2 · Tareas del padre" nota="RF-03 y RF-13 · prueba tipo Escolar o Actividad con 0 puntos">
           <Marco titulo="/padre/tareas · Lista" alto={520}>
             <div className="p-4">
@@ -185,6 +201,8 @@ export function Galeria() {
                 perfiles={PERFILES}
                 perfilId={null}
                 verInactivas={false}
+                soloDeEllas={soloDeEllas}
+                onSoloDeEllas={setSoloDeEllas}
                 colorDeCategoria={(id) => CATEGORIAS.find((c) => c.id === id)?.color ?? 'lavanda'}
                 onFiltrar={() => undefined}
                 onVerInactivas={() => undefined}

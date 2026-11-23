@@ -6,6 +6,7 @@ import { ModoPadrePin } from './features/acceso/ModoPadrePin.tsx';
 import { SelectorPerfil } from './features/acceso/SelectorPerfil.tsx';
 import { HijaLayout } from './features/hija/HijaLayout.tsx';
 import { MiDia } from './features/mi-dia/MiDia.tsx';
+import { EditarTareaPropia, MisTareas } from './features/mis-tareas/MisTareas.tsx';
 import { PadreLayout } from './features/padre/PadreLayout.tsx';
 import { EnConstruccion } from './ui/EnConstruccion.tsx';
 
@@ -26,7 +27,10 @@ export const router = createBrowserRouter(
         { path: '/premios', element: <EnConstruccion pantalla="Premios" sprint="Sprint 4" /> },
         { path: '/logros', element: <EnConstruccion pantalla="Mis logros" sprint="Sprint 3" /> },
         { path: '/calendario', element: <EnConstruccion pantalla="Semana" sprint="Sprint 5" /> },
-        { path: '/mis-tareas', element: <RequierePerfil soloPro><EnConstruccion pantalla="Mis tareas" sprint="Sprint 5" /></RequierePerfil> },
+        // RF-19: Aventureras y Pro crean sus escolares; las Exploradoras regresan a Mi día.
+        { path: '/mis-tareas', element: <RequierePerfil puedeCrear><MisTareas /></RequierePerfil> },
+        { path: '/mis-tareas/nueva', element: <RequierePerfil puedeCrear><EditarTareaPropia /></RequierePerfil> },
+        { path: '/mis-tareas/:id', element: <RequierePerfil puedeCrear><EditarTareaPropia /></RequierePerfil> },
       ],
     },
     {
