@@ -1,13 +1,14 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Instancia, Panel, PerfilPublico, Semana } from '../../../src/api/ApiClient.ts';
 import { WeekCalendar } from '../../../src/features/calendario/WeekCalendar.tsx';
 import { FormTareaPro } from '../../../src/features/mis-tareas/FormTareaPro.tsx';
 import { validarRutina } from '../../../src/features/mis-tareas/rutinaPropia.ts';
 import { PanelVista } from '../../../src/features/padre/Panel.tsx';
 import { lunesDe, sumarDias } from '../../../src/lib/fechas.ts';
+import { ESCRITORIO } from '../../../src/lib/useMediaQuery.ts';
 
 const perfil = (id: number, apodo: string): PerfilPublico => ({ id, apodo, avatar: 'gato', color: 'menta', nivel_ux: 'aventureras', sonidos: true, tema: 'claro', bloqueado_hasta: null });
 const inst = (id: number, fecha: string, extra: Partial<Instancia> = {}): Instancia => ({
@@ -35,17 +36,56 @@ describe('WeekCalendar (RF-14)', () => {
     }),
   };
 
-  it('muestra 7 días, la hora de las actividades y marca hoy', () => {
-    render(<WeekCalendar semana={semana} hoy={sumarDias(desde, 2)} onSemana={vi.fn()} />);
-    expect(screen.getAllByRole('listitem').filter((li) => li.parentElement?.tagName === 'OL')).toHaveLength(7);
-    expect(screen.getByLabelText('Natación a las 18:00, aprobada')).toBeInTheDocument();
-    expect(document.querySelector('[aria-current="date"]')).not.toBeNull();
-    expect(screen.getAllByText('Libre')).toHaveLength(6);
+  const original = window.matchMedia;
+  const conEscritorio = (amplio: boolean) => {
+    window.matchMedia = (q: string) => ({
+      matches: amplio && q === ESCRITORIO, media: q, onchange: null,
+      addEventListener: vi.fn(), removeEventListener: vi.fn(), addListener: vi.fn(), removeListener: vi.fn(), dispatchEvent: vi.fn(),
+    });
+  };
+  afterEach(() => {
+    window.matchMedia = original;
   });
 
-  it('en modo padre dice de quién es cada tarea', () => {
-    render(<WeekCalendar semana={semana} hoy={desde} perfiles={[perfil(1, 'Luna'), perfil(2, 'Sol')]} onSemana={vi.fn()} />);
+  it('en celular y tablet abre hoy y muestra la agenda del día que se elija', async () => {
+    conEscritorio(false);
+    render(<WeekCalendar semana={semana} hoy={sumarDias(desde, 2)} onSemana={vi.fn()} />);
+    const dias = within(screen.getByRole('group', { name: 'Días de la semana' })).getAllByRole('button');
+    expect(dias).toHaveLength(7);
+    expect(dias[2]).toHaveAttribute('aria-pressed', 'true');
+    expect(dias[2]).toHaveAttribute('aria-current', 'date');
+    expect(screen.getByText('Día libre')).toBeInTheDocument();
+
+    await userEvent.click(dias[1]);
+    expect(dias[1]).toHaveAccessibleName('mar 24 , 1 de 2 listas');
+    expect(screen.getByRole('heading', { level: 2, name: 'martes, 24 de noviembre' })).toBeInTheDocument();
+    expect(screen.getByLabelText('Natación a las 18:00, aprobada')).toBeInTheDocument();
+    expect(screen.queryByText('Día libre')).toBeNull();
+  });
+
+  it('en modo padre agrupa el día por hija y dice de quién es cada tarea', async () => {
+    conEscritorio(false);
+    render(<WeekCalendar semana={semana} hoy={sumarDias(desde, 1)} perfiles={[perfil(1, 'Luna'), perfil(2, 'Sol'), perfil(3, 'Estrella')]} onSemana={vi.fn()} />);
+    expect(screen.getAllByRole('heading', { level: 3 }).map((h) => h.textContent)).toEqual(['Luna· 1', 'Sol· 1']);
     expect(screen.getByLabelText('Tarea 2, Sol, pendiente')).toBeInTheDocument();
+  });
+
+  it('en escritorio es un tablero con una fila por hija y una columna por día', () => {
+    conEscritorio(true);
+    render(<WeekCalendar semana={semana} hoy={desde} perfiles={[perfil(1, 'Luna'), perfil(2, 'Sol'), perfil(3, 'Estrella')]} onSemana={vi.fn()} />);
+    const tabla = screen.getByRole('table');
+    expect(within(tabla).getAllByRole('columnheader')).toHaveLength(7);
+    expect(within(tabla).getAllByRole('rowheader').map((h) => h.textContent)).toEqual(['Luna', 'Sol']);
+    expect(document.querySelector('th[aria-current="date"]')?.textContent).toBe('lun · hoy23');
+    expect(screen.getByLabelText('Natación a las 18:00, Luna, aprobada')).toBeInTheDocument();
+    expect(screen.getAllByText('Libre')).toHaveLength(12);
+  });
+
+  it('en escritorio, la vista de la hija es un solo carril sin encabezado', () => {
+    conEscritorio(true);
+    render(<WeekCalendar semana={semana} hoy={desde} onSemana={vi.fn()} />);
+    expect(screen.queryAllByRole('rowheader')).toHaveLength(0);
+    expect(screen.getAllByText('Libre')).toHaveLength(6);
   });
 
   it('respeta los límites de navegación', async () => {
