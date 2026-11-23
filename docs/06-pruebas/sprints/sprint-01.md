@@ -60,3 +60,17 @@ Hallazgos:
 1. **La validación de alta vive en `UsuariosService`** y la usan E-52 y `php spark usuarios:crear` (antes estaba copiada en el comando). La instalación (RF-20) conserva su flujo propio con `GET_LOCK`, porque con la tabla vacía `FOR UPDATE` no bloquea nada.
 2. **El máximo de 2 se comprueba con las filas bloqueadas** (`SELECT id FROM usuarios FOR UPDATE`) dentro de la transacción del alta; un correo repetido que se cuele por carrera choca con `uq_usuarios_email` y responde 400 en `campos.email`.
 3. **Sin cambio de contraseña ni baja de padres desde la app** (fuera del ADR-009); se hacen por consola.
+
+## Cambio posterior: cambio y restablecimiento de contraseña (ADR-010, 2026-11-23)
+
+Rama `cambio/contrasenas`. Contrato 1.1 → 1.2: E-53 `PUT /admin/usuarios/{id}/password` → `UsuarioAdmin`, tipo `CambioPasswordEntrada`.
+
+| Caso | RF | Estado | Evidencia | Fecha |
+|---|---|---|---|---|
+| CP-088 | RF-02 | PASS | `src/api/tests/feature/Acceso/ContrasenasTest.php::testCambioPropioConLaActualCorrecta` · `cd src/api && composer test -- --filter testCambioPropioConLaActualCorrecta`. En navegador (Vite + API local): aviso "Tu contraseña cambió." y `PUT` 200 | 2026-11-23 |
+| CP-089 | RF-02 | PASS | `src/api/tests/feature/Acceso/ContrasenasTest.php::testCambioPropioConLaActualIncorrecta` (400 en `password_actual`, sin cambio; 429 al agotar el límite del login) · `cd src/api && composer test -- --filter testCambioPropioConLaActualIncorrecta`. En navegador: mensaje "La contraseña actual no es correcta." en el campo | 2026-11-23 |
+| CP-090 | RF-02 | PASS | `src/api/tests/feature/Acceso/ContrasenasTest.php::testRestablecerLaDelOtroPadre` · `cd src/api && composer test -- --filter testRestablecerLaDelOtroPadre`. En navegador: aviso "Listo: pásale a … su contraseña nueva." y `PUT` 200 | 2026-11-23 |
+
+Web: `src/web/tests/unit/padre/padres.test.tsx` (10 pruebas, 4 nuevas); axe sin violaciones graves con el formulario abierto. Suites: API `OK (336 tests, 2381 assertions)`; web 105 de 105, lint y `tsc` sin errores.
+
+Hallazgo: con `php spark serve`, el proxy de Vite rechazaba de forma intermitente la respuesta `204` a un `PUT` (`Parse Error: Data after Connection: close`), aunque la respuesta directa era un 204 limpio. E-53 responde `200` con el `UsuarioAdmin`, como las demás ediciones. Otros endpoints con `204` (logout, desactivar) podrían toparse con lo mismo solo en desarrollo; en producción responde LiteSpeed.

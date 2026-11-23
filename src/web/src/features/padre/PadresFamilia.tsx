@@ -1,12 +1,22 @@
-import { UserRound } from 'lucide-react';
+import { KeyRound, UserRound } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
-import type { UsuarioAdmin, UsuarioEntrada } from '../../api/ApiClient.ts';
-import { useCrearUsuario, useUsuarios } from '../../hooks/useUsuarios.ts';
+import type { CambioPasswordEntrada, UsuarioAdmin, UsuarioEntrada } from '../../api/ApiClient.ts';
+import { useCambiarPassword, useCrearUsuario, useUsuarios } from '../../hooks/useUsuarios.ts';
 import { detalleError } from '../../lib/errores.ts';
 import { Boton } from '../../ui/Boton.tsx';
 import { Campo } from '../../ui/Campo.tsx';
 import { Cargando } from '../../ui/Cargando.tsx';
-import { PADRE_VACIO, aEntradaPadre, validarPadre, type ErroresPadre, type PadreBorrador } from './validarPadre.ts';
+import {
+  PADRE_VACIO,
+  PASSWORD_VACIO,
+  aEntradaPadre,
+  validarPadre,
+  validarPassword,
+  type ErroresPadre,
+  type ErroresPassword,
+  type PadreBorrador,
+  type PasswordBorrador,
+} from './validarPadre.ts';
 
 /** Máximo de padres por familia (doc 03, ADR-009). */
 export const MAX_PADRES = 2;
@@ -17,14 +27,79 @@ interface VistaProps {
   aviso: string | null;
   erroresServidor?: Record<string, string>;
   onCrear: (u: UsuarioEntrada) => void;
+  cambiandoPassword?: boolean;
+  /** Errores del servidor del cambio de contraseña (`password_actual`, `password`). */
+  erroresPassword?: Record<string, string>;
+  onCambiarPassword: (usuario: UsuarioAdmin, datos: CambioPasswordEntrada) => void;
+}
+
+/**
+ * Cambio de la contraseña propia (pide la actual) o restablecimiento de la del otro padre (ADR-010).
+ */
+function FormPassword({ padre, enviando, erroresServidor, onGuardar, onCancelar }: {
+  padre: UsuarioAdmin;
+  enviando: boolean;
+  erroresServidor: Record<string, string>;
+  onGuardar: (datos: CambioPasswordEntrada) => void;
+  onCancelar: () => void;
+}) {
+  const propia = padre.es_actual;
+  const [d, setD] = useState<PasswordBorrador>(PASSWORD_VACIO);
+  const [tocado, setTocado] = useState(false);
+  const errores = validarPassword(d, propia);
+  const servidor: ErroresPassword = { actual: erroresServidor.password_actual, nueva: erroresServidor.password };
+  const ver = (k: keyof ErroresPassword) => (tocado ? errores[k] : undefined) ?? servidor[k];
+  const cambiar = (k: keyof PasswordBorrador, v: string) => setD((x) => ({ ...x, [k]: v }));
+
+  function enviar(e: FormEvent) {
+    e.preventDefault();
+    setTocado(true);
+    if (Object.keys(errores).length > 0) return;
+    onGuardar(propia ? { password_actual: d.actual, password: d.nueva } : { password: d.nueva });
+  }
+
+  return (
+    <form onSubmit={enviar} noValidate aria-label={propia ? 'Cambiar mi contraseña' : `Restablecer la contraseña de ${padre.nombre}`} className="flex flex-col gap-4 border-t border-superficie pt-4">
+      {!propia && (
+        <p className="m-0 text-etiqueta text-tinta-600">
+          Úsalo si {padre.nombre} olvidó su contraseña: escribe una nueva y pásasela en persona. Su PIN no cambia.
+        </p>
+      )}
+      <div className="grid gap-4 sm:grid-cols-2">
+        {propia && (
+          <Campo etiqueta="Contraseña actual" type="password" autoComplete="current-password" value={d.actual} onChange={(e) => cambiar('actual', e.target.value)} error={ver('actual')} />
+        )}
+        <Campo etiqueta="Contraseña nueva" type="password" autoComplete="new-password" value={d.nueva} onChange={(e) => cambiar('nueva', e.target.value)} error={ver('nueva')} ayuda="Mínimo 10 caracteres." />
+        <Campo etiqueta="Repite la contraseña nueva" type="password" autoComplete="new-password" value={d.confirmar} onChange={(e) => cambiar('confirmar', e.target.value)} error={ver('confirmar')} />
+      </div>
+      <div className="flex flex-wrap justify-end gap-2">
+        <Boton type="button" variante="secundario" onClick={onCancelar}>
+          Cancelar
+        </Boton>
+        <Boton type="submit" disabled={enviando}>
+          {enviando ? 'Guardando…' : 'Guardar contraseña'}
+        </Boton>
+      </div>
+    </form>
+  );
 }
 
 /**
  * Padres de la familia (RF-02, ADR-009): lista los padres y, si hay lugar, da de alta al otro con
  * su correo, una contraseña inicial y su PIN de modo padre.
  */
-export function PadresFamiliaVista({ padres, enviando, aviso, erroresServidor = {}, onCrear }: VistaProps) {
+export function PadresFamiliaVista({
+  padres,
+  enviando,
+  aviso,
+  erroresServidor = {},
+  onCrear,
+  cambiandoPassword = false,
+  erroresPassword = {},
+  onCambiarPassword,
+}: VistaProps) {
   const [d, setD] = useState<PadreBorrador>(PADRE_VACIO);
+  const [editando, setEditando] = useState<number | null>(null);
   const [tocado, setTocado] = useState(false);
   const errores = validarPadre(d);
   const ver = (k: keyof ErroresPadre) => (tocado ? errores[k] : undefined) ?? erroresServidor[k];
@@ -45,17 +120,38 @@ export function PadresFamiliaVista({ padres, enviando, aviso, erroresServidor = 
       </h2>
       <ul className="m-0 flex list-none flex-col gap-2 p-0">
         {padres.map((p) => (
-          <li key={p.id} className="flex items-center gap-3 rounded-tarjeta-interna bg-blanco p-3">
-            <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-lavanda-100 text-indigo-700" aria-hidden="true">
-              <UserRound className="size-5" />
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="block text-cuerpo">
-                {p.nombre}
-                {p.es_actual && <span className="text-etiqueta text-tinta-600"> · tú</span>}
+          <li key={p.id} className="flex flex-col gap-3 rounded-tarjeta-interna bg-blanco p-3">
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-lavanda-100 text-indigo-700" aria-hidden="true">
+                <UserRound className="size-5" />
               </span>
-              <span className="block break-all text-etiqueta text-tinta-600">{p.email}</span>
-            </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-cuerpo">
+                  {p.nombre}
+                  {p.es_actual && <span className="text-etiqueta text-tinta-600"> · tú</span>}
+                </span>
+                <span className="block break-all text-etiqueta text-tinta-600">{p.email}</span>
+              </span>
+              {editando !== p.id && (
+                <button
+                  type="button"
+                  onClick={() => setEditando(p.id)}
+                  className="inline-flex min-h-tactil items-center gap-2 rounded-boton px-3 text-etiqueta text-indigo-700 hover:bg-lavanda-100"
+                >
+                  <KeyRound className="size-4" aria-hidden="true" />
+                  {p.es_actual ? 'Cambiar mi contraseña' : 'Restablecer contraseña'}
+                </button>
+              )}
+            </div>
+            {editando === p.id && (
+              <FormPassword
+                padre={p}
+                enviando={cambiandoPassword}
+                erroresServidor={erroresPassword}
+                onGuardar={(datos) => onCambiarPassword(p, datos)}
+                onCancelar={() => setEditando(null)}
+              />
+            )}
           </li>
         ))}
       </ul>
@@ -110,6 +206,7 @@ export function PadresFamiliaVista({ padres, enviando, aviso, erroresServidor = 
 export function PadresFamilia() {
   const padres = useUsuarios();
   const crear = useCrearUsuario();
+  const cambiarPassword = useCambiarPassword();
   const [aviso, setAviso] = useState<string | null>(null);
   // Tras un alta exitosa se remonta la vista para limpiar el formulario (y las contraseñas escritas).
   const [version, setVersion] = useState(0);
@@ -118,13 +215,29 @@ export function PadresFamilia() {
   if (padres.isError) return <p className="text-cuerpo text-indigo-700">No se pudo cargar la lista de padres. Intenta de nuevo.</p>;
 
   const d = crear.error ? detalleError(crear.error) : null;
+  const dp = cambiarPassword.error ? detalleError(cambiarPassword.error) : null;
   return (
     <PadresFamiliaVista
       key={version}
       padres={padres.data}
       enviando={crear.isPending}
-      aviso={aviso ?? (d && !d.campos ? d.mensaje : null)}
+      aviso={aviso ?? (d && !d.campos ? d.mensaje : null) ?? (dp && !dp.campos ? dp.mensaje : null)}
       erroresServidor={d?.campos ?? {}}
+      cambiandoPassword={cambiarPassword.isPending}
+      erroresPassword={dp?.campos ?? {}}
+      onCambiarPassword={(usuario, datos) =>
+        cambiarPassword.mutate(
+          { id: usuario.id, datos },
+          {
+            onSuccess: () => {
+              setAviso(usuario.es_actual ? 'Tu contraseña cambió.' : `Listo: pásale a ${usuario.nombre} su contraseña nueva.`);
+              setVersion((n) => n + 1);
+              cambiarPassword.reset();
+            },
+            onError: () => setAviso(null),
+          },
+        )
+      }
       onCrear={(u) =>
         crear.mutate(u, {
           onSuccess: (nuevo) => {

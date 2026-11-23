@@ -18,7 +18,7 @@ Principio: **minimizar.** Si un dato no es indispensable para una función del S
 
 | ID | Amenaza | Actor | Impacto | Control |
 |---|---|---|---|---|
-| A-01 | Alguien en internet entra a la app | Externo | Alto | Login con contraseña, throttling, HTTPS, sin registro público. Altas por web: la instalación inicial (RF-20: solo con 0 usuarios, en transacción con bloqueo y, en producción, con token de `.env`) y el segundo padre en modo padre (ADR-009: sesión de dispositivo + PIN vigente, máximo 2, transacción con `FOR UPDATE`) |
+| A-01 | Alguien en internet entra a la app | Externo | Alto | Login con contraseña, throttling, HTTPS, sin registro público. Altas por web: la instalación inicial (RF-20: solo con 0 usuarios, en transacción con bloqueo y, en producción, con token de `.env`) y el segundo padre en modo padre (ADR-009: sesión de dispositivo + PIN vigente, máximo 2, transacción con `FOR UPDATE`). Cambio de contraseña en modo padre (ADR-010): la propia exige la actual con el límite del login; la del otro padre se restablece sin ella |
 | A-02 | Una hija entra a modo padre | Interno | Medio | PIN de padre distinto, Filter `modoPadre`, expiración de 10 min |
 | A-03 | Una hija entra al perfil de su hermana | Interno | Bajo | PIN por perfil y bloqueo tras 5 intentos |
 | A-04 | Una hija se suma puntos manipulando peticiones | Interno | Medio | Puntos solo se acreditan en el servidor al aprobar (RN-03); la API ignora puntos enviados por el cliente |

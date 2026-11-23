@@ -1,6 +1,6 @@
 # 05 · Contrato de API
 
-**Proyecto:** Tareas en Familia · **Versión:** 1.1 (ADR-009: E-51 y E-52, alta del segundo padre) · **Congelada el 2026-11-23** al cerrar el Sprint 2 (ADR-008). Cualquier cambio en endpoints, tipos o `ApiClient` requiere un ADR de cambio de contrato (Metodología v4 §11) · **Fecha:** 2026-11-22
+**Proyecto:** Tareas en Familia · **Versión:** 1.2 (ADR-009: E-51 y E-52, alta del segundo padre; ADR-010: E-53, cambio de contraseña) · **Congelada el 2026-11-23** al cerrar el Sprint 2 (ADR-008). Cualquier cambio en endpoints, tipos o `ApiClient` requiere un ADR de cambio de contrato (Metodología v4 §11) · **Fecha:** 2026-11-22
 
 ## 1. Convenciones
 
@@ -120,8 +120,11 @@ Reglas de E-17, E-22 y E-46 (*aclaraciones de comportamiento del 2026-11-23, sin
 | E-48 | `PUT /admin/configuracion` | MP | `ConfiguracionEntrada` | `Configuracion` | RF-18 |
 | E-51 | `GET /admin/usuarios` | MP | — | `UsuarioAdmin[]` | RF-02 (ADR-009) |
 | E-52 | `POST /admin/usuarios` | MP | `UsuarioEntrada` | `UsuarioAdmin` (201) | RF-02 (ADR-009) |
+| E-53 | `PUT /admin/usuarios/{id}/password` | MP | `CambioPasswordEntrada` | `UsuarioAdmin` | RF-02 (ADR-010) |
 
 E-52 (ADR-009): máximo 2 padres; con 2 responde 409 `ESTADO_INVALIDO`. Reglas de `UsuarioEntrada` iguales a la instalación: `nombre` de 1 a 60, `email` válido y no registrado, `password` de 10 caracteres o más y `pin` de 4 dígitos no trivial; con datos inválidos, 400 `VALIDACION` con `campos`. La comprobación del máximo y el alta van en una transacción con `SELECT … FOR UPDATE`. La respuesta nunca trae hashes.
+
+E-53 (ADR-010): si `{id}` es el padre de la sesión, `password_actual` es obligatoria y se verifica con el mismo límite del login (5 por minuto por IP, 429); incorrecta → 400 `VALIDACION` en `campos.password_actual`. Si `{id}` es el otro padre, es un restablecimiento y no se pide la actual. `password` nueva de 10 caracteres o más (400 en `campos.password`); padre inexistente → 404.
 
 ### 2.4 Reglas de transición
 
@@ -230,6 +233,7 @@ export interface Configuracion { racha_umbral: number; sonidos_default: boolean;
 export interface ConfiguracionEntrada { racha_umbral?: number; sonidos_default?: boolean; pin_padre?: string; } // pin_padre cambia el PIN del usuario de la sesión
 export interface UsuarioAdmin { id: number; nombre: string; email: string; es_actual: boolean; } // es_actual: el padre de esta sesión (ADR-009)
 export interface UsuarioEntrada { nombre: string; email: string; password: string; pin: string; }      // ADR-009
+export interface CambioPasswordEntrada { password: string; password_actual?: string; }                  // ADR-010: la actual solo para la propia
 
 // ===== Cliente único =====
 export interface ApiClient {
@@ -287,6 +291,7 @@ export interface ApiClient {
   guardarConfiguracion(c: ConfiguracionEntrada): Promise<Configuracion>;       // E-48
   adminUsuarios(): Promise<UsuarioAdmin[]>;                                    // E-51 (ADR-009)
   crearUsuario(u: UsuarioEntrada): Promise<UsuarioAdmin>;                      // E-52 (ADR-009)
+  cambiarPassword(usuarioId: number, datos: CambioPasswordEntrada): Promise<UsuarioAdmin>; // E-53 (ADR-010)
 }
 ```
 
