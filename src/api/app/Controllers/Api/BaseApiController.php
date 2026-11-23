@@ -36,6 +36,28 @@ abstract class BaseApiController extends Controller
     }
 
     /**
+     * Cuerpo JSON de la petición como arreglo (vacío si no es JSON válido).
+     *
+     * @return array<string, mixed>
+     */
+    protected function entrada(): array
+    {
+        if (! str_contains($this->request->getHeaderLine('Content-Type'), 'application/json')) {
+            $post = $this->request->getPost();
+
+            return is_array($post) ? $post : [];
+        }
+
+        try {
+            $datos = $this->request->getJSON(true);
+        } catch (\Throwable) {
+            $datos = null;
+        }
+
+        return is_array($datos) ? $datos : [];
+    }
+
+    /**
      * @param array<string, string>|null $campos
      * @param array<string, mixed>       $extra
      */

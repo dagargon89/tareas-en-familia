@@ -6,7 +6,10 @@ namespace Config;
 
 use App\Filters\CsrfFilter;
 use App\Filters\CsrfTokenHeaderFilter;
+use App\Filters\ModoPadreFilter;
+use App\Filters\PerfilActivoFilter;
 use App\Filters\SecurityHeadersFilter;
+use App\Filters\SesionFilter;
 use CodeIgniter\Config\Filters as BaseFilters;
 use CodeIgniter\Filters\Cors;
 use CodeIgniter\Filters\DebugToolbar;
@@ -32,6 +35,9 @@ class Filters extends BaseFilters
         'csrf'            => CsrfFilter::class,
         'securityHeaders' => SecurityHeadersFilter::class,
         'csrfHeader'      => CsrfTokenHeaderFilter::class,
+        'sesion'          => SesionFilter::class,       // doc 04 §3.2, por grupo de rutas
+        'perfilActivo'    => PerfilActivoFilter::class, // rutas /yo/*
+        'modoPadre'       => ModoPadreFilter::class,    // rutas admin/*
         'toolbar'       => DebugToolbar::class,
         'honeypot'      => Honeypot::class,
         'invalidchars'  => InvalidChars::class,
