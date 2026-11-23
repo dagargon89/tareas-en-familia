@@ -7,6 +7,7 @@ import { ModoPadrePin } from './features/acceso/ModoPadrePin.tsx';
 import { SelectorPerfil } from './features/acceso/SelectorPerfil.tsx';
 import { HijaLayout } from './features/hija/HijaLayout.tsx';
 import { MiDia } from './features/mi-dia/MiDia.tsx';
+import { MisLogros } from './features/progreso/MisLogros.tsx';
 import { EditarTareaPropia, MisTareas } from './features/mis-tareas/MisTareas.tsx';
 import { PadreLayout } from './features/padre/PadreLayout.tsx';
 import { EnConstruccion } from './ui/EnConstruccion.tsx';
@@ -27,7 +28,7 @@ export const router = createBrowserRouter(
       children: [
         { path: '/hoy', element: <MiDia /> },
         { path: '/premios', element: <EnConstruccion pantalla="Premios" sprint="Sprint 4" /> },
-        { path: '/logros', element: <EnConstruccion pantalla="Mis logros" sprint="Sprint 3" /> },
+        { path: '/logros', element: <MisLogros /> },
         { path: '/calendario', element: <EnConstruccion pantalla="Semana" sprint="Sprint 5" /> },
         // RF-19: Aventureras y Pro crean sus escolares; las Exploradoras regresan a Mi día.
         { path: '/mis-tareas', element: <RequierePerfil puedeCrear><MisTareas /></RequierePerfil> },
@@ -40,7 +41,7 @@ export const router = createBrowserRouter(
       element: <RequiereModoPadre><PadreLayout /></RequiereModoPadre>,
       children: [
         { index: true, element: <EnConstruccion pantalla="Panel" sprint="Sprint 5" /> },
-        { path: 'aprobaciones', element: <EnConstruccion pantalla="Aprobaciones" sprint="Sprint 3" /> },
+        { path: 'aprobaciones', lazy: async () => ({ Component: (await import('./features/padre/Aprobaciones.tsx')).Aprobaciones }) },
         { path: 'tareas', lazy: async () => ({ Component: (await import('./features/padre/Tareas.tsx')).Tareas }) },
         { path: 'perfiles', lazy: async () => ({ Component: (await import('./features/padre/Perfiles.tsx')).Perfiles }) },
         { path: 'premios', element: <EnConstruccion pantalla="Premios" sprint="Sprint 4" /> },

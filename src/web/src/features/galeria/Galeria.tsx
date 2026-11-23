@@ -19,13 +19,10 @@ import { FormTarea } from '../padre/FormTarea.tsx';
 import { TareasVista } from '../padre/Tareas.tsx';
 import { FormEscolarPropia } from '../mis-tareas/FormEscolarPropia.tsx';
 import { MisTareasVista } from '../mis-tareas/MisTareas.tsx';
-import { ParentApprovalItem } from '../padre/ParentApprovalItem.tsx';
+import { AprobacionesVista } from '../padre/Aprobaciones.tsx';
+import { resumirResultados } from '../padre/resumirResultados.ts';
+import { MisLogrosVista } from '../progreso/MisLogros.tsx';
 import { RewardCard } from '../premios/RewardCard.tsx';
-import { BadgeGrid } from '../progreso/BadgeGrid.tsx';
-import { FamilyGoalBar } from '../progreso/FamilyGoalBar.tsx';
-import { StatTile } from '../progreso/StatTile.tsx';
-import { StreakBadge } from '../progreso/StreakBadge.tsx';
-import { XpWaveBar } from '../progreso/XpWaveBar.tsx';
 import { BANDEJA, CATEGORIAS, TAREAS, INSIGNIAS, INSTANCIAS, META, NIVEL_ACTUAL, NIVEL_SIGUIENTE, PERFILES, PERFILES_ADMIN, RECOMPENSAS } from './datosGaleria.ts';
 
 function Seccion({ titulo, nota, children }: { titulo: string; nota?: string; children: ReactNode }) {
@@ -39,6 +36,11 @@ function Seccion({ titulo, nota, children }: { titulo: string; nota?: string; ch
     </section>
   );
 }
+
+/** Foto de evidencia de ejemplo (SVG en línea; la CSP permite data: en img-src). */
+const FOTO_EJEMPLO =
+  'data:image/svg+xml;utf8,' +
+  encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 60"><rect width="60" height="60" fill="#C9EFD5"/><rect x="12" y="30" width="36" height="16" rx="4" fill="#3F4FB8"/><circle cx="22" cy="20" r="7" fill="#FFE08A"/></svg>');
 
 /** Encierra una pantalla completa: el transform hace que sus elementos fixed queden dentro. */
 function Marco({ titulo, alto = 640, children }: { titulo: string; alto?: number; children: ReactNode }) {
@@ -58,6 +60,16 @@ export function Galeria() {
   const hoy = fechaLocal();
   const [fechaDia, setFechaDia] = useState(hoy);
   const [soloDeEllas, setSoloDeEllas] = useState(false);
+  const [bandeja, setBandeja] = useState(BANDEJA);
+  const [seleccion, setSeleccion] = useState<number[]>([]);
+  const [devolviendo, setDevolviendo] = useState<number | null>(null);
+  const [avisoBandeja, setAvisoBandeja] = useState<string | null>(null);
+  const aprobarEnGaleria = (ids: number[]) => {
+    const rs = bandeja.filter((b) => ids.includes(b.id)).map((b) => ({ instancia: { ...b, estado: 'aprobada' as const }, puntos_acreditados: b.puntos, insignias_nuevas: [], meta_cumplida: false }));
+    setAvisoBandeja(resumirResultados(rs, bandeja));
+    setBandeja((xs) => xs.filter((x) => !ids.includes(x.id)));
+    setSeleccion([]);
+  };
   const [instancias, setInstancias] = useState<Instancia[]>(INSTANCIAS);
   const [fallos, setFallos] = useState(0);
   const [pinMsg, setPinMsg] = useState<string | null>(null);
@@ -219,20 +231,16 @@ export function Galeria() {
           </Marco>
         </Seccion>
 
-        <Seccion titulo="Mis logros" nota="RF-08, RF-10, RF-11 y RF-12">
-          <div className="flex flex-col gap-6 rounded-tarjeta bg-superficie p-6">
-            <XpWaveBar xp={612} nivel={NIVEL_ACTUAL} siguiente={NIVEL_SIGUIENTE} nivelUx={nivel} />
-            <div className="grid grid-cols-2 gap-3">
-              <StatTile etiqueta={`${v.puntos} para canjear`} valor={128} tono="ambar" />
-              <StatTile etiqueta="Esta semana" valor="75%" tono="menta" />
+        <Seccion titulo="Sprint 3 · Mis logros" nota="RF-08, RF-10, RF-11 y RF-12 · cambia de nivel arriba">
+          <Marco titulo="/logros" alto={860}>
+            <div className="p-4">
+              <MisLogrosVista
+                nivel={nivel}
+                perfiles={PERFILES}
+                progreso={{ xp: 612, saldo: 128, disponible: 88, nivel: NIVEL_ACTUAL, siguiente_nivel: NIVEL_SIGUIENTE, racha_semanas: 3, semana_actual: { asignadas: 12, aprobadas: 9, porcentaje: 75 }, insignias: INSIGNIAS, meta_familiar: META }}
+              />
             </div>
-            <div className="flex flex-wrap gap-2">
-              <StreakBadge semanas={3} nivel={nivel} />
-              <StreakBadge semanas={0} nivel={nivel} />
-            </div>
-          </div>
-          <BadgeGrid insignias={INSIGNIAS} />
-          <FamilyGoalBar meta={META} perfiles={PERFILES} />
+          </Marco>
         </Seccion>
 
         <Seccion titulo="Premios" nota="RF-09 · CP-064">
@@ -243,12 +251,32 @@ export function Galeria() {
           </div>
         </Seccion>
 
-        <Seccion titulo="Bandeja del padre" nota="RF-07">
-          <ul className="m-0 flex list-none flex-col gap-3 p-0">
-            {BANDEJA.map((b) => (
-              <ParentApprovalItem key={b.id} item={b} onSeleccionar={() => undefined} />
-            ))}
-          </ul>
+        <Seccion titulo="Sprint 3 · Aprobaciones" nota="RF-07 · aprueba una, varias en lote, o devuelve con mensaje">
+          <Marco titulo="/padre/aprobaciones" alto={620}>
+            <div className="p-4">
+              <AprobacionesVista
+                items={bandeja}
+                seleccion={seleccion}
+                devolviendo={devolviendo}
+                ocupado={false}
+                aviso={avisoBandeja}
+                urlFoto={() => FOTO_EJEMPLO}
+                onSeleccionar={(id, v) => setSeleccion((xs) => (v ? [...xs, id] : xs.filter((x) => x !== id)))}
+                onSeleccionarTodas={(v) => setSeleccion(v ? bandeja.map((b) => b.id) : [])}
+                onAprobar={(id) => aprobarEnGaleria([id])}
+                onAprobarSeleccion={() => aprobarEnGaleria(seleccion)}
+                onAbrirDevolver={setDevolviendo}
+                onDevolver={(id) => {
+                  setBandeja((xs) => xs.filter((x) => x.id !== id));
+                  setDevolviendo(null);
+                  setAvisoBandeja('Devuelta con tu mensaje.');
+                }}
+              />
+              <button type="button" onClick={() => { setBandeja(BANDEJA); setAvisoBandeja(null); }} className="mt-3 rounded-boton px-4 py-2 text-etiqueta text-indigo-700 hover:bg-lavanda-100">
+                Reiniciar bandeja
+              </button>
+            </div>
+          </Marco>
         </Seccion>
       </main>
     </div>
