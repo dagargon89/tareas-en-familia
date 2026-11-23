@@ -32,7 +32,7 @@ Duraciones estimadas para un solo desarrollador a tiempo parcial. S0 dura 1 sema
 | Sprint | Objetivo | RF | Casos |
 |---|---|---|---|
 | S0 | Base técnica y despliegue a pruebas | — | CP-SEG-04, CP-SEG-06 |
-| S1 | Acceso y perfiles | RF-01, RF-02, RF-17 | CP-001 a CP-012, CP-SEG-01 a CP-SEG-03, CP-SEG-07 |
+| S1 | Acceso, perfiles e instalación inicial | RF-01, RF-02, RF-17, RF-20 | CP-001 a CP-016, CP-SEG-01 a CP-SEG-03, CP-SEG-07 |
 | S2 | Tareas, recurrencias, Mi día y escolares propias | RF-03, RF-04, RF-05, RF-13, RF-19 | CP-020 a CP-039, CP-SEG-05 |
 | S3 | Evidencias, aprobación y puntos | RF-06, RF-07, RF-08 | CP-040 a CP-052 |
 | S4 | Recompensas, rachas, insignias, meta, configuración | RF-09 a RF-12, RF-18 | CP-060 a CP-072, CP-086 |
@@ -76,7 +76,7 @@ Formato: **Requisitos** · **Depende de** · **Casos** · **Endpoints** · **Arc
 **T-S1-01 · Login y sesión del padre**
 - Requisitos: RF-02 · Depende de: T-S0-02, T-S0-03 · Casos: CP-001, CP-002, CP-SEG-03, CP-SEG-07 · Endpoints: E-02 a E-05
 - Archivos: `app/Services/AuthService.php`, `app/Controllers/Api/V1/AuthController.php`, `app/Filters/SesionFilter.php`, `app/Models/UsuarioModel.php`, `app/Commands/CrearUsuario.php` (alta del padre por consola; pide nombre, correo, contraseña y PIN porque `pin_hash` es obligatorio)
-- Aceptación: casos en PASS; no existe endpoint de registro.
+- Aceptación: casos en PASS; no existe endpoint de registro público (la única alta por web es la instalación inicial de T-S1-05).
 - Fuera de alcance: recuperación de contraseña (se restablece por consola).
 
 **T-S1-02 · Perfiles y PIN**
@@ -93,6 +93,11 @@ Formato: **Requisitos** · **Depende de** · **Casos** · **Endpoints** · **Arc
 - Requisitos: RF-01, RF-02, RF-17 · Depende de: T-S1-01 a T-S1-03, componentes de `s0/web-base` · Casos: CP-009 · Endpoints: los anteriores vía `HttpApiClient`
 - Archivos: `src/web/src/features/acceso/*`, `src/web/src/features/padre/Perfiles.tsx`, `src/web/src/stores/sesionStore.ts`, `src/web/tests/e2e/acceso.spec.ts`
 - Aceptación: CP-009 en PASS en ambos viewports.
+
+**T-S1-05 · Instalación inicial (RF-20)**
+- Requisitos: RF-20 · Depende de: T-S1-01 · Casos: CP-013 a CP-016 · Endpoints: E-49, E-50
+- Archivos: `app/Services/InstalacionService.php`, `app/Controllers/Api/V1/InstalacionController.php`, `instalacion.token` en `env`, `src/web/src/features/acceso/Instalacion.tsx`
+- Aceptación: casos en PASS; con un usuario existente, E-50 nunca crea nada.
 
 ### S2 · Tareas y Mi día
 

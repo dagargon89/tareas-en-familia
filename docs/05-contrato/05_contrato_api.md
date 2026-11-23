@@ -52,6 +52,10 @@ Columna **Filtro**: `—` público · `S` sesión de dispositivo · `P` perfil a
 | E-08 | `POST /perfiles/salir` | S | — | `Sesion` | RF-01 |
 | E-09 | `POST /modo-padre` | S | `{ pin }` | `Sesion` | RF-02 |
 | E-10 | `DELETE /modo-padre` | S | — | `Sesion` | RF-02 |
+| E-49 | `GET /instalacion` | — | — | `EstadoInstalacion` | RF-20 |
+| E-50 | `POST /instalacion` | — (CSRF) | `InstalacionEntrada` | `Sesion` (201) | RF-20 |
+
+E-50 solo funciona con 0 usuarios: comprueba y crea dentro de una transacción con bloqueo (`SELECT … FOR UPDATE` sobre `usuarios`). Con usuarios existentes responde 409 `ESTADO_INVALIDO`; con token ausente o incorrecto (cuando se requiere) responde 403 `PROHIBIDO`; con datos inválidos 400 `VALIDACION`. Tiene el mismo throttling que el login. Al crear, regenera el id de sesión y deja `usuario_id` en sesión.
 
 ### 2.2 Hija (perfil activo)
 
@@ -155,6 +159,9 @@ export interface PerfilAdmin extends PerfilPublico { activo: boolean; orden: num
 export interface PerfilEntrada { apodo: string; avatar: string; color: ColorToken; nivel_ux: NivelUx;
   pin?: string; orden?: number; activo?: boolean; }
 
+export interface EstadoInstalacion { requerida: boolean; requiere_token: boolean; }
+export interface InstalacionEntrada { nombre: string; email: string; password: string; pin: string; token?: string; }
+
 // ===== Tareas =====
 export interface Recurrencia { frecuencia: Frecuencia; dias_semana: DiaSemana[] | null;
   hora: string | null; fecha_inicio: string; fecha_fin: string | null; }
@@ -224,6 +231,8 @@ export interface ApiClient {
   salirPerfil(): Promise<Sesion>;                                              // E-08
   entrarModoPadre(pin: string): Promise<Sesion>;                               // E-09
   salirModoPadre(): Promise<Sesion>;                                           // E-10
+  estadoInstalacion(): Promise<EstadoInstalacion>;                             // E-49
+  instalar(datos: InstalacionEntrada): Promise<Sesion>;                        // E-50
   // Hija
   dia(fecha?: string): Promise<Dia>;                                           // E-11
   marcarHecha(instanciaId: number, foto?: File): Promise<Instancia>;           // E-12

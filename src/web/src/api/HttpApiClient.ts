@@ -6,9 +6,11 @@ import type {
   Configuracion,
   ConfiguracionEntrada,
   Dia,
+  EstadoInstalacion,
   EstadoCanje,
   EstadoMeta,
   Instancia,
+  InstalacionEntrada,
   InstanciaRevision,
   Meta,
   MetaEntrada,
@@ -156,6 +158,12 @@ export class HttpApiClient implements ApiClient {
   }
   salirModoPadre() {
     return this.peticion<Sesion>('DELETE', '/modo-padre');
+  }
+  estadoInstalacion() {
+    return this.peticion<EstadoInstalacion>('GET', '/instalacion');
+  }
+  instalar(datos: InstalacionEntrada) {
+    return this.peticion<Sesion>('POST', '/instalacion', datos);
   }
 
   // ===== Hija =====

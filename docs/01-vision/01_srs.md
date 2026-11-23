@@ -48,6 +48,13 @@ Prioridad: Alta · Sprint: S1
 - Cuando desde cualquier pantalla se toca "Modo padre" y se escribe el PIN del padre que abrió la sesión del dispositivo (`usuario_id` de la sesión), entonces se habilitan las pantallas de administración.
 - Cuando pasan 10 minutos sin actividad en modo padre, entonces el modo padre se cierra solo.
 
+**RF-20 · Instalación inicial**
+Prioridad: Alta · Sprint: S1
+- Dado que la base no tiene ningún usuario, cuando se abre la app, entonces se muestra la pantalla "Configura la app" en lugar del login.
+- El padre escribe nombre, correo, contraseña (mínimo 10 caracteres) y su PIN de modo padre (sin PIN trivial); al terminar queda creado y con la sesión del dispositivo abierta.
+- En producción se pide además el token de instalación definido en el `.env` del servidor (`instalacion.token`); en desarrollo no.
+- En cuanto existe un usuario, la instalación queda cerrada para siempre: la pantalla ya no se ofrece y el endpoint responde 409. Los usuarios siguientes (el segundo padre) se crean con `php spark usuarios:crear`.
+
 ### Tareas
 
 **RF-03 · Crear y editar tareas**
