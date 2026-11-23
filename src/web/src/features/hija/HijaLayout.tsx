@@ -1,5 +1,5 @@
 import { CalendarDays, Gift, ListChecks, Medal, Moon, MonitorSmartphone, Sun, SunMedium, Volume2, VolumeX } from 'lucide-react';
-import { NavLink, Outlet, useNavigate } from 'react-router';
+import { NavLink, Outlet, useMatch, useNavigate } from 'react-router';
 import type { NivelUx, PerfilPublico } from '../../api/ApiClient.ts';
 import { usePreferencias, useSalirPerfil, useSesion } from '../../hooks/useSesion.ts';
 import { aplicarTema } from '../../niveles/nivel.ts';
@@ -41,6 +41,8 @@ export function HijaLayoutVista({ perfil, onCambiar, onSonidos, onTema }: VistaP
   const tema = TEMA[perfil.tema];
   const Avatar = avatarDe(perfil.avatar);
   const secciones = seccionesDe(perfil.nivel_ux);
+  // "Mi semana" usa el ancho del escritorio para su tablero.
+  const amplia = useMatch('/calendario') !== null;
   return (
     <div className="relative flex min-h-dvh flex-col">
       <FormasVivas />
@@ -66,7 +68,7 @@ export function HijaLayoutVista({ perfil, onCambiar, onSonidos, onTema }: VistaP
           Cambiar de perfil
         </button>
       </header>
-      <main className="mx-auto w-full max-w-3xl flex-1 px-4 pt-4 pb-32 sm:px-8">
+      <main className={`mx-auto w-full flex-1 px-4 pt-4 pb-32 sm:px-8 ${amplia ? 'max-w-3xl lg:max-w-6xl' : 'max-w-3xl'}`}>
         <Outlet />
       </main>
       <nav aria-label="Secciones" className="fixed inset-x-0 bottom-0 border-t border-superficie bg-fondo px-2 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">

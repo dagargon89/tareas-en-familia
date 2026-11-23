@@ -1,6 +1,6 @@
 import { CalendarDays, ChartColumn, Gift, Inbox, ListChecks, LogOut, Settings, Target, Users } from 'lucide-react';
 import { useEffect } from 'react';
-import { NavLink, Outlet, useNavigate } from 'react-router';
+import { NavLink, Outlet, useMatch, useNavigate } from 'react-router';
 import { useLogout, useSalirModoPadre, useSesion } from '../../hooks/useSesion.ts';
 import { aplicarNivel, aplicarTema } from '../../niveles/nivel.ts';
 
@@ -23,6 +23,8 @@ export function PadreLayout() {
   const navegar = useNavigate();
   const salir = useSalirModoPadre();
   const logout = useLogout();
+  // La semana usa el ancho del escritorio para su tablero; las demás pantallas, una columna cómoda.
+  const amplia = useMatch('/padre/semana') !== null;
 
   useEffect(() => {
     aplicarNivel('pro');
@@ -71,7 +73,7 @@ export function PadreLayout() {
           </button>
         </div>
       </header>
-      <main className="mx-auto w-full max-w-4xl flex-1 p-4 sm:p-6">
+      <main className={`mx-auto w-full flex-1 p-4 sm:p-6 ${amplia ? 'max-w-4xl lg:max-w-6xl' : 'max-w-4xl'}`}>
         <Outlet />
       </main>
     </div>
