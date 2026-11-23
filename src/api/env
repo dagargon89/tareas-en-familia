@@ -1,0 +1,36 @@
+#--------------------------------------------------------------------
+# Plantilla de .env · Tareas en Familia (doc 02 §7)
+# Copiar con `cp env .env`, llenar y generar la llave con
+# `php spark key:generate`. El archivo .env nunca se versiona.
+#--------------------------------------------------------------------
+
+# development | production
+CI_ENVIRONMENT = development
+
+app.baseURL = 'http://localhost:8080/'
+
+# Base principal (local: tareas_dev)
+database.default.hostname = 127.0.0.1
+database.default.database = tareas_dev
+database.default.username =
+database.default.password =
+database.default.DBDriver = MySQLi
+database.default.port = 3306
+
+# Base de pruebas (PHPUnit). phpunit.xml.dist trae los valores locales;
+# estas variables o las del entorno de CI los sobrescriben.
+# database.tests.hostname = 127.0.0.1
+# database.tests.database = tareas_test
+# database.tests.username =
+# database.tests.password =
+# database.tests.port = 3306
+
+# Sesión: por omisión writable/session. En producción, ruta absoluta a
+# compartido/writable/session.
+# session.savePath =
+
+# Cookie Secure: false en local (http), true en producción (doc 04 §3.1).
+# Por omisión vale true solo si CI_ENVIRONMENT = production.
+cookie.secure = false
+
+encryption.key =

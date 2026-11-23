@@ -78,7 +78,7 @@ Con `prefers-reduced-motion: reduce` se desactivan confeti, rebotes y formas flo
 | Celebración | Confeti + sonido + salto | Barra de XP que avanza + sonido | Check animado + contador |
 | Formas decorativas | Muchas, flotando | Algunas, estáticas | Ninguna |
 | Modo oscuro | No | Opcional | Opcional, por defecto según el sistema |
-| Navegación | 3 botones grandes: Mi día, Premios, Mis insignias | 4 pestañas | 5 pestañas + crear tarea |
+| Navegación | 3 botones grandes: Mi día, Premios, Mis insignias | 4 pestañas + "Agregar tarea de la escuela" en Mi día | 5 pestañas + crear tarea |
 
 ## 4. Componentes
 

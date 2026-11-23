@@ -38,7 +38,7 @@ Columna **Tipo**: U unitario backend · I integración API · F unitario fronten
 | CP-011 | RF-17 | I | Desbloquear perfil bloqueado | `bloqueado_hasta` null, intentos en 0 |
 | CP-012 | RF-17 | I | Borrado definitivo de perfil | Sin filas del perfil en ninguna tabla; fotos borradas |
 
-### 2.2 Tareas (RF-03, RF-04, RF-05, RF-13)
+### 2.2 Tareas (RF-03, RF-04, RF-05, RF-13, RF-19)
 
 | ID | RF | Tipo | Caso | Resultado esperado |
 |---|---|---|---|---|
@@ -57,6 +57,11 @@ Columna **Tipo**: U unitario backend · I integración API · F unitario fronten
 | CP-032 | RF-05 | F | Tocar "Listo" muestra celebración y llama `marcarHecha` | Confeti visible; con `reduced-motion` no hay confeti |
 | CP-033 | RF-13 | I | Escolar creada hoy con entrega en 3 días | Aparece en "Mi día" hoy, mañana y pasado; desaparece al aprobarse |
 | CP-034 | RF-04 | U | Fecha "hoy" a las 23:30 en Ciudad Juárez | Usa la fecha local, no UTC (RN-06) |
+| CP-035 | RF-19 | I | Aventurera crea una escolar propia enviando `puntos: 50` y otro `perfil_id` | 201; `creada_por = perfil`, `perfil_id` = el suyo, `puntos = 5`, categoría "Escuela", `una_vez` desde hoy |
+| CP-036 | RF-19 | I | Aventurera intenta crear una tarea de tipo `casa` | 403 `PROHIBIDO` |
+| CP-037 | RF-19 | I | Exploradora llama `POST /yo/tareas` | 403 `PROHIBIDO` |
+| CP-038 | RF-19 | I | Escolar propia marcada hecha y aprobada por el padre | Aparece en `GET /admin/tareas` con `creada_por = perfil` y en la bandeja; al aprobar se acreditan 5 puntos una vez |
+| CP-039 | RF-19 | F | Formulario de escolar propia | Solo envía campos de `TareaPropiaEntrada` con `tipo = escolar`; exige materia y entrega no anterior a hoy |
 
 ### 2.3 Evidencias y aprobación (RF-06, RF-07, RF-08)
 
@@ -101,7 +106,7 @@ Columna **Tipo**: U unitario backend · I integración API · F unitario fronten
 | CP-080 | RF-14 | I | `GET /yo/semana` | 7 días con sus instancias |
 | CP-081 | RF-14 | I | Actividad de 0 puntos marcada hecha | Pasa a `aprobada` sin revisión del padre |
 | CP-082 | RF-15 | I | Hija Pro crea tarea propia | `creada_por = perfil`, `puntos = 5` |
-| CP-083 | RF-15 | I | Hija Aventurera llama `POST /yo/tareas` | 403 `PROHIBIDO` |
+| CP-083 | RF-15 | I | Hija Aventurera intenta crear una tarea de tipo `actividad` (solo Pro puede, RF-19) | 403 `PROHIBIDO` |
 | CP-084 | RF-15 | I | Hija Pro edita una tarea creada por el padre | 403 `PROHIBIDO` |
 | CP-085 | RF-16 | I | `GET /admin/panel` con datos de demo | Porcentajes, pendientes y racha por hija correctos |
 | CP-086 | RF-18 | I | Cambiar `racha_umbral` a 60 | Siguiente cierre semanal usa 60 |
@@ -154,6 +159,7 @@ Columna **Tipo**: U unitario backend · I integración API · F unitario fronten
 | RF-16 | CP-085, CP-087 | S5 |
 | RF-17 | CP-010 a CP-012 | S1 |
 | RF-18 | CP-086 | S4 |
+| RF-19 | CP-035 a CP-039 | S2 |
 
 ## 4. Datos de prueba
 

@@ -32,6 +32,7 @@
 | 409 | `SALDO_INSUFICIENTE` | Canje sin puntos disponibles |
 | 423 | `BLOQUEADO` | Perfil o modo padre bloqueado; incluye `bloqueado_hasta` |
 | 429 | `DEMASIADOS_INTENTOS` | Throttling |
+| 500 | `ERROR_INTERNO` | Error no controlado; sin traza en producción (la traza va a `writable/logs`) |
 
 ## 2. Endpoints
 
@@ -63,11 +64,19 @@ Columna **Filtro**: `—` público · `S` sesión de dispositivo · `P` perfil a
 | E-15 | `POST /yo/canjes` | P | `{ recompensa_id }` | `Canje` (201) | RF-09 |
 | E-16 | `GET /yo/canjes` | P | — | `Canje[]` | RF-09 |
 | E-17 | `GET /yo/semana?desde=` | P | — | `Semana` | RF-14 |
-| E-18 | `GET /yo/tareas` | P (Pro) | — | `Tarea[]` (propias) | RF-15 |
-| E-19 | `POST /yo/tareas` | P (Pro) | `TareaPropiaEntrada` | `Tarea` (201) | RF-15 |
-| E-20 | `PUT /yo/tareas/{id}` | P (Pro) | `TareaPropiaEntrada` | `Tarea` | RF-15 |
-| E-21 | `DELETE /yo/tareas/{id}` | P (Pro) | — | `204` (desactiva) | RF-15 |
+| E-18 | `GET /yo/tareas` | P (Aventureras y Pro) | — | `Tarea[]` (propias) | RF-15, RF-19 |
+| E-19 | `POST /yo/tareas` | P (Aventureras y Pro) | `TareaPropiaEntrada` | `Tarea` (201) | RF-15, RF-19 |
+| E-20 | `PUT /yo/tareas/{id}` | P (Aventureras y Pro) | `TareaPropiaEntrada` | `Tarea` | RF-15, RF-19 |
+| E-21 | `DELETE /yo/tareas/{id}` | P (Aventureras y Pro) | — | `204` (desactiva) | RF-15, RF-19 |
 | E-22 | `PATCH /yo/preferencias` | P | `{ sonidos?, tema? }` | `PerfilPublico` | RF-18 |
+
+Reglas de E-18 a E-21 (RF-15, RF-19):
+
+- Exploradoras: 403 `PROHIBIDO` en las cuatro rutas.
+- Aventureras: solo `tipo = escolar`; cualquier otro tipo responde 403 `PROHIBIDO`. Pro: cualquier tipo (S5).
+- El servidor fija `perfil_id` (perfil activo), `creada_por = perfil` y `puntos = puntos_tarea_propia`; ignora esos campos si llegan en el cuerpo.
+- En una escolar propia el servidor usa siempre la categoría "Escuela" y `una_vez` desde hoy; `categoria_id` es opcional y solo lo usa Pro en tareas no escolares.
+- Editar o desactivar una tarea ajena, o una propia ya aprobada, responde 403 `PROHIBIDO` o 409 `ESTADO_INVALIDO` respectivamente.
 
 ### 2.3 Padre (modo padre)
 
@@ -158,7 +167,7 @@ export interface TareaEntrada {
   perfil_id: number; categoria_id: number; titulo: string; icono: string; puntos: number; tipo: TipoTarea;
   materia?: string | null; fecha_entrega?: string | null; requiere_foto?: boolean; recurrencia: Recurrencia;
 }
-export type TareaPropiaEntrada = Omit<TareaEntrada, 'perfil_id' | 'puntos'>;
+export type TareaPropiaEntrada = Omit<TareaEntrada, 'perfil_id' | 'puntos' | 'categoria_id'> & { categoria_id?: number };
 export interface Categoria { id: number; nombre: string; icono: string; color: ColorToken; }
 
 export interface Instancia {
@@ -200,7 +209,7 @@ export interface PanelHija { perfil: PerfilPublico; porcentaje_semana: number; p
 export interface Panel { semana_iso: string; hijas: PanelHija[]; meta_familiar: Meta | null;
   canjes_pendientes: Canje[]; }
 export interface Configuracion { racha_umbral: number; sonidos_default: boolean; dias_generacion: number;
-  evidencia_dias_retencion: number; puntos_tarea_propia_pro: number; }
+  evidencia_dias_retencion: number; puntos_tarea_propia: number; }
 export interface ConfiguracionEntrada { racha_umbral?: number; sonidos_default?: boolean; pin_padre?: string; } // pin_padre cambia el PIN del usuario de la sesión
 
 // ===== Cliente único =====
