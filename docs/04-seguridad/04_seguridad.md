@@ -77,7 +77,8 @@ X-Robots-Tag: noindex, nofollow
 ### 3.5 Archivos de evidencia
 
 1. Se valida `$file->isValid()`, tamaño máximo 3 MB y MIME real en (`image/jpeg`, `image/png`, `image/webp`).
-2. Se re-codifica con la librería Image de CI4 (GD) a WebP calidad 80, máximo 1600 px por lado. La re-codificación elimina EXIF y GPS.
+2. Se re-codifica con GD directamente a WebP calidad 80, máximo 1600 px por lado, aplicando antes la orientación EXIF de las fotos de celular. La re-codificación elimina EXIF y GPS.
+   El servidor debe aceptar subidas de al menos 3 MB: `public/.user.ini` fija `upload_max_filesize = 4M` y `post_max_size = 6M` (verificar en el hosting, H-01).
 3. Se guarda como `writable/evidencias/<perfil_id>/<uuid>.webp`.
 4. Se sirve con `GET /evidencias/{id}` solo a la dueña o en modo padre, con `Cache-Control: private, max-age=300`.
 

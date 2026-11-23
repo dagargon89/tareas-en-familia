@@ -10,7 +10,7 @@
 | Formato | JSON UTF-8. Nombres de campo en `snake_case` |
 | Fechas | `YYYY-MM-DD`; fecha-hora ISO 8601 con offset (`2026-11-22T18:30:00-07:00`); horas `HH:MM` |
 | Autenticación | Cookie de sesión `tf_sesion` (ADR-003) |
-| CSRF | Header `X-CSRF-TOKEN` en `POST`, `PUT`, `PATCH`, `DELETE`. El token se obtiene con `GET /csrf` y se renueva con cada respuesta en el header `X-CSRF-TOKEN` |
+| CSRF | Header `X-CSRF-TOKEN` en `POST`, `PUT`, `PATCH`, `DELETE`. El token se obtiene con `GET /csrf` y se renueva con cada respuesta en el header `X-CSRF-TOKEN`, incluidas las de error (todas las de `/api/*` salvo `/salud`) |
 | Éxito | `200` con el recurso, `201` al crear, `204` sin cuerpo |
 | Error | `{ "error": { "codigo": "PIN_INCORRECTO", "mensaje": "…", "campos": { "titulo": "…" } } }` |
 | Paginación | `?pagina=1&por_pagina=20` → `{ "datos": [...], "meta": { "pagina", "por_pagina", "total" } }` |
@@ -118,7 +118,7 @@ Reglas de E-18 a E-21 (RF-15, RF-19):
 | Recurso | De | A | Quién | Endpoint |
 |---|---|---|---|---|
 | Instancia | `pendiente`, `devuelta` | `hecha` | Dueña, fecha ≤ hoy | E-12 |
-| Instancia | `hecha` | `aprobada` | Padre | E-34, E-35 |
+| Instancia | `hecha` | `aprobada` | Padre | E-34, E-35 (el lote aprueba cada `hecha` en su propia transacción; omite sin abortar las que no están `hecha`, las inexistentes y los repetidos; `ids` de 1 a 100) |
 | Instancia | `hecha` | `devuelta` | Padre, mensaje obligatorio | E-34 |
 | Canje | `solicitado` | `aprobado` / `rechazado` | Padre | E-41 |
 | Canje | `aprobado` | `entregado` | Padre | E-41 |

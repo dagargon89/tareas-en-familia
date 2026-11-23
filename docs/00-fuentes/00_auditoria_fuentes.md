@@ -50,7 +50,7 @@ Consecuencias: sin root, sin nginx configurable (LiteSpeed administrado), sin Do
 
 | ID | Pendiente | Responsable | Cómo se cierra |
 |---|---|---|---|
-| H-01 | Versión exacta de PHP disponible (se requiere 8.3) | David | hPanel → Avanzado → Configuración de PHP |
+| H-01 | Versión exacta de PHP disponible (se requiere 8.3) y que respete `public/.user.ini` (`upload_max_filesize` ≥ 3 MB para fotos) | David | hPanel → Avanzado → Configuración de PHP |
 | H-02 | Versión exacta de MariaDB del hosting | David | phpMyAdmin → `SELECT VERSION();` |
 | H-03 | Dominio o subdominio para la app | David | Elegir en el portafolio de dominios |
 | H-04 | Acceso SSH habilitado y llave de despliegue | David | hPanel → Avanzado → Acceso SSH |
