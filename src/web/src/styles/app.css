@@ -1,0 +1,27 @@
+@import 'tailwindcss';
+@import '@fontsource/dm-sans/400.css';
+@import '@fontsource/dm-sans/500.css';
+@import '@fontsource/dm-sans/700.css';
+@import './tokens.css';
+
+@layer base {
+  html {
+    background-color: var(--tf-fondo);
+    color: var(--tf-tinta-900);
+    font-family: var(--font-sans);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    font-size: var(--tf-cuerpo);
+    line-height: var(--tf-cuerpo-lh);
+    font-weight: var(--tf-cuerpo-peso);
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--tf-indigo-600);
+    outline-offset: 3px;
+  }
+}

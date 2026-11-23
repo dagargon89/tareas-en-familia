@@ -1,0 +1,966 @@
+{
+  "proyecto": "Tareas en Familia",
+  "motor": "MariaDB 10.11",
+  "version_esquema": "1.0",
+  "generado": "2026-11-22",
+  "tablas": {
+    "canjes": {
+      "columnas": {
+        "id": {
+          "tipo": "INT(10) UNSIGNED",
+          "nulo": false,
+          "auto_incremento": true
+        },
+        "perfil_id": {
+          "tipo": "INT(10) UNSIGNED",
+          "nulo": false
+        },
+        "recompensa_id": {
+          "tipo": "INT(10) UNSIGNED",
+          "nulo": false
+        },
+        "costo": {
+          "tipo": "SMALLINT(5) UNSIGNED",
+          "nulo": false
+        },
+        "estado": {
+          "tipo": "ENUM('solicitado','aprobado','entregado','rechazado')",
+          "nulo": false,
+          "valores": [
+            "solicitado",
+            "aprobado",
+            "entregado",
+            "rechazado"
+          ],
+          "default": "solicitado"
+        },
+        "revisado_por": {
+          "tipo": "INT(10) UNSIGNED",
+          "nulo": true
+        },
+        "created_at": {
+          "tipo": "DATETIME",
+          "nulo": false
+        },
+        "updated_at": {
+          "tipo": "DATETIME",
+          "nulo": false
+        }
+      },
+      "pk": [
+        "id"
+      ],
+      "unicas": {},
+      "fks": [
+        {
+          "nombre": "fk_canjes_perfil",
+          "columna": "perfil_id",
+          "referencia": "perfiles.id",
+          "on_delete": "RESTRICT",
+          "on_update": "CASCADE"
+        },
+        {
+          "nombre": "fk_canjes_recompensa",
+          "columna": "recompensa_id",
+          "referencia": "recompensas.id",
+          "on_delete": "RESTRICT",
+          "on_update": "CASCADE"
+        },
+        {
+          "nombre": "fk_canjes_revisor",
+          "columna": "revisado_por",
+          "referencia": "usuarios.id",
+          "on_delete": "SET NULL",
+          "on_update": "CASCADE"
+        }
+      ]
+    },
+    "categorias": {
+      "columnas": {
+        "id": {
+          "tipo": "INT(10) UNSIGNED",
+          "nulo": false,
+          "auto_incremento": true
+        },
+        "nombre": {
+          "tipo": "VARCHAR(40)",
+          "nulo": false
+        },
+        "icono": {
+          "tipo": "VARCHAR(40)",
+          "nulo": false
+        },
+        "color": {
+          "tipo": "ENUM('indigo','ambar','menta','rosa','lavanda')",
+          "nulo": false,
+          "valores": [
+            "indigo",
+            "ambar",
+            "menta",
+            "rosa",
+            "lavanda"
+          ]
+        },
+        "activa": {
+          "tipo": "TINYINT(1)",
+          "nulo": false,
+          "default": "1"
+        }
+      },
+      "pk": [
+        "id"
+      ],
+      "unicas": {
+        "uq_categorias_nombre": [
+          "nombre"
+        ]
+      },
+      "fks": []
+    },
+    "configuracion": {
+      "columnas": {
+        "clave": {
+          "tipo": "VARCHAR(50)",
+          "nulo": false
+        },
+        "valor": {
+          "tipo": "LONGTEXT",
+          "nulo": false
+        },
+        "updated_at": {
+          "tipo": "DATETIME",
+          "nulo": false
+        }
+      },
+      "pk": [
+        "clave"
+      ],
+      "unicas": {},
+      "fks": []
+    },
+    "evidencias": {
+      "columnas": {
+        "id": {
+          "tipo": "INT(10) UNSIGNED",
+          "nulo": false,
+          "auto_incremento": true
+        },
+        "instancia_id": {
+          "tipo": "INT(10) UNSIGNED",
+          "nulo": false
+        },
+        "ruta": {
+          "tipo": "VARCHAR(255)",
+          "nulo": false
+        },
+        "mime": {
+          "tipo": "VARCHAR(30)",
+          "nulo": false
+        },
+        "bytes": {
+          "tipo": "INT(10) UNSIGNED",
+          "nulo": false
+        },
+        "borrar_despues": {
+          "tipo": "DATE",
+          "nulo": true
+        },
+        "created_at": {
+          "tipo": "DATETIME",
+          "nulo": false
+        }
+      },
+      "pk": [
+        "id"
+      ],
+      "unicas": {
+        "uq_evidencias_instancia": [
+          "instancia_id"
+        ]
+      },
+      "fks": [
+        {
+          "nombre": "fk_evidencias_instancia",
+          "columna": "instancia_id",
+          "referencia": "tarea_instancias.id",
+          "on_delete": "CASCADE",
+          "on_update": "CASCADE"
+        }
+      ]
+    },
+    "insignias": {
+      "columnas": {
+        "id": {
+          "tipo": "INT(10) UNSIGNED",
+          "nulo": false,
+          "auto_incremento": true
+        },
+        "codigo": {
+          "tipo": "VARCHAR(40)",
+          "nulo": false
+        },
+        "nombre": {
+          "tipo": "VARCHAR(40)",
+          "nulo": false
+        },
+        "descripcion": {
+          "tipo": "VARCHAR(120)",
+          "nulo": false
+        },
+        "icono": {
+          "tipo": "VARCHAR(40)",
+          "nulo": false
+        },
+        "color": {
+          "tipo": "ENUM('indigo','ambar','menta','rosa','lavanda')",
+          "nulo": false,
+          "valores": [
+            "indigo",
+            "ambar",
+            "menta",
+            "rosa",
+            "lavanda"
+          ]
+        },
+        "regla": {
+          "tipo": "LONGTEXT",
+          "nulo": false
+        },
+        "xp": {
+          "tipo": "SMALLINT(5) UNSIGNED",
+          "nulo": false,
+          "default": "20"
+        },
+        "orden": {
+          "tipo": "TINYINT(3) UNSIGNED",
+          "nulo": false,
+          "default": "0"
+        }
+      },
+      "pk": [
+        "id"
+      ],
+      "unicas": {
+        "uq_insignias_codigo": [
+          "codigo"
+        ]
+      },
+      "fks": []
+    },
+    "metas_familiares": {
+      "columnas": {
+        "id": {
+          "tipo": "INT(10) UNSIGNED",
+          "nulo": false,
+          "auto_incremento": true
+        },
+        "titulo": {
+          "tipo": "VARCHAR(60)",
+          "nulo": false
+        },
+        "premio": {
+          "tipo": "VARCHAR(80)",
+          "nulo": false
+        },
+        "objetivo_puntos": {
+          "tipo": "INT(10) UNSIGNED",
+          "nulo": false
+        },
+        "fecha_inicio": {
+          "tipo": "DATE",
+          "nulo": false
+        },
+        "fecha_limite": {
+          "tipo": "DATE",
+          "nulo": true
+        },
+        "estado": {
+          "tipo": "ENUM('activa','cumplida','cancelada')",
+          "nulo": false,
+          "valores": [
+            "activa",
+            "cumplida",
+            "cancelada"
+          ],
+          "default": "activa"
+        },
+        "activa_unica": {
+          "tipo": "TINYINT(4)",
+          "nulo": true,
+          "generada": true
+        },
+        "cumplida_en": {
+          "tipo": "DATETIME",
+          "nulo": true
+        },
+        "created_at": {
+          "tipo": "DATETIME",
+          "nulo": false
+        },
+        "updated_at": {
+          "tipo": "DATETIME",
+          "nulo": false
+        }
+      },
+      "pk": [
+        "id"
+      ],
+      "unicas": {
+        "uq_metas_activa_unica": [
+          "activa_unica"
+        ]
+      },
+      "fks": []
+    },
+    "movimientos_puntos": {
+      "columnas": {
+        "id": {
+          "tipo": "INT(10) UNSIGNED",
+          "nulo": false,
+          "auto_incremento": true
+        },
+        "perfil_id": {
+          "tipo": "INT(10) UNSIGNED",
+          "nulo": false
+        },
+        "origen": {
+          "tipo": "ENUM('tarea','insignia','canje','ajuste')",
+          "nulo": false,
+          "valores": [
+            "tarea",
+            "insignia",
+            "canje",
+            "ajuste"
+          ]
+        },
+        "origen_id": {
+          "tipo": "INT(10) UNSIGNED",
+          "nulo": true
+        },
+        "puntos": {
+          "tipo": "INT(11)",
+          "nulo": false
+        },
+        "descripcion": {
+          "tipo": "VARCHAR(120)",
+          "nulo": false
+        },
+        "created_at": {
+          "tipo": "DATETIME",
+          "nulo": false
+        }
+      },
+      "pk": [
+        "id"
+      ],
+      "unicas": {
+        "uq_movimientos_origen": [
+          "origen",
+          "origen_id"
+        ]
+      },
+      "fks": [
+        {
+          "nombre": "fk_movimientos_perfil",
+          "columna": "perfil_id",
+          "referencia": "perfiles.id",
+          "on_delete": "RESTRICT",
+          "on_update": "CASCADE"
+        }
+      ]
+    },
+    "perfiles": {
+      "columnas": {
+        "id": {
+          "tipo": "INT(10) UNSIGNED",
+          "nulo": false,
+          "auto_incremento": true
+        },
+        "apodo": {
+          "tipo": "VARCHAR(30)",
+          "nulo": false
+        },
+        "avatar": {
+          "tipo": "VARCHAR(40)",
+          "nulo": false
+        },
+        "color": {
+          "tipo": "ENUM('indigo','ambar','menta','rosa','lavanda')",
+          "nulo": false,
+          "valores": [
+            "indigo",
+            "ambar",
+            "menta",
+            "rosa",
+            "lavanda"
+          ],
+          "default": "indigo"
+        },
+        "nivel_ux": {
+          "tipo": "ENUM('exploradoras','aventureras','pro')",
+          "nulo": false,
+          "valores": [
+            "exploradoras",
+            "aventureras",
+            "pro"
+          ]
+        },
+        "pin_hash": {
+          "tipo": "VARCHAR(255)",
+          "nulo": false
+        },
+        "pin_intentos": {
+          "tipo": "TINYINT(3) UNSIGNED",
+          "nulo": false,
+          "default": "0"
+        },
+        "bloqueado_hasta": {
+          "tipo": "DATETIME",
+          "nulo": true
+        },
+        "sonidos": {
+          "tipo": "TINYINT(1)",
+          "nulo": false,
+          "default": "1"
+        },
+        "tema": {
+          "tipo": "ENUM('claro','oscuro','sistema')",
+          "nulo": false,
+          "valores": [
+            "claro",
+            "oscuro",
+            "sistema"
+          ],
+          "default": "claro"
+        },
+        "orden": {
+          "tipo": "TINYINT(3) UNSIGNED",
+          "nulo": false,
+          "default": "0"
+        },
+        "activo": {
+          "tipo": "TINYINT(1)",
+          "nulo": false,
+          "default": "1"
+        },
+        "created_at": {
+          "tipo": "DATETIME",
+          "nulo": false
+        },
+        "updated_at": {
+          "tipo": "DATETIME",
+          "nulo": false
+        }
+      },
+      "pk": [
+        "id"
+      ],
+      "unicas": {},
+      "fks": []
+    },
+    "perfil_insignias": {
+      "columnas": {
+        "id": {
+          "tipo": "INT(10) UNSIGNED",
+          "nulo": false,
+          "auto_incremento": true
+        },
+        "perfil_id": {
+          "tipo": "INT(10) UNSIGNED",
+          "nulo": false
+        },
+        "insignia_id": {
+          "tipo": "INT(10) UNSIGNED",
+          "nulo": false
+        },
+        "obtenida_en": {
+          "tipo": "DATETIME",
+          "nulo": false
+        }
+      },
+      "pk": [
+        "id"
+      ],
+      "unicas": {
+        "uq_perfil_insignia": [
+          "perfil_id",
+          "insignia_id"
+        ]
+      },
+      "fks": [
+        {
+          "nombre": "fk_pi_insignia",
+          "columna": "insignia_id",
+          "referencia": "insignias.id",
+          "on_delete": "RESTRICT",
+          "on_update": "CASCADE"
+        },
+        {
+          "nombre": "fk_pi_perfil",
+          "columna": "perfil_id",
+          "referencia": "perfiles.id",
+          "on_delete": "CASCADE",
+          "on_update": "CASCADE"
+        }
+      ]
+    },
+    "rachas": {
+      "columnas": {
+        "id": {
+          "tipo": "INT(10) UNSIGNED",
+          "nulo": false,
+          "auto_incremento": true
+        },
+        "perfil_id": {
+          "tipo": "INT(10) UNSIGNED",
+          "nulo": false
+        },
+        "semana_iso": {
+          "tipo": "CHAR(8)",
+          "nulo": false
+        },
+        "asignadas": {
+          "tipo": "SMALLINT(5) UNSIGNED",
+          "nulo": false
+        },
+        "aprobadas": {
+          "tipo": "SMALLINT(5) UNSIGNED",
+          "nulo": false
+        },
+        "porcentaje": {
+          "tipo": "DECIMAL(5,2)",
+          "nulo": false
+        },
+        "cumplida": {
+          "tipo": "TINYINT(1)",
+          "nulo": false
+        },
+        "created_at": {
+          "tipo": "DATETIME",
+          "nulo": false
+        }
+      },
+      "pk": [
+        "id"
+      ],
+      "unicas": {
+        "uq_rachas_perfil_semana": [
+          "perfil_id",
+          "semana_iso"
+        ]
+      },
+      "fks": [
+        {
+          "nombre": "fk_rachas_perfil",
+          "columna": "perfil_id",
+          "referencia": "perfiles.id",
+          "on_delete": "CASCADE",
+          "on_update": "CASCADE"
+        }
+      ]
+    },
+    "recompensas": {
+      "columnas": {
+        "id": {
+          "tipo": "INT(10) UNSIGNED",
+          "nulo": false,
+          "auto_incremento": true
+        },
+        "titulo": {
+          "tipo": "VARCHAR(60)",
+          "nulo": false
+        },
+        "icono": {
+          "tipo": "VARCHAR(40)",
+          "nulo": false
+        },
+        "costo": {
+          "tipo": "SMALLINT(5) UNSIGNED",
+          "nulo": false
+        },
+        "activa": {
+          "tipo": "TINYINT(1)",
+          "nulo": false,
+          "default": "1"
+        },
+        "created_at": {
+          "tipo": "DATETIME",
+          "nulo": false
+        },
+        "updated_at": {
+          "tipo": "DATETIME",
+          "nulo": false
+        }
+      },
+      "pk": [
+        "id"
+      ],
+      "unicas": {},
+      "fks": []
+    },
+    "revisiones": {
+      "columnas": {
+        "id": {
+          "tipo": "INT(10) UNSIGNED",
+          "nulo": false,
+          "auto_incremento": true
+        },
+        "instancia_id": {
+          "tipo": "INT(10) UNSIGNED",
+          "nulo": false
+        },
+        "usuario_id": {
+          "tipo": "INT(10) UNSIGNED",
+          "nulo": false
+        },
+        "decision": {
+          "tipo": "ENUM('aprobada','devuelta')",
+          "nulo": false,
+          "valores": [
+            "aprobada",
+            "devuelta"
+          ]
+        },
+        "mensaje": {
+          "tipo": "VARCHAR(140)",
+          "nulo": true
+        },
+        "created_at": {
+          "tipo": "DATETIME",
+          "nulo": false
+        }
+      },
+      "pk": [
+        "id"
+      ],
+      "unicas": {},
+      "fks": [
+        {
+          "nombre": "fk_revisiones_instancia",
+          "columna": "instancia_id",
+          "referencia": "tarea_instancias.id",
+          "on_delete": "CASCADE",
+          "on_update": "CASCADE"
+        },
+        {
+          "nombre": "fk_revisiones_usuario",
+          "columna": "usuario_id",
+          "referencia": "usuarios.id",
+          "on_delete": "RESTRICT",
+          "on_update": "CASCADE"
+        }
+      ]
+    },
+    "tareas": {
+      "columnas": {
+        "id": {
+          "tipo": "INT(10) UNSIGNED",
+          "nulo": false,
+          "auto_incremento": true
+        },
+        "perfil_id": {
+          "tipo": "INT(10) UNSIGNED",
+          "nulo": false
+        },
+        "categoria_id": {
+          "tipo": "INT(10) UNSIGNED",
+          "nulo": false
+        },
+        "titulo": {
+          "tipo": "VARCHAR(80)",
+          "nulo": false
+        },
+        "icono": {
+          "tipo": "VARCHAR(40)",
+          "nulo": false
+        },
+        "puntos": {
+          "tipo": "SMALLINT(5) UNSIGNED",
+          "nulo": false
+        },
+        "tipo": {
+          "tipo": "ENUM('casa','escolar','actividad')",
+          "nulo": false,
+          "valores": [
+            "casa",
+            "escolar",
+            "actividad"
+          ]
+        },
+        "materia": {
+          "tipo": "VARCHAR(40)",
+          "nulo": true
+        },
+        "fecha_entrega": {
+          "tipo": "DATE",
+          "nulo": true
+        },
+        "requiere_foto": {
+          "tipo": "TINYINT(1)",
+          "nulo": false,
+          "default": "0"
+        },
+        "creada_por": {
+          "tipo": "ENUM('padre','perfil')",
+          "nulo": false,
+          "valores": [
+            "padre",
+            "perfil"
+          ]
+        },
+        "creada_por_usuario_id": {
+          "tipo": "INT(10) UNSIGNED",
+          "nulo": true
+        },
+        "activa": {
+          "tipo": "TINYINT(1)",
+          "nulo": false,
+          "default": "1"
+        },
+        "created_at": {
+          "tipo": "DATETIME",
+          "nulo": false
+        },
+        "updated_at": {
+          "tipo": "DATETIME",
+          "nulo": false
+        }
+      },
+      "pk": [
+        "id"
+      ],
+      "unicas": {},
+      "fks": [
+        {
+          "nombre": "fk_tareas_categoria",
+          "columna": "categoria_id",
+          "referencia": "categorias.id",
+          "on_delete": "RESTRICT",
+          "on_update": "CASCADE"
+        },
+        {
+          "nombre": "fk_tareas_perfil",
+          "columna": "perfil_id",
+          "referencia": "perfiles.id",
+          "on_delete": "RESTRICT",
+          "on_update": "CASCADE"
+        },
+        {
+          "nombre": "fk_tareas_usuario",
+          "columna": "creada_por_usuario_id",
+          "referencia": "usuarios.id",
+          "on_delete": "SET NULL",
+          "on_update": "CASCADE"
+        }
+      ]
+    },
+    "tarea_instancias": {
+      "columnas": {
+        "id": {
+          "tipo": "INT(10) UNSIGNED",
+          "nulo": false,
+          "auto_incremento": true
+        },
+        "tarea_id": {
+          "tipo": "INT(10) UNSIGNED",
+          "nulo": false
+        },
+        "perfil_id": {
+          "tipo": "INT(10) UNSIGNED",
+          "nulo": false
+        },
+        "fecha": {
+          "tipo": "DATE",
+          "nulo": false
+        },
+        "hora": {
+          "tipo": "TIME",
+          "nulo": true
+        },
+        "fecha_entrega": {
+          "tipo": "DATE",
+          "nulo": true
+        },
+        "puntos": {
+          "tipo": "SMALLINT(5) UNSIGNED",
+          "nulo": false
+        },
+        "estado": {
+          "tipo": "ENUM('pendiente','hecha','aprobada','devuelta')",
+          "nulo": false,
+          "valores": [
+            "pendiente",
+            "hecha",
+            "aprobada",
+            "devuelta"
+          ],
+          "default": "pendiente"
+        },
+        "mensaje_devolucion": {
+          "tipo": "VARCHAR(140)",
+          "nulo": true
+        },
+        "completada_en": {
+          "tipo": "DATETIME",
+          "nulo": true
+        },
+        "aprobada_en": {
+          "tipo": "DATETIME",
+          "nulo": true
+        },
+        "created_at": {
+          "tipo": "DATETIME",
+          "nulo": false
+        },
+        "updated_at": {
+          "tipo": "DATETIME",
+          "nulo": false
+        }
+      },
+      "pk": [
+        "id"
+      ],
+      "unicas": {
+        "uq_instancias_tarea_fecha": [
+          "tarea_id",
+          "fecha"
+        ]
+      },
+      "fks": [
+        {
+          "nombre": "fk_instancias_perfil",
+          "columna": "perfil_id",
+          "referencia": "perfiles.id",
+          "on_delete": "RESTRICT",
+          "on_update": "CASCADE"
+        },
+        {
+          "nombre": "fk_instancias_tarea",
+          "columna": "tarea_id",
+          "referencia": "tareas.id",
+          "on_delete": "CASCADE",
+          "on_update": "CASCADE"
+        }
+      ]
+    },
+    "tarea_recurrencias": {
+      "columnas": {
+        "id": {
+          "tipo": "INT(10) UNSIGNED",
+          "nulo": false,
+          "auto_incremento": true
+        },
+        "tarea_id": {
+          "tipo": "INT(10) UNSIGNED",
+          "nulo": false
+        },
+        "frecuencia": {
+          "tipo": "ENUM('una_vez','diaria','semanal')",
+          "nulo": false,
+          "valores": [
+            "una_vez",
+            "diaria",
+            "semanal"
+          ]
+        },
+        "dias_semana": {
+          "tipo": "SET('lu','ma','mi','ju','vi','sa','do')",
+          "nulo": true,
+          "valores": [
+            "lu",
+            "ma",
+            "mi",
+            "ju",
+            "vi",
+            "sa",
+            "do"
+          ]
+        },
+        "hora": {
+          "tipo": "TIME",
+          "nulo": true
+        },
+        "fecha_inicio": {
+          "tipo": "DATE",
+          "nulo": false
+        },
+        "fecha_fin": {
+          "tipo": "DATE",
+          "nulo": true
+        }
+      },
+      "pk": [
+        "id"
+      ],
+      "unicas": {
+        "uq_recurrencias_tarea": [
+          "tarea_id"
+        ]
+      },
+      "fks": [
+        {
+          "nombre": "fk_recurrencias_tarea",
+          "columna": "tarea_id",
+          "referencia": "tareas.id",
+          "on_delete": "CASCADE",
+          "on_update": "CASCADE"
+        }
+      ]
+    },
+    "usuarios": {
+      "columnas": {
+        "id": {
+          "tipo": "INT(10) UNSIGNED",
+          "nulo": false,
+          "auto_incremento": true
+        },
+        "nombre": {
+          "tipo": "VARCHAR(60)",
+          "nulo": false
+        },
+        "email": {
+          "tipo": "VARCHAR(120)",
+          "nulo": false
+        },
+        "password_hash": {
+          "tipo": "VARCHAR(255)",
+          "nulo": false
+        },
+        "pin_hash": {
+          "tipo": "VARCHAR(255)",
+          "nulo": false
+        },
+        "pin_intentos": {
+          "tipo": "TINYINT(3) UNSIGNED",
+          "nulo": false,
+          "default": "0"
+        },
+        "bloqueado_hasta": {
+          "tipo": "DATETIME",
+          "nulo": true
+        },
+        "ultimo_acceso": {
+          "tipo": "DATETIME",
+          "nulo": true
+        },
+        "created_at": {
+          "tipo": "DATETIME",
+          "nulo": false
+        },
+        "updated_at": {
+          "tipo": "DATETIME",
+          "nulo": false
+        }
+      },
+      "pk": [
+        "id"
+      ],
+      "unicas": {
+        "uq_usuarios_email": [
+          "email"
+        ]
+      },
+      "fks": []
+    }
+  }
+}

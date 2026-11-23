@@ -1,0 +1,23 @@
+# Secretos
+.env
+*.env.local
+
+# CodeIgniter
+src/api/vendor/
+src/api/writable/*
+!src/api/writable/**/.gitkeep
+src/api/public/app/
+
+# Web
+src/web/node_modules/
+src/web/dist/
+src/web/coverage/
+src/web/test-results/
+src/web/playwright-report/
+
+# Sistema y editores
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log
