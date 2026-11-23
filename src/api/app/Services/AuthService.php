@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Exceptions\ApiException;
 use App\Libraries\Hash;
+use App\Libraries\LimiteIntentos;
 use App\Models\UsuarioModel;
 use CodeIgniter\I18n\Time;
 use CodeIgniter\Throttle\ThrottlerInterface;
@@ -15,8 +16,6 @@ use CodeIgniter\Throttle\ThrottlerInterface;
  */
 final class AuthService
 {
-    public const INTENTOS_LOGIN_POR_MINUTO = 5;
-
     public function __construct(
         private readonly SesionService $sesion = new SesionService(),
         private readonly ?UsuarioModel $usuarios = null,
@@ -36,11 +35,7 @@ final class AuthService
      */
     public function login(array $entrada, string $ip): void
     {
-        $throttler = $this->throttler ?? service('throttler');
-
-        if (! $throttler->check('login_' . md5($ip), self::INTENTOS_LOGIN_POR_MINUTO, MINUTE)) {
-            throw ApiException::demasiadosIntentos($throttler->getTokenTime());
-        }
+        LimiteIntentos::verificar($ip, $this->throttler);
 
         $email    = $entrada['email'] ?? null;
         $password = $entrada['password'] ?? null;

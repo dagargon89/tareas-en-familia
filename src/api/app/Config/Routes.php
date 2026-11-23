@@ -17,6 +17,8 @@ $routes->group('api/v1', $opciones, static function (RouteCollection $routes) us
     $routes->get('salud', 'SaludController::index');        // E-01
     $routes->get('csrf', 'CsrfController::index');          // E-02
     $routes->post('auth/login', 'AuthController::login');   // E-03
+    $routes->get('instalacion', 'InstalacionController::estado');     // E-49
+    $routes->post('instalacion', 'InstalacionController::instalar');  // E-50 (con CSRF)
 
     // Sesión de dispositivo (filtro `sesion`)
     $routes->group('', $opciones + ['filter' => 'sesion'], static function (RouteCollection $routes): void {

@@ -33,4 +33,9 @@ database.default.port = 3306
 # Por omisión vale true solo si CI_ENVIRONMENT = production.
 cookie.secure = false
 
+# Instalación inicial (RF-20). En producción POST /instalacion exige este
+# token; si queda vacío, la instalación por web queda cerrada (403). Se puede
+# borrar después de instalar. En desarrollo no se pide.
+instalacion.token =
+
 encryption.key =
