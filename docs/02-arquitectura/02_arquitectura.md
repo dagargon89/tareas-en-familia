@@ -193,7 +193,7 @@ El pipeline completo y el `.htaccess` se documentan en el doc 11 (Fase 3). El Sp
 | `app.baseURL` | `http://localhost:8080/` | `https://<dominio>/` |
 | `database.default.*` | `tareas_dev` local | Base creada en hPanel |
 | `session.savePath` | `writable/session` | `../compartido/writable/session` |
-| `app.cookieSecure` | `false` | `true` |
+| `cookie.secure` (CI4 4.7; antes `app.cookieSecure`) | `false` | `true` |
 | `encryption.key` | Generada con `php spark key:generate` | Propia, solo en el servidor |
 
 ## 8. Arranque local

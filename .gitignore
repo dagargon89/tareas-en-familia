@@ -4,8 +4,11 @@
 
 # CodeIgniter
 src/api/vendor/
-src/api/writable/*
+src/api/writable/**
+!src/api/writable/**/
 !src/api/writable/**/.gitkeep
+!src/api/writable/.htaccess
+!src/api/writable/index.html
 src/api/public/app/
 
 # Web

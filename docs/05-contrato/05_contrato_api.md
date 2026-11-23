@@ -32,6 +32,7 @@
 | 409 | `SALDO_INSUFICIENTE` | Canje sin puntos disponibles |
 | 423 | `BLOQUEADO` | Perfil o modo padre bloqueado; incluye `bloqueado_hasta` |
 | 429 | `DEMASIADOS_INTENTOS` | Throttling |
+| 500 | `ERROR_INTERNO` | Error no controlado; sin traza en producción (la traza va a `writable/logs`) |
 
 ## 2. Endpoints
 
