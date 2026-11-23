@@ -17,6 +17,8 @@ use RuntimeException;
  */
 final class PerfilesService
 {
+    public const TEMAS = ['claro', 'oscuro', 'sistema'];
+
     private readonly PerfilModel $perfiles;
     private readonly PinService $pines;
 
@@ -165,6 +167,48 @@ final class PerfilesService
         // Los archivos se borran tras confirmar la transacción: si la base fallara, no se pierden fotos de filas vivas.
         $this->borrarArchivos($id, $rutas);
         $this->olvidarSiEsElActivo($id);
+    }
+
+    /**
+     * E-22 · Sonidos y tema de la hija con perfil activo. Las Exploradoras no tienen modo oscuro
+     * (doc 08 §3): solo aceptan `claro`.
+     *
+     * @param array<string, mixed> $entrada `{ sonidos?, tema? }`
+     *
+     * @return array<string, mixed> `PerfilPublico`
+     */
+    public function preferencias(Perfil $perfil, array $entrada): array
+    {
+        $campos  = [];
+        $cambios = [];
+
+        if (array_key_exists('sonidos', $entrada)) {
+            if (! is_bool($entrada['sonidos'])) {
+                $campos['sonidos'] = 'Debe ser verdadero o falso.';
+            } else {
+                $cambios['sonidos'] = $entrada['sonidos'] ? 1 : 0;
+            }
+        }
+
+        if (array_key_exists('tema', $entrada)) {
+            $temas = $perfil->nivel_ux === 'exploradoras' ? ['claro'] : self::TEMAS;
+
+            if (! in_array($entrada['tema'], $temas, true)) {
+                $campos['tema'] = $perfil->nivel_ux === 'exploradoras' ? 'Tu nivel usa el tema claro.' : 'Elige claro, oscuro o sistema.';
+            } else {
+                $cambios['tema'] = $entrada['tema'];
+            }
+        }
+
+        if ($campos !== []) {
+            throw ApiException::validacion($campos);
+        }
+
+        if ($cambios !== []) {
+            $this->perfiles->update($perfil->id, $cambios);
+        }
+
+        return $this->buscar($perfil->id)->publico();
     }
 
     private function buscar(int $id): Perfil

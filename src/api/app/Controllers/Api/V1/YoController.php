@@ -8,14 +8,16 @@ use App\Controllers\Api\BaseApiController;
 use App\Entities\Perfil;
 use App\Exceptions\ApiException;
 use App\Models\PerfilModel;
+use App\Services\CanjesService;
 use App\Services\InstanciasService;
+use App\Services\PerfilesService;
 use App\Services\ProgresoService;
 use App\Services\SesionService;
 use App\Services\TareasService;
 use CodeIgniter\HTTP\ResponseInterface;
 
 /**
- * Rutas de la hija con perfil activo (`/yo/*`): E-11, E-12, E-13 y E-18 a E-21.
+ * Rutas de la hija con perfil activo (`/yo/*`): E-11 a E-16 y E-18 a E-22.
  */
 final class YoController extends BaseApiController
 {
@@ -44,6 +46,26 @@ final class YoController extends BaseApiController
     public function progreso(): ResponseInterface
     {
         return $this->ok((new ProgresoService(db_connect()))->progreso($this->perfil()->id));
+    }
+
+    public function recompensas(): ResponseInterface
+    {
+        return $this->ok((new CanjesService(db_connect()))->paraPerfil($this->perfil()->id));
+    }
+
+    public function solicitarCanje(): ResponseInterface
+    {
+        return $this->creado((new CanjesService(db_connect()))->solicitar($this->perfil()->id, $this->entrada()));
+    }
+
+    public function canjes(): ResponseInterface
+    {
+        return $this->ok((new CanjesService(db_connect()))->delPerfil($this->perfil()->id));
+    }
+
+    public function preferencias(): ResponseInterface
+    {
+        return $this->ok((new PerfilesService(db_connect()))->preferencias($this->perfil(), $this->entrada()));
     }
 
     public function tareas(): ResponseInterface
