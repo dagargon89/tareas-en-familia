@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace App\Commands;
 
-use App\Libraries\Hash;
+use App\Exceptions\ApiException;
 use App\Models\UsuarioModel;
-use App\Services\PinService;
+use App\Services\UsuariosService;
 use CodeIgniter\CLI\BaseCommand;
 use CodeIgniter\CLI\CLI;
 
 /**
- * Alta del padre o la madre por consola (T-S1-01). No existe endpoint de registro.
+ * Alta del padre o la madre por consola (T-S1-01). Desde la app, en modo padre, con E-52 (ADR-009);
+ * las dos vías usan las mismas reglas (`UsuariosService`). No existe registro público.
  *
  * Uso: `php spark usuarios:crear` (pregunta los datos) o con opciones
  * `--nombre --email --password --pin`.
@@ -38,57 +39,32 @@ class CrearUsuario extends BaseCommand
      */
     public function run(array $params): int
     {
-        $usuarios = model(UsuarioModel::class);
+        $usuarios = new UsuariosService(db_connect());
 
-        if ($usuarios->countAllResults() >= UsuarioModel::MAX_USUARIOS) {
+        if (! $usuarios->hayLugar()) {
             CLI::error('Ya hay ' . UsuarioModel::MAX_USUARIOS . ' usuarios: el máximo 2 está completo.');
 
             return EXIT_ERROR;
         }
 
-        $nombre   = trim($this->dato($params, 'nombre', 'Nombre'));
-        $email    = UsuarioModel::normalizarEmail($this->dato($params, 'email', 'Correo'));
-        $password = $this->dato($params, 'password', 'Contraseña (mínimo 10 caracteres)');
-        $pin      = $this->dato($params, 'pin', 'PIN de modo padre (4 dígitos)');
+        $entrada = [
+            'nombre'   => $this->dato($params, 'nombre', 'Nombre'),
+            'email'    => $this->dato($params, 'email', 'Correo'),
+            'password' => $this->dato($params, 'password', 'Contraseña (mínimo 10 caracteres)'),
+            'pin'      => $this->dato($params, 'pin', 'PIN de modo padre (4 dígitos)'),
+        ];
 
-        $errores = [];
-
-        if ($nombre === '' || mb_strlen($nombre) > 60) {
-            $errores[] = 'El nombre es obligatorio (máximo 60 caracteres).';
-        }
-
-        if (filter_var($email, FILTER_VALIDATE_EMAIL) === false || mb_strlen($email) > 120) {
-            $errores[] = 'El correo no es válido.';
-        } elseif ($usuarios->porEmail($email) !== null) {
-            $errores[] = "Ese correo ya existe: {$email}.";
-        }
-
-        if (mb_strlen($password) < 10) {
-            $errores[] = 'La contraseña debe tener al menos 10 caracteres.';
-        }
-
-        $errorPin = PinService::errorDePinNuevo($pin);
-
-        if ($errorPin !== null) {
-            $errores[] = 'PIN: ' . $errorPin;
-        }
-
-        if ($errores !== []) {
-            foreach ($errores as $error) {
-                CLI::error($error);
+        try {
+            $usuario = $usuarios->crear($entrada);
+        } catch (ApiException $e) {
+            foreach ($e->getCampos() ?? ['' => $e->getMessage()] as $campo => $mensaje) {
+                CLI::error(($campo === 'pin' ? 'PIN: ' : '') . $mensaje);
             }
 
             return EXIT_ERROR;
         }
 
-        $usuarios->insert([
-            'nombre'        => $nombre,
-            'email'         => $email,
-            'password_hash' => Hash::crear($password),
-            'pin_hash'      => Hash::crear($pin),
-        ]);
-
-        CLI::write("Usuario creado: {$nombre} <{$email}>.", 'green');
+        CLI::write("Usuario creado: {$usuario['nombre']} <{$usuario['email']}>.", 'green');
 
         return EXIT_SUCCESS;
     }

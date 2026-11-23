@@ -5,7 +5,7 @@
 | Sprint | Archivo | Casos | PASS | Estado |
 |---|---|---|---|---|
 | S0 | `sprint-00.md` | 2 | 2 | 🟡 En curso (despliegue activo en task.scalegridtech.com; falta el environment `pruebas` en GitHub) |
-| S1 | `sprint-01.md` | 20 | 20 | 🟢 Completo (S0 sigue abierto por T-S0-04/05) |
+| S1 | `sprint-01.md` | 23 | 23 | 🟢 Completo (incluye CP-017 a CP-019 del cambio ADR-009) |
 | S2 | `sprint-02.md` | 20 | 20 | 🟢 Completo (CP-038 pasó al S3) |
 | S3 | `sprint-03.md` | 14 | 14 | 🟢 Completo |
 | S4 | `sprint-04.md` | 14 | 14 | 🟢 Completo |
