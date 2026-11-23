@@ -21,6 +21,8 @@ src/web/playwright-report/
 # Sistema y editores
 .DS_Store
 Thumbs.db
+# Metadatos de Windows al copiar archivos a WSL ("descargado de internet")
+*:Zone.Identifier
 .idea/
 .vscode/
 *.log
