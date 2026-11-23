@@ -6,6 +6,7 @@ namespace Tests\Support;
 
 use App\Database\Seeds\CatalogoSeeder;
 use App\Database\Seeds\DemoSeeder;
+use App\Domain\Calendario;
 use CodeIgniter\I18n\Time;
 use CodeIgniter\Test\CIUnitTestCase;
 use CodeIgniter\Test\DatabaseTestTrait;
@@ -131,6 +132,83 @@ abstract class ApiTestCase extends CIUnitTestCase
     protected function entrarModoPadre(): void
     {
         $this->api('post', 'modo-padre', ['pin' => DemoSeeder::PIN])->assertStatus(200);
+    }
+
+    /**
+     * Entra al perfil de la demo con su PIN.
+     */
+    protected function entrarPerfil(string $apodo): void
+    {
+        $pin = array_column(DemoSeeder::PERFILES, 'pin', 'apodo')[$apodo];
+        $this->api('post', 'perfiles/' . $this->perfilId($apodo) . '/entrar', ['pin' => $pin])->assertStatus(200);
+    }
+
+    /**
+     * "Hoy" en America/Ciudad_Juarez (respeta `Time::setTestNow()`).
+     */
+    protected function hoy(int $masDias = 0): string
+    {
+        return Calendario::sumarDias(Calendario::hoy(Time::now()), $masDias);
+    }
+
+    /**
+     * Desactiva las tareas de la demo para que cada prueba controle sus instancias.
+     */
+    protected function sinTareasDemo(): void
+    {
+        $this->db->table('tareas')->update(['activa' => 0]);
+    }
+
+    /**
+     * `TareaEntrada` válida (casa, diaria desde hoy) con cambios.
+     *
+     * @param array<string, mixed> $cambios
+     * @param array<string, mixed> $recurrencia
+     *
+     * @return array<string, mixed>
+     */
+    protected function tareaEntrada(string $apodo, array $cambios = [], array $recurrencia = []): array
+    {
+        $casa = (int) $this->db->table('categorias')->where('nombre', 'Casa')->get()->getRowArray()['id'];
+
+        return array_merge([
+            'perfil_id'     => $this->perfilId($apodo),
+            'categoria_id'  => $casa,
+            'titulo'        => 'Regar las plantas',
+            'icono'         => 'planta',
+            'puntos'        => 5,
+            'tipo'          => 'casa',
+            'materia'       => null,
+            'fecha_entrega' => null,
+            'requiere_foto' => false,
+            'recurrencia'   => array_merge([
+                'frecuencia' => 'diaria', 'dias_semana' => null, 'hora' => null,
+                'fecha_inicio' => $this->hoy(), 'fecha_fin' => null,
+            ], $recurrencia),
+        ], $cambios);
+    }
+
+    /**
+     * Crea una tarea por E-29 (requiere modo padre en la sesión) y devuelve la `Tarea`.
+     *
+     * @param array<string, mixed> $cambios
+     * @param array<string, mixed> $recurrencia
+     *
+     * @return array<string, mixed>
+     */
+    protected function crearTarea(string $apodo, array $cambios = [], array $recurrencia = []): array
+    {
+        return $this->cuerpo($this->conEstado($this->api('post', 'admin/tareas', $this->tareaEntrada($apodo, $cambios, $recurrencia)), 201));
+    }
+
+    /**
+     * Instancia de la tarea en la fecha dada.
+     *
+     * @return array<string, mixed>
+     */
+    protected function instancia(int $tareaId, string $fecha): array
+    {
+        return $this->db->table('tarea_instancias')->where(['tarea_id' => $tareaId, 'fecha' => $fecha])->get()->getRowArray() ?? [];
     }
 
     protected function perfilId(string $apodo): int
