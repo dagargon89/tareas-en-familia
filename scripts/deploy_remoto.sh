@@ -89,7 +89,7 @@ case "$modo" in
   *) echo "Uso: $0 {desplegar|revertir|estado} --base DIR [opciones]" >&2; exit 2 ;;
 esac
 
-[[ -f "$compartido/.env" ]] || falla "Falta $compartido/.env (créalo una vez con la plantilla del doc 11 §3)"
+[[ -f "$compartido/.env" ]] || falla "Falta $compartido/.env (créalo una vez con la plantilla del doc 11 §4)"
 
 # Un despliegue a la vez.
 exec 9>"$compartido/deploy.lock"
@@ -149,7 +149,8 @@ echo "$id" > "$compartido/release.actual"
 rm -f "$paquete"
 
 # Conserva los N releases más recientes (siempre el activo y el anterior).
-mapfile -t todos < <(find "$releases" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' | sort -r)
+# Sin sustitución de procesos: en CloudLinux/CageFS (Hostinger) no existe /dev/fd.
+mapfile -t todos <<< "$(find "$releases" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' | sort -r)"
 for viejo in "${todos[@]:$conservar}"; do
   [[ "$viejo" == "$id" || "$viejo" == "$anterior" ]] && continue
   rm -rf "${releases:?}/$viejo"

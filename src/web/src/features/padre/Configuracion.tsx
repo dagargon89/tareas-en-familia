@@ -5,6 +5,7 @@ import { detalleError } from '../../lib/errores.ts';
 import { Boton } from '../../ui/Boton.tsx';
 import { Campo } from '../../ui/Campo.tsx';
 import { Cargando } from '../../ui/Cargando.tsx';
+import { PadresFamilia } from './PadresFamilia.tsx';
 import { validarAjustes, type AjustesBorrador } from './validarJuego.ts';
 
 interface VistaProps {
@@ -107,21 +108,25 @@ export function Configuracion() {
 
   const d = guardar.error ? detalleError(guardar.error) : null;
   return (
-    <ConfiguracionVista
-      key={version}
-      config={config.data}
-      enviando={guardar.isPending}
-      aviso={aviso}
-      erroresServidor={d?.campos ?? {}}
-      onGuardar={(c) =>
-        guardar.mutate(c, {
-          onSuccess: () => {
-            setAviso(c.pin_padre ? 'Ajustes guardados. Tu PIN cambió.' : 'Ajustes guardados.');
-            setVersion((n) => n + 1);
-          },
-          onError: (e) => setAviso(detalleError(e).campos ? null : 'No se pudo guardar. Intenta otra vez.'),
-        })
-      }
-    />
+    <div className="flex flex-col gap-8">
+      <ConfiguracionVista
+        key={version}
+        config={config.data}
+        enviando={guardar.isPending}
+        aviso={aviso}
+        erroresServidor={d?.campos ?? {}}
+        onGuardar={(c) =>
+          guardar.mutate(c, {
+            onSuccess: () => {
+              setAviso(c.pin_padre ? 'Ajustes guardados. Tu PIN cambió.' : 'Ajustes guardados.');
+              setVersion((n) => n + 1);
+            },
+            onError: (e) => setAviso(detalleError(e).campos ? null : 'No se pudo guardar. Intenta otra vez.'),
+          })
+        }
+      />
+      {/* Formulario aparte: alta del otro padre (RF-02, ADR-009). */}
+      <PadresFamilia />
+    </div>
   );
 }

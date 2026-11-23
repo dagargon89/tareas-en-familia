@@ -88,6 +88,8 @@ export interface Panel { semana_iso: string; hijas: PanelHija[]; meta_familiar: 
 export interface Configuracion { racha_umbral: number; sonidos_default: boolean; dias_generacion: number;
   evidencia_dias_retencion: number; puntos_tarea_propia: number; }
 export interface ConfiguracionEntrada { racha_umbral?: number; sonidos_default?: boolean; pin_padre?: string; } // pin_padre cambia el PIN del usuario de la sesión
+export interface UsuarioAdmin { id: number; nombre: string; email: string; es_actual: boolean; } // es_actual: el padre de esta sesión (ADR-009)
+export interface UsuarioEntrada { nombre: string; email: string; password: string; pin: string; }      // ADR-009
 
 // ===== Cliente único =====
 export interface ApiClient {
@@ -143,4 +145,6 @@ export interface ApiClient {
   adminSemana(desde?: string, perfilId?: number): Promise<Semana>;             // E-46
   configuracion(): Promise<Configuracion>;                                     // E-47
   guardarConfiguracion(c: ConfiguracionEntrada): Promise<Configuracion>;       // E-48
+  adminUsuarios(): Promise<UsuarioAdmin[]>;                                    // E-51 (ADR-009)
+  crearUsuario(u: UsuarioEntrada): Promise<UsuarioAdmin>;                      // E-52 (ADR-009)
 }

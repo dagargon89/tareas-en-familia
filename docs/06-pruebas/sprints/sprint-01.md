@@ -42,3 +42,21 @@ Suite completa de `s1/api-acceso` (2026-11-23, tras integrar `main` con RF-19 y 
 9. **Pruebas**: `tests/_support/ApiTestCase.php` vacía y vuelve a sembrar la base antes de cada caso, conserva la sesión entre peticiones y recrea el `Throttler` (el servicio compartido retenía la caché simulada de la prueba anterior). `DemoSeeder` reutiliza los hashes ya calculados en el mismo proceso para que la suite no tarde más de un minuto.
 
 - CP-009: Chromium de Playwright en WSL necesita `libnss3`, `libnspr4` y `libasound2`. Sin sudo, se instalaron con Homebrew y se enlazan en `~/.local/lib/playwright-libs`; `playwright.config.ts` los usa solo si esa carpeta existe. En CI (GitHub Actions) se usa `npx playwright install --with-deps chromium`.
+
+## Cambio posterior: alta del segundo padre desde la app (ADR-009, 2026-11-23)
+
+Rama `cambio/segundo-padre`. Contrato 1.0 → 1.1: E-51 `GET /admin/usuarios` y E-52 `POST /admin/usuarios`, tipos `UsuarioAdmin` y `UsuarioEntrada`.
+
+| Caso | RF | Estado | Evidencia | Fecha |
+|---|---|---|---|---|
+| CP-017 | RF-02 | PASS | `src/api/tests/feature/Acceso/UsuariosTest.php::testAltaDelSegundoPadre` (201 sin hashes; el nuevo padre inicia sesión y abre el modo padre con su PIN) · `cd src/api && composer test -- --filter testAltaDelSegundoPadre`. En navegador contra la API local: alta desde Ajustes, mensaje "Listo: … ya puede entrar", login de la mamá 200 y modo padre con su PIN 200 | 2026-11-23 |
+| CP-018 | RF-02 | PASS | `src/api/tests/feature/Acceso/UsuariosTest.php::testNoMasDeDosPadres` · `cd src/api && composer test -- --filter testNoMasDeDosPadres` | 2026-11-23 |
+| CP-019 | RF-02 | PASS | `src/api/tests/feature/Acceso/UsuariosTest.php::testRequiereModoPadreYSesion` · `cd src/api && composer test -- --filter testRequiereModoPadreYSesion` | 2026-11-23 |
+
+Además: `testValidacion` y `testListaLosPadresYMarcaAlDeLaSesion` en el mismo archivo; `CrearUsuarioTest` sigue en verde con el comando ya apoyado en `UsuariosService`. Web: `src/web/tests/unit/padre/padres.test.tsx` (6 pruebas) y axe sin violaciones graves en `/app/padre/ajustes` a 1280 y 360 px. Suites: API `OK (331 tests, 2341 assertions)`; web 101 de 101, lint y `tsc` sin errores.
+
+Hallazgos:
+
+1. **La validación de alta vive en `UsuariosService`** y la usan E-52 y `php spark usuarios:crear` (antes estaba copiada en el comando). La instalación (RF-20) conserva su flujo propio con `GET_LOCK`, porque con la tabla vacía `FOR UPDATE` no bloquea nada.
+2. **El máximo de 2 se comprueba con las filas bloqueadas** (`SELECT id FROM usuarios FOR UPDATE`) dentro de la transacción del alta; un correo repetido que se cuele por carrera choca con `uq_usuarios_email` y responde 400 en `campos.email`.
+3. **Sin cambio de contraseña ni baja de padres desde la app** (fuera del ADR-009); se hacen por consola.

@@ -59,6 +59,19 @@ Consecuencias: sin root, sin nginx configurable (LiteSpeed administrado), sin Do
 | H-07 | Extensión GD de PHP con soporte WebP | David | `php -m` y `php -r "print_r(gd_info());"` por SSH |
 | H-08 | `exec()` y `mysqldump` disponibles para el cron | David | `php -r "var_dump(function_exists('exec'));"` y `which mysqldump` por SSH |
 
+### 5.1 Estado de los huecos de hosting (2026-11-23, verificado por SSH y el conector de Hostinger)
+
+| ID | Estado | Resultado |
+|---|---|---|
+| H-01 | ✅ Cerrado | PHP 8.3.37 en el sitio; la CLI 8.3 está en `/opt/alt/php83/usr/bin/php` (el `php` por omisión es 8.2). Límites de subida de 256 MB y `.user.ini` respetado |
+| H-02 | ✅ Cerrado | MariaDB 11.8.9 (`SELECT VERSION()` desde el servidor) |
+| H-03 | ✅ Cerrado | `task.scalegridtech.com` con SSL de Let's Encrypt |
+| H-04 | ✅ Cerrado | SSH en `82.180.175.69:65002` con llave de despliegue ED25519 |
+| H-05 | ⬜ Abierto | Recompensas y meta reales: sesión familiar (no bloquea el despliegue) |
+| H-06 | ⬜ Abierto | Dispositivo principal: se diseñó para tablet y celular (RNF-05) |
+| H-07 | ✅ Cerrado | GD 2.3.3 con WebP y JPEG; `imagewebp()` disponible |
+| H-08 | ✅ Cerrado con nota | En la CLI `exec()` está disponible y existe `/usr/bin/mysqldump`; en la web, `exec` está deshabilitado. Los respaldos de la Fase 3 se hacen por cron |
+
 ## 6. Riesgos de las fuentes
 
 - Los colores de F-03 se tomaron de una imagen; los valores hex del doc 08 son de partida y se ajustan al validar contraste.

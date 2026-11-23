@@ -5,6 +5,9 @@
 Options -Indexes
 ServerSignature Off
 
+# La raíz siempre es el front controller de CI4 (Hostinger deja un default.php de relleno).
+DirectoryIndex index.php
+
 # ----------------------------------------------------------------------
 # Archivos ocultos (.env, .git, .htaccess, ...) → 403
 # Se permite /.well-known/ (validación de certificados).

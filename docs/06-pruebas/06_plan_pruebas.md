@@ -41,6 +41,9 @@ Columna **Tipo**: U unitario backend · I integración API · F unitario fronten
 | CP-014 | RF-20 | I | `POST /instalacion` válido con 0 usuarios (en producción, con token correcto) | 201, usuario creado con hash Argon2id/bcrypt, `Sesion.usuario` lleno, cookie de sesión |
 | CP-015 | RF-20 | I | `POST /instalacion` cuando ya existe un usuario | 409 `ESTADO_INVALIDO`; no se crea nada |
 | CP-016 | RF-20 | I | Producción: `POST /instalacion` sin token o con token incorrecto | 403 `PROHIBIDO`; no se crea nada |
+| CP-017 | RF-02 | I | En modo padre, `POST /admin/usuarios` con datos válidos (ADR-009) | 201 `UsuarioAdmin` sin hashes; el nuevo padre inicia sesión y su PIN abre el modo padre |
+| CP-018 | RF-02 | I | `POST /admin/usuarios` con 2 padres ya registrados | 409 `ESTADO_INVALIDO`; no se crea nada |
+| CP-019 | RF-02 | I | `POST /admin/usuarios` sin modo padre (o sin sesión) | 403 `MODO_PADRE_REQUERIDO` (o 401 `SIN_SESION`) |
 
 ### 2.2 Tareas (RF-03, RF-04, RF-05, RF-13, RF-19)
 
@@ -146,7 +149,7 @@ Columna **Tipo**: U unitario backend · I integración API · F unitario fronten
 | RF | Casos | Sprint |
 |---|---|---|
 | RF-01 | CP-003, CP-004, CP-005, CP-006, CP-009 | S1 |
-| RF-02 | CP-001, CP-002, CP-007, CP-008 | S1 |
+| RF-02 | CP-001, CP-002, CP-007, CP-008; CP-017 a CP-019 (ADR-009) | S1; cambio ADR-009 |
 | RF-03 | CP-020 a CP-026 | S2 |
 | RF-04 | CP-027, CP-028, CP-034 | S2 |
 | RF-05 | CP-029 a CP-032 | S2 |

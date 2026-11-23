@@ -5,6 +5,8 @@ import type {
   Categoria,
   Configuracion,
   ConfiguracionEntrada,
+  UsuarioAdmin,
+  UsuarioEntrada,
   Dia,
   EstadoInstalacion,
   EstadoCanje,
@@ -292,6 +294,12 @@ export class HttpApiClient implements ApiClient {
   }
   guardarConfiguracion(c: ConfiguracionEntrada) {
     return this.peticion<Configuracion>('PUT', '/admin/configuracion', c);
+  }
+  adminUsuarios() {
+    return this.peticion<UsuarioAdmin[]>('GET', '/admin/usuarios');
+  }
+  crearUsuario(u: UsuarioEntrada) {
+    return this.peticion<UsuarioAdmin>('POST', '/admin/usuarios', u);
   }
 }
 

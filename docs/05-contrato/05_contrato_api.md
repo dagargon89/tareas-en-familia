@@ -1,6 +1,6 @@
 # 05 · Contrato de API
 
-**Proyecto:** Tareas en Familia · **Versión:** 1.0 · **Congelada el 2026-11-23** al cerrar el Sprint 2 (ADR-008). Cualquier cambio en endpoints, tipos o `ApiClient` requiere un ADR de cambio de contrato (Metodología v4 §11) · **Fecha:** 2026-11-22
+**Proyecto:** Tareas en Familia · **Versión:** 1.1 (ADR-009: E-51 y E-52, alta del segundo padre) · **Congelada el 2026-11-23** al cerrar el Sprint 2 (ADR-008). Cualquier cambio en endpoints, tipos o `ApiClient` requiere un ADR de cambio de contrato (Metodología v4 §11) · **Fecha:** 2026-11-22
 
 ## 1. Convenciones
 
@@ -118,6 +118,10 @@ Reglas de E-17, E-22 y E-46 (*aclaraciones de comportamiento del 2026-11-23, sin
 | E-46 | `GET /admin/semana?desde=&perfil_id=` | MP | — | `Semana` | RF-14 |
 | E-47 | `GET /admin/configuracion` | MP | — | `Configuracion` | RF-18 |
 | E-48 | `PUT /admin/configuracion` | MP | `ConfiguracionEntrada` | `Configuracion` | RF-18 |
+| E-51 | `GET /admin/usuarios` | MP | — | `UsuarioAdmin[]` | RF-02 (ADR-009) |
+| E-52 | `POST /admin/usuarios` | MP | `UsuarioEntrada` | `UsuarioAdmin` (201) | RF-02 (ADR-009) |
+
+E-52 (ADR-009): máximo 2 padres; con 2 responde 409 `ESTADO_INVALIDO`. Reglas de `UsuarioEntrada` iguales a la instalación: `nombre` de 1 a 60, `email` válido y no registrado, `password` de 10 caracteres o más y `pin` de 4 dígitos no trivial; con datos inválidos, 400 `VALIDACION` con `campos`. La comprobación del máximo y el alta van en una transacción con `SELECT … FOR UPDATE`. La respuesta nunca trae hashes.
 
 ### 2.4 Reglas de transición
 
@@ -224,6 +228,8 @@ export interface Panel { semana_iso: string; hijas: PanelHija[]; meta_familiar: 
 export interface Configuracion { racha_umbral: number; sonidos_default: boolean; dias_generacion: number;
   evidencia_dias_retencion: number; puntos_tarea_propia: number; }
 export interface ConfiguracionEntrada { racha_umbral?: number; sonidos_default?: boolean; pin_padre?: string; } // pin_padre cambia el PIN del usuario de la sesión
+export interface UsuarioAdmin { id: number; nombre: string; email: string; es_actual: boolean; } // es_actual: el padre de esta sesión (ADR-009)
+export interface UsuarioEntrada { nombre: string; email: string; password: string; pin: string; }      // ADR-009
 
 // ===== Cliente único =====
 export interface ApiClient {
@@ -279,6 +285,8 @@ export interface ApiClient {
   adminSemana(desde?: string, perfilId?: number): Promise<Semana>;             // E-46
   configuracion(): Promise<Configuracion>;                                     // E-47
   guardarConfiguracion(c: ConfiguracionEntrada): Promise<Configuracion>;       // E-48
+  adminUsuarios(): Promise<UsuarioAdmin[]>;                                    // E-51 (ADR-009)
+  crearUsuario(u: UsuarioEntrada): Promise<UsuarioAdmin>;                      // E-52 (ADR-009)
 }
 ```
 

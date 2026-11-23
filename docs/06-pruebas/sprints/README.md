@@ -4,12 +4,12 @@
 
 | Sprint | Archivo | Casos | PASS | Estado |
 |---|---|---|---|---|
-| S0 | `sprint-00.md` | 2 | 2 | 🟡 En curso (T-S0-05 lista; falta activarla en el hosting: H-03 y H-04) |
-| S1 | `sprint-01.md` | 20 | 20 | 🟢 Completo (S0 sigue abierto por T-S0-04/05) |
+| S0 | `sprint-00.md` | 2 | 2 | 🟡 En curso (despliegue activo en task.scalegridtech.com; falta el environment `pruebas` en GitHub) |
+| S1 | `sprint-01.md` | 23 | 23 | 🟢 Completo (incluye CP-017 a CP-019 del cambio ADR-009) |
 | S2 | `sprint-02.md` | 20 | 20 | 🟢 Completo (CP-038 pasó al S3) |
 | S3 | `sprint-03.md` | 14 | 14 | 🟢 Completo |
 | S4 | `sprint-04.md` | 14 | 14 | 🟢 Completo |
-| S5 | `sprint-05.md` | 15 | 13 | 🟡 En curso (CP-SEG-08 y CP-NF-05 esperan el despliegue de T-S0-05) |
+| S5 | `sprint-05.md` | 15 | 14 | 🟡 En curso (falta CP-NF-05: instalar la PWA en Android y iPhone) |
 
 Gate: un sprint no arranca hasta que el anterior esté en 🟢 (100 % PASS).
 

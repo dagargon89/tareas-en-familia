@@ -75,6 +75,8 @@ $routes->group('api/v1', $opciones, static function (RouteCollection $routes) us
         $routes->get('semana', 'PanelController::semana');                                 // E-46
         $routes->get('configuracion', 'ConfiguracionController::ver');                     // E-47
         $routes->put('configuracion', 'ConfiguracionController::guardar');                 // E-48
+        $routes->get('usuarios', 'UsuariosController::index');                             // E-51 (ADR-009)
+        $routes->post('usuarios', 'UsuariosController::crear');                            // E-52 (ADR-009)
 
         // Comodín: cualquier otra ruta admin/* exige sesión y modo padre (403) antes de responder 404.
         $routes->match(['GET', 'POST', 'PUT', 'PATCH', 'DELETE'], '(:any)', '\App\Controllers\Errores::noEncontrado');

@@ -13,13 +13,13 @@ Ramas: `s5/api-cierre` (T-S5-01 a T-S5-03, `padre.spec.ts` y evidencia de T-S5-0
 | CP-084 | RF-15 | PASS | `src/api/tests/feature/Tareas/TareasProTest.php::testProNoEditaTareaDelPadre` · `cd src/api && composer test -- --filter testProNoEditaTareaDelPadre` | 2026-11-23 |
 | CP-085 | RF-16 | PASS | `src/api/tests/feature/Padre/PanelTest.php::testPanelConDatosDeDemo` · `cd src/api && composer test -- --filter testPanelConDatosDeDemo` | 2026-11-23 |
 | CP-087 | RF-16 | PASS | `src/web/tests/e2e/padre.spec.ts` contra la API real, tablet y celular · `cd src/web && npx playwright test tests/e2e/padre.spec.ts` → 2 passed | 2026-11-23 |
-| CP-SEG-08 | RNF-07 | PENDIENTE | Manual en el servidor: requiere el subdominio de pruebas (T-S0-05). Localmente, `tests/unit/Seguridad/ArchivosPublicosTest.php` verifica los `.htaccess` | — |
+| CP-SEG-08 | RNF-07 | PASS | Manual en `https://task.scalegridtech.com` (LiteSpeed de Hostinger) con `curl`: `/.env`, `/.htaccess`, `/.user.ini`, `/app-tareas/.env` y `/index.php/../.env` → 403; `/writable/` y `/writable/logs/cron.log` → 404 (`writable/` vive fuera de la raíz web). HSTS `max-age=31536000; includeSubDomains` también en estáticos (`/app/`); cookie `secure; HttpOnly; SameSite=Lax` | 2026-11-23 |
 | CP-SEG-09 | RNF-07 | PASS | `src/web/tests/e2e/build/rendimiento.spec.ts` (build de producción, sin peticiones a otro origen) · `cd src/web && npx playwright test --project=build` → 1 passed | 2026-11-23 |
 | CP-NF-01 | RNF-01 | PASS | `src/web/tests/e2e/build/rendimiento.spec.ts` · LCP de Mi día 820 ms y 860 ms en dos corridas (4G, CPU 4×, caché vacía; máximo 1500 ms) | 2026-11-23 |
 | CP-NF-02 | RNF-03 | PASS | `src/web/tests/e2e/botones.spec.ts` (alto de "Listo" por nivel), tablet y celular → 2 passed | 2026-11-23 |
 | CP-NF-03 | RNF-04 | PASS | `src/web/tests/e2e/a11y.spec.ts`: axe sin violaciones serias ni críticas en las pantallas de los 3 niveles y del padre (incluidas las del S4 y el S5 ya con su API real), tablet y celular → 10 passed | 2026-11-23 |
 | CP-NF-04 | RNF-05 | PASS | Suite e2e completa en 768 px y 360 px más el build · `cd src/web && npx playwright test` → `17 passed (1.3m)` | 2026-11-23 |
-| CP-NF-05 | RNF-10 | PENDIENTE | Manual: instalar la PWA en Android y en iPhone; requiere HTTPS en el subdominio de pruebas (T-S0-05) | — |
+| CP-NF-05 | RNF-10 | PENDIENTE | Manual: instalar la PWA desde `https://task.scalegridtech.com/app/` en Android (Chrome → Instalar app) y en iPhone (Safari → Compartir → Agregar a inicio) y confirmar que abre sin barra del navegador | — |
 | CP-NF-06 | RNF-09 | PASS | PCOV en PHP 8.3.37 (contenedor `php:8.3-cli` + pcov, mysqli, intl, gd, exif) contra el mismo MariaDB: `OK (324 tests, 2295 assertions)` · `app/Domain` 104/104 líneas (100 %), `app/Services` 1293/1359 (95,14 %), juntos 1397/1463 (95,49 %); ningún archivo por debajo de 85 % · `vendor/bin/phpunit --coverage-clover …` | 2026-11-23 |
 
 Suite completa de `s5/api-cierre` (2026-11-23): `cd src/api && composer test` → `OK (324 tests, 2295 assertions)` con PHPUnit 11.5.58 sobre PHP 8.5.12 y también sobre PHP 8.3.37 (la del hosting), MariaDB 10.11.19. Web: `npm test` 93 de 93, `npm run lint` y `tsc` sin errores; e2e 17 de 17 (Node 22, Playwright 1.65.1, Chromium headless 1255).
@@ -31,7 +31,7 @@ Suite completa de `s5/api-cierre` (2026-11-23): `cd src/api && composer test` �
 | T-S5-01 | Hecha | `InstanciasService::semana()` y `semanaAdmin()`, E-17 en `YoController`, E-46 en `PanelController`; `tests/feature/Calendario/SemanaTest.php` (8 pruebas) |
 | T-S5-02 | Hecha | Rutinas de Pro en `TareasService` (`validarRutina`, `exigirPro`); `tests/feature/Tareas/TareasProTest.php` (8 pruebas) |
 | T-S5-03 | Hecha | `PanelService`, `PanelController` (E-45); `tests/feature/Padre/PanelTest.php`, `src/web/tests/e2e/padre.spec.ts` |
-| T-S5-04 | Abierta | Casos automáticos en PASS; faltan CP-SEG-08 y CP-NF-05, que necesitan el subdominio de pruebas con HTTPS (T-S0-05) |
+| T-S5-04 | Abierta | Casos automáticos y CP-SEG-08 en PASS; falta CP-NF-05 (instalar la PWA en dos teléfonos) |
 
 ## Hallazgos y ajustes
 

@@ -2,7 +2,7 @@
 # Se dispara cuando el CI de main termina bien y usa el paquete que dejó su job "paquete".
 # También se puede correr a mano (Actions → Despliegue → Run workflow), incluso para revertir.
 #
-# Configuración en GitHub → Settings → Environments → "pruebas" (doc 11 §2):
+# Configuración en GitHub → Settings → Environments → "pruebas" (doc 11 §3):
 #   Secrets:   SSH_KEY (llave privada de despliegue), SSH_KNOWN_HOSTS (salida de ssh-keyscan)
 #   Variables: SSH_HOST, SSH_PORT, SSH_USER, DEPLOY_BASE (p. ej. /home/u123/domains/pruebas.ejemplo.com),
 #              URL_PRUEBAS (https://pruebas.ejemplo.com), y opcionales DEPLOY_PUBLICO y DEPLOY_PHP.
@@ -62,7 +62,7 @@ jobs:
             [[ -n "${!v}" ]] || faltan+=("$v")
           done
           if (( ${#faltan[@]} )); then
-            echo "::notice title=Despliegue no configurado::Faltan en el environment 'pruebas': ${faltan[*]} (doc 11 §2). No se desplegó."
+            echo "::notice title=Despliegue no configurado::Faltan en el environment 'pruebas': ${faltan[*]} (doc 11 §3). No se desplegó."
             echo "listo=no" >> "$GITHUB_OUTPUT"
           else
             echo "listo=si" >> "$GITHUB_OUTPUT"
