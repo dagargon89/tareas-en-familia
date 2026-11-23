@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import type { Instancia, NivelUx } from '../../api/ApiClient.ts';
-import { fechaLarga, fechaLocal } from '../../lib/fechas.ts';
+import { diasEntre, fechaLocal } from '../../lib/fechas.ts';
+import { sonar } from '../../lib/sonidos.ts';
 import { NIVELES, NOMBRE_NIVEL } from '../../niveles/nivel.ts';
 import { VOCABULARIO } from '../../niveles/vocabulario.ts';
 import { useSesionStore } from '../../stores/sesionStore.ts';
@@ -13,7 +14,9 @@ import { FormPerfil } from '../padre/FormPerfil.tsx';
 import { PerfilesVista } from '../padre/Perfiles.tsx';
 import { PinPad } from '../acceso/PinPad.tsx';
 import { celebrar } from '../mi-dia/Celebracion.ts';
-import { TaskCard } from '../mi-dia/TaskCard.tsx';
+import { MiDiaVista } from '../mi-dia/MiDia.tsx';
+import { FormTarea } from '../padre/FormTarea.tsx';
+import { TareasVista } from '../padre/Tareas.tsx';
 import { ParentApprovalItem } from '../padre/ParentApprovalItem.tsx';
 import { RewardCard } from '../premios/RewardCard.tsx';
 import { BadgeGrid } from '../progreso/BadgeGrid.tsx';
@@ -21,7 +24,7 @@ import { FamilyGoalBar } from '../progreso/FamilyGoalBar.tsx';
 import { StatTile } from '../progreso/StatTile.tsx';
 import { StreakBadge } from '../progreso/StreakBadge.tsx';
 import { XpWaveBar } from '../progreso/XpWaveBar.tsx';
-import { BANDEJA, INSIGNIAS, INSTANCIAS, META, NIVEL_ACTUAL, NIVEL_SIGUIENTE, PERFILES, PERFILES_ADMIN, RECOMPENSAS } from './datosGaleria.ts';
+import { BANDEJA, CATEGORIAS, TAREAS, INSIGNIAS, INSTANCIAS, META, NIVEL_ACTUAL, NIVEL_SIGUIENTE, PERFILES, PERFILES_ADMIN, RECOMPENSAS } from './datosGaleria.ts';
 
 function Seccion({ titulo, nota, children }: { titulo: string; nota?: string; children: ReactNode }) {
   return (
@@ -50,6 +53,8 @@ function Marco({ titulo, alto = 640, children }: { titulo: string; alto?: number
 /** Galería de componentes con datos fijos (solo desarrollo, ADR-008). */
 export function Galeria() {
   const { nivel, setNivel } = useSesionStore();
+  const hoy = fechaLocal();
+  const [fechaDia, setFechaDia] = useState(hoy);
   const [instancias, setInstancias] = useState<Instancia[]>(INSTANCIAS);
   const [fallos, setFallos] = useState(0);
   const [pinMsg, setPinMsg] = useState<string | null>(null);
@@ -59,6 +64,7 @@ export function Galeria() {
   function marcar(i: Instancia, origen: { x: number; y: number }) {
     setInstancias((xs) => xs.map((x) => (x.id === i.id ? { ...x, estado: 'hecha', mensaje_devolucion: null } : x)));
     celebrar(nivel, origen);
+    sonar('completar', true);
   }
 
   return (
@@ -145,12 +151,54 @@ export function Galeria() {
           />
         </Seccion>
 
-        <Seccion titulo={`Mi día · ${fechaLarga(fechaLocal())}`} nota="RF-04 y RF-05 · toca Listo para ver la celebración del nivel">
-          <div className="flex flex-col gap-4">
-            {instancias.map((i) => (
-              <TaskCard key={i.id} instancia={i} nivel={nivel} puedeMarcar onListo={marcar} />
-            ))}
-          </div>
+        <Seccion titulo="Sprint 2 · Mi día" nota="RF-04 y RF-05 · toca ¡Listo! (con sonido); las flechas cambian de día hasta ±7; en días futuros no se puede marcar">
+          <Marco titulo="/hoy" alto={820}>
+            <div className="p-4">
+              <MiDiaVista
+                dia={{
+                  fecha: fechaDia,
+                  es_hoy: fechaDia === hoy,
+                  instancias: diasEntre(hoy, fechaDia) === 0 ? instancias : diasEntre(hoy, fechaDia) % 2 === 0 ? [] : instancias.slice(0, 3).map((i) => ({ ...i, estado: 'pendiente' as const, mensaje_devolucion: null })),
+                  resumen: (() => {
+                    const xs = diasEntre(hoy, fechaDia) === 0 ? instancias : diasEntre(hoy, fechaDia) % 2 === 0 ? [] : instancias.slice(0, 3);
+                    const hechas = diasEntre(hoy, fechaDia) === 0 ? xs.filter((x) => x.estado === 'hecha' || x.estado === 'aprobada').length : 0;
+                    return { total: xs.length, hechas, aprobadas: 0 };
+                  })(),
+                }}
+                hoy={hoy}
+                apodo="Sofi"
+                nivel={nivel}
+                marcando={null}
+                aviso={null}
+                onCambiarDia={setFechaDia}
+                onListo={marcar}
+              />
+            </div>
+          </Marco>
+        </Seccion>
+
+        <Seccion titulo="Sprint 2 · Tareas del padre" nota="RF-03 y RF-13 · prueba tipo Escolar o Actividad con 0 puntos">
+          <Marco titulo="/padre/tareas · Lista" alto={520}>
+            <div className="p-4">
+              <TareasVista
+                tareas={TAREAS}
+                perfiles={PERFILES}
+                perfilId={null}
+                verInactivas={false}
+                colorDeCategoria={(id) => CATEGORIAS.find((c) => c.id === id)?.color ?? 'lavanda'}
+                onFiltrar={() => undefined}
+                onVerInactivas={() => undefined}
+                onNueva={() => undefined}
+                onEditar={() => undefined}
+                onDesactivar={() => undefined}
+              />
+            </div>
+          </Marco>
+          <Marco titulo="/padre/tareas · Nueva tarea" alto={900}>
+            <div className="p-4">
+              <FormTarea tarea={null} perfiles={PERFILES} categorias={CATEGORIAS} hoy={hoy} enviando={false} onGuardar={() => undefined} onCancelar={() => undefined} />
+            </div>
+          </Marco>
         </Seccion>
 
         <Seccion titulo="Mis logros" nota="RF-08, RF-10, RF-11 y RF-12">

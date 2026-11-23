@@ -20,9 +20,9 @@ describe('celebrar (CP-032, parte de frontend)', () => {
     vi.mocked(confetti).mockClear();
   });
 
-  it('lanza confeti en Exploradoras', () => {
+  it('lanza confeti en Exploradoras', async () => {
     expect(celebrar('exploradoras')).toBe(true);
-    expect(confetti).toHaveBeenCalledTimes(1);
+    await vi.waitFor(() => expect(confetti).toHaveBeenCalledTimes(1));
   });
 
   it('no lanza confeti con prefers-reduced-motion', () => {

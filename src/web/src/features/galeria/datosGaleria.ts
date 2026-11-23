@@ -2,7 +2,7 @@
  * Datos fijos SOLO para la galería de componentes (ADR-008). No implementan ApiClient
  * ni se usan fuera de /app/galeria.
  */
-import type { PerfilAdmin, Insignia, Instancia, InstanciaRevision, Meta, Nivel, PerfilPublico, RecompensaParaPerfil } from '../../api/ApiClient.ts';
+import type { Categoria, Tarea, PerfilAdmin, Insignia, Instancia, InstanciaRevision, Meta, Nivel, PerfilPublico, RecompensaParaPerfil } from '../../api/ApiClient.ts';
 import { fechaLocal } from '../../lib/fechas.ts';
 
 const hoy = fechaLocal();
@@ -51,3 +51,21 @@ export const BANDEJA: InstanciaRevision[] = [
 export const PERFILES_ADMIN: PerfilAdmin[] = PERFILES.map((p, i) => ({ ...p, activo: true, orden: i, pin_intentos: p.bloqueado_hasta ? 5 : 0 })).concat([
   { id: 4, apodo: 'Prueba', avatar: 'nube', color: 'lavanda', nivel_ux: 'aventureras', sonidos: true, tema: 'claro', bloqueado_hasta: null, activo: false, orden: 3, pin_intentos: 0 },
 ]);
+
+export const CATEGORIAS: Categoria[] = [
+  { id: 1, nombre: 'Casa', icono: 'sillon', color: 'ambar' },
+  { id: 2, nombre: 'Escuela', icono: 'libro', color: 'menta' },
+  { id: 3, nombre: 'Actividad', icono: 'musica', color: 'lavanda' },
+  { id: 4, nombre: 'Hábito', icono: 'brillo', color: 'rosa' },
+  { id: 5, nombre: 'Cuidado personal', icono: 'dientes', color: 'menta' },
+];
+
+const rec = (r: Partial<Tarea['recurrencia']>): Tarea['recurrencia'] => ({ frecuencia: 'diaria', dias_semana: null, hora: null, fecha_inicio: hoy, fecha_fin: null, ...r });
+
+export const TAREAS: Tarea[] = [
+  { id: 1, perfil_id: 2, categoria_id: 1, titulo: 'Tender la cama', icono: 'cama', puntos: 3, tipo: 'casa', materia: null, fecha_entrega: null, requiere_foto: false, creada_por: 'padre', activa: true, recurrencia: rec({ hora: '07:30' }) },
+  { id: 2, perfil_id: 2, categoria_id: 2, titulo: 'Leer 20 minutos', icono: 'libro', puntos: 5, tipo: 'escolar', materia: 'Español', fecha_entrega: enDias(2), requiere_foto: false, creada_por: 'padre', activa: true, recurrencia: rec({ frecuencia: 'una_vez' }) },
+  { id: 3, perfil_id: 1, categoria_id: 3, titulo: 'Clase de música', icono: 'musica', puntos: 0, tipo: 'actividad', materia: null, fecha_entrega: null, requiere_foto: false, creada_por: 'padre', activa: true, recurrencia: rec({ frecuencia: 'semanal', dias_semana: ['ma', 'ju'], hora: '18:00' }) },
+  { id: 4, perfil_id: 3, categoria_id: 4, titulo: 'Practicar inglés', icono: 'idiomas', puntos: 5, tipo: 'casa', materia: null, fecha_entrega: null, requiere_foto: false, creada_por: 'perfil', activa: true, recurrencia: rec({ frecuencia: 'semanal', dias_semana: ['lu', 'mi', 'vi'] }) },
+  { id: 5, perfil_id: 1, categoria_id: 1, titulo: 'Recoger mi cuarto', icono: 'brillo', puntos: 6, tipo: 'casa', materia: null, fecha_entrega: null, requiere_foto: true, creada_por: 'padre', activa: true, recurrencia: rec({}) },
+];
