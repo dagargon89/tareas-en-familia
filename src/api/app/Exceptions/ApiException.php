@@ -101,6 +101,14 @@ class ApiException extends RuntimeException implements ResponsableInterface
         return $this->codigo;
     }
 
+    /**
+     * @return array<string, string>|null
+     */
+    public function getCampos(): ?array
+    {
+        return $this->campos;
+    }
+
     public function getEstado(): int
     {
         return $this->estado;

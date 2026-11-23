@@ -17,7 +17,7 @@ use App\Services\TareasService;
 use CodeIgniter\HTTP\ResponseInterface;
 
 /**
- * Rutas de la hija con perfil activo (`/yo/*`): E-11 a E-16 y E-18 a E-22.
+ * Rutas de la hija con perfil activo (`/yo/*`): E-11 a E-22.
  */
 final class YoController extends BaseApiController
 {
@@ -46,6 +46,11 @@ final class YoController extends BaseApiController
     public function progreso(): ResponseInterface
     {
         return $this->ok((new ProgresoService(db_connect()))->progreso($this->perfil()->id));
+    }
+
+    public function semana(): ResponseInterface
+    {
+        return $this->ok((new InstanciasService(db_connect()))->semana($this->perfil()->id, $this->request->getGet('desde')));
     }
 
     public function recompensas(): ResponseInterface

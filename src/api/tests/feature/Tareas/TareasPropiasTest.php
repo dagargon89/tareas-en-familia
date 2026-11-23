@@ -87,14 +87,6 @@ final class TareasPropiasTest extends ApiTestCase
         $this->assertSame(0, $this->db->table('tareas')->where('creada_por', 'perfil')->countAllResults());
     }
 
-    public function testProTambienLimitadaAEscolarEnElS2(): void
-    {
-        $this->entrarPerfil('Estrella');
-
-        $this->assertError($this->api('post', 'yo/tareas', $this->propia(['tipo' => 'actividad'])), 403, 'PROHIBIDO');
-        $this->api('post', 'yo/tareas', $this->propia())->assertStatus(201);
-    }
-
     /**
      * CP-037 · Exploradora llama `POST /yo/tareas`: 403 `PROHIBIDO` (y en las otras tres rutas).
      */

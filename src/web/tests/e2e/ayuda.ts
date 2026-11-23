@@ -24,10 +24,18 @@ export async function abrirSesion(request: APIRequestContext): Promise<void> {
 let csrfActual = '';
 
 async function post(request: APIRequestContext, ruta: string, data?: unknown) {
-  const r = await request.post(ruta, { headers: { 'X-CSRF-TOKEN': csrfActual }, data });
+  return api(request, 'POST', ruta, data);
+}
+
+/**
+ * Petición a la API con el CSRF vigente (lo renueva con el de cada respuesta). Falla si no es 2xx.
+ * Sirve para preparar datos en los e2e sin pasar por la UI.
+ */
+export async function api<T = unknown>(request: APIRequestContext, metodo: 'GET' | 'POST' | 'PUT' | 'DELETE', ruta: string, data?: unknown): Promise<T> {
+  const r = await request.fetch(ruta, { method: metodo, headers: { 'X-CSRF-TOKEN': csrfActual }, data });
   csrfActual = r.headers()['x-csrf-token'] ?? csrfActual;
-  if (!r.ok()) throw new Error(`${ruta} falló: ${r.status()} ${await r.text()}`);
-  return r;
+  if (!r.ok()) throw new Error(`${metodo} ${ruta} falló: ${r.status()} ${await r.text()}`);
+  return (r.status() === 204 ? undefined : await r.json()) as T;
 }
 
 /** Entra al perfil de una hija por la API. */
