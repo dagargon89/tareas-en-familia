@@ -33,8 +33,8 @@ Duraciones estimadas para un solo desarrollador a tiempo parcial. S0 dura 1 sema
 |---|---|---|---|
 | S0 | Base técnica y despliegue a pruebas | — | CP-SEG-04, CP-SEG-06 |
 | S1 | Acceso, perfiles e instalación inicial | RF-01, RF-02, RF-17, RF-20 | CP-001 a CP-016, CP-SEG-01 a CP-SEG-03, CP-SEG-07 |
-| S2 | Tareas, recurrencias, Mi día y escolares propias | RF-03, RF-04, RF-05, RF-13, RF-19 | CP-020 a CP-039, CP-SEG-05 |
-| S3 | Evidencias, aprobación y puntos | RF-06, RF-07, RF-08 | CP-040 a CP-052 |
+| S2 | Tareas, recurrencias, Mi día y escolares propias | RF-03, RF-04, RF-05, RF-13, RF-19 | CP-020 a CP-037, CP-039, CP-SEG-05 |
+| S3 | Evidencias, aprobación y puntos | RF-06, RF-07, RF-08 | CP-040 a CP-052, CP-038 |
 | S4 | Recompensas, rachas, insignias, meta, configuración | RF-09 a RF-12, RF-18 | CP-060 a CP-072, CP-086 |
 | S5 | Calendario, nivel Pro, panel, PWA y no funcionales | RF-14, RF-15, RF-16 | CP-080 a CP-085, CP-087, CP-SEG-08, CP-SEG-09, CP-NF-01 a CP-NF-06 |
 
@@ -122,7 +122,7 @@ Formato: **Requisitos** · **Depende de** · **Casos** · **Endpoints** · **Arc
 - Aceptación: CP-032 en PASS; sesión con las hijas registrada.
 
 **T-S2-05 · Escolares propias (RF-19)**
-- Requisitos: RF-19 · Depende de: T-S2-02 · Casos: CP-035 a CP-039 · Endpoints: E-18 a E-21 (solo `escolar` para Aventureras; Pro también limitada a `escolar` hasta el S5)
+- Requisitos: RF-19 · Depende de: T-S2-02 · Casos: CP-035 a CP-037, CP-039 (CP-038 se cierra en T-S3-02) · Endpoints: E-18 a E-21 (solo `escolar` para Aventureras; Pro también limitada a `escolar` hasta el S5)
 - Archivos: métodos de tareas propias en `app/Controllers/Api/V1/YoController.php` y `app/Services/TareasService.php`, `src/web/src/features/mis-tareas/*`, filtro "Creadas por ellas" en `src/web/src/features/padre/Tareas.tsx`
 - Aceptación: casos en PASS; el servidor nunca toma `puntos`, `perfil_id` ni `creada_por` del cliente.
 
@@ -134,7 +134,7 @@ Formato: **Requisitos** · **Depende de** · **Casos** · **Endpoints** · **Arc
 - Aceptación: casos en PASS; fotos fuera de `public/`.
 
 **T-S3-02 · Aprobación y libro de puntos**
-- Requisitos: RF-07, RF-08 · Depende de: T-S2-03 · Casos: CP-045 a CP-052 · Endpoints: E-33 a E-35, E-13 (XP, nivel)
+- Requisitos: RF-07, RF-08 · Depende de: T-S2-03 · Casos: CP-045 a CP-052, CP-038 · Endpoints: E-33 a E-35, E-13 (XP, nivel)
 - Archivos: `app/Services/AprobacionService.php`, `app/Services/PuntosService.php`, `app/Domain/Niveles.php`, `app/Controllers/Api/V1/AprobacionesController.php`
 - Aceptación: aprobar es una transacción; doble aprobación no acredita doble.
 

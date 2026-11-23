@@ -164,7 +164,7 @@ Columna **Tipo**: U unitario backend · I integración API · F unitario fronten
 | RF-17 | CP-010 a CP-012 | S1 |
 | RF-18 | CP-086 | S4 |
 | RF-20 | CP-013 a CP-016 | S1 |
-| RF-19 | CP-035 a CP-039 | S2 |
+| RF-19 | CP-035 a CP-037 y CP-039 (S2); CP-038 (S3, necesita la aprobación de T-S3-02) | S2, S3 |
 
 ## 4. Datos de prueba
 
