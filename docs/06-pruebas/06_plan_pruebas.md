@@ -8,7 +8,7 @@
 |---|---|---|---|
 | Unitario backend | PHPUnit 11 + `CIUnitTestCase` | `src/api/tests/unit/` | Local y CI |
 | Integración API | `FeatureTestTrait` + `DatabaseTestTrait` (MariaDB de prueba) | `src/api/tests/feature/` | Local y CI |
-| Unitario frontend | Vitest 3 + Testing Library + `MockApiClient` | `src/web/tests/unit/` | Local y CI |
+| Unitario frontend | Vitest 3 + Testing Library + dobles de `ApiClient` por prueba (ADR-008) | `src/web/tests/unit/` | Local y CI |
 | Extremo a extremo | Playwright (viewports 768×1024 y 360×780) | `src/web/tests/e2e/` | Local y CI contra `php spark serve` |
 | Accesibilidad | `@axe-core/playwright` | Dentro de e2e | CI |
 | Manual con usuarias | Guion de sesión con las hijas | `06-pruebas/sprints/` | Fin de sprint de UI |

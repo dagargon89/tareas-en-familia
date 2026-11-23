@@ -52,8 +52,8 @@ Consecuencias: sin root, sin nginx configurable (LiteSpeed administrado), sin Do
 | H-02 | Versión exacta de MariaDB del hosting | David | phpMyAdmin → `SELECT VERSION();` |
 | H-03 | Dominio o subdominio para la app | David | Elegir en el portafolio de dominios |
 | H-04 | Acceso SSH habilitado y llave de despliegue | David | hPanel → Avanzado → Acceso SSH |
-| H-05 | Recompensas iniciales (5 a 10) y meta familiar del primer mes | David con sus hijas | Sesión familiar antes de Fase 1 |
-| H-06 | Dispositivo principal (tablet familiar o celulares) | David | Define el viewport prioritario de Fase 1 |
+| H-05 | Recompensas iniciales (5 a 10) y meta familiar del primer mes | David con sus hijas | Sesión familiar antes del S4 (recompensas) |
+| H-06 | Dispositivo principal (tablet familiar o celulares) | David | Define el viewport prioritario del S1 |
 | H-07 | Extensión GD de PHP con soporte WebP | David | `php -m` y `php -r "print_r(gd_info());"` por SSH |
 | H-08 | `exec()` y `mysqldump` disponibles para el cron | David | `php -r "var_dump(function_exists('exec'));"` y `which mysqldump` por SSH |
 

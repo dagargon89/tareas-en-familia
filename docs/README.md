@@ -10,8 +10,8 @@ App web (PWA) para que las hijas de primaria y secundaria vean, completen y cele
 |---|---|---|---|
 | Descubrimiento | Alcance aprobado por escrito | ✅ Completa (22-nov-2026) | Plan de desarrollo aprobado |
 | Fase 0 | Documentación (docs 00–08) | ✅ Completa (22-nov-2026) | Aprobación de David; cierre manual porque `verify_phase.py` aún no está en el repositorio |
-| Fase 1 | Demo UX (doc 09) + freeze del contrato | 🟡 En curso | Validación con las hijas y `ApiClient` congelado en doc 05 |
-| Fase 2 | Construcción por sprints (doc 10) | ⬜ Pendiente | Cada sprint al 100 % `PASS` |
+| Fase 1 | Demo UX (doc 09) + freeze del contrato | ⏭️ Reducida a T-F1-01 (ADR-008) | El contrato se congela al cerrar el S2 |
+| Fase 2 | Construcción por sprints (doc 10) | 🟡 En curso (S0) | Cada sprint al 100 % `PASS` |
 | Fase 3 | Despliegue y operación (doc 11) | ⬜ Pendiente | Rollback y restauración probados |
 
 ## Stack confirmado
@@ -48,7 +48,7 @@ El número de documento es global y estable. El número de carpeta solo indica o
 | 06 | `06-pruebas/06_plan_pruebas.md` | Catálogo de casos de prueba con IDs |
 | 07 | `07-roadmap/07_roadmap.md` | Sprints y fichas de tarea |
 | 10 | `06-pruebas/sprints/` | Registro de ejecución por sprint (se llena en Fase 2) |
-| 09 | `demo-ux/` | Especificación y prototipo (Fase 1) |
+| 09 | `demo-ux/` | Omitido por ADR-008 |
 | 11 | `08-operacion/` | Despliegue y operación (Fase 3) |
 
 ## Estructura del repositorio de código

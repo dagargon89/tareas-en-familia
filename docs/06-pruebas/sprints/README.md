@@ -4,7 +4,7 @@
 
 | Sprint | Archivo | Casos | PASS | Estado |
 |---|---|---|---|---|
-| S0 | `sprint-00.md` | 2 | 0 | ⬜ No iniciado |
+| S0 | `sprint-00.md` | 2 | 0 | 🟡 En curso |
 | S1 | `sprint-01.md` | 16 | 0 | ⬜ No iniciado |
 | S2 | `sprint-02.md` | 16 | 0 | ⬜ No iniciado |
 | S3 | `sprint-03.md` | 13 | 0 | ⬜ No iniciado |

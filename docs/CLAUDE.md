@@ -8,8 +8,8 @@ Instrucciones para cualquier agente que desarrolle este proyecto. Léelas comple
 |---|---|
 | Descubrimiento | ✅ Completa |
 | Fase 0 · Documentación | ✅ Completa (cierre manual, 22-nov-2026) |
-| Fase 1 · Demo UX | 🟡 En curso |
-| Fase 2 · Construcción | ⬜ Pendiente |
+| Fase 1 · Demo UX | ⏭️ Reducida a T-F1-01 (ADR-008) |
+| Fase 2 · Construcción | 🟡 En curso (S0) |
 | Fase 3 · Despliegue | ⬜ Pendiente |
 
 No se trabaja en una fase cuyo gate anterior no esté cerrado. Esta tabla debe coincidir con la del README.
@@ -26,6 +26,13 @@ CodeIgniter 4.7 + PHP 8.3 · MariaDB 10.11+ · React 19 + TypeScript + Vite 7 + 
 4. Los casos que cita en `06-pruebas/06_plan_pruebas.md`.
 5. Si toca datos: `03-datos/03_modelo_datos.md`. Si toca UI: `01-vision/08_design_system.md`. Si toca auth, archivos o headers: `04-seguridad/04_seguridad.md`.
 
+## Ramas (ADR-008)
+
+- `main` siempre compila y pasa la suite. No se trabaja directo en `main`.
+- Cada sprint tiene una rama de API (`sNN/api-<tema>`) y una de web (`sNN/web-<tema>`) que avanzan en paralelo.
+- Solo la rama de API escribe en `06-pruebas/sprints/sprint-NN.md`; la de web reporta sus casos en la descripción del merge y se registran al integrar.
+- Mientras su API no existe, una pantalla se ve en `/app/galeria` con datos fijos; nunca con un `ApiClient` falso.
+
 ## Orden de trabajo en cada sprint
 
 1. Verificar que el sprint anterior está al 100 % `PASS` en `06-pruebas/sprints/`.
@@ -39,7 +46,7 @@ CodeIgniter 4.7 + PHP 8.3 · MariaDB 10.11+ · React 19 + TypeScript + Vite 7 + 
 ## Prohibiciones
 
 1. **No cambiar el stack** ni agregar dependencias de producción sin un ADR aprobado por David.
-2. **No modificar la interfaz `ApiClient`** después del freeze de Fase 1 sin ADR de cambio de contrato (Metodología v4 §11).
+2. **No modificar la interfaz `ApiClient`** después del freeze (al cerrar el S2, ADR-008) sin ADR de cambio de contrato (Metodología v4 §11).
 3. **No crear ni alterar tablas fuera de una migración**, y no dejar `03_esquema.sql` y `03_esquema.json` desactualizados.
 4. **No acreditar puntos fuera de `PuntosService`** ni aceptar puntos enviados por el cliente.
 5. **No escribir SQL concatenando entradas**; solo Query Builder o consultas con binding.

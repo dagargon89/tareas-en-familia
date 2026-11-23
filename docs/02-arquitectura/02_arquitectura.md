@@ -39,6 +39,7 @@ flowchart TB
 | ADR-005 | Cron cada minuto en lugar de colas |
 | ADR-006 | Tres niveles de experiencia sobre una misma lógica |
 | ADR-007 | React Router, Lucide y DM Sans local como dependencias del frontend |
+| ADR-008 | Sin prototipo de Fase 1; frontend y backend en paralelo por ramas |
 
 ## 3. Backend (`src/api`, CodeIgniter 4)
 

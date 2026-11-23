@@ -15,6 +15,8 @@ Duraciones estimadas para un solo desarrollador a tiempo parcial. S0 dura 1 sema
 
 ## 2. Fase 1 · Demo UX
 
+> **Reducida por ADR-008:** solo se ejecutó T-F1-01. T-F1-02 a T-F1-06 se omiten y T-F1-07 (freeze del contrato) pasa al cierre del S2.
+
 | ID | Tarea | Archivos | Criterio de aceptación |
 |---|---|---|---|
 | T-F1-01 | Proyecto Vite + React + TS + Tailwind 4 con tokens del doc 08 | `src/web/*`, `src/web/src/styles/tokens.css` | `npm run build` sin errores; tokens visibles en una página de muestra |
@@ -88,7 +90,7 @@ Formato: **Requisitos** · **Depende de** · **Casos** · **Endpoints** · **Arc
 - Aceptación: cualquier ruta `admin/*` sin modo padre responde 403.
 
 **T-S1-04 · Pantallas de acceso**
-- Requisitos: RF-01, RF-02, RF-17 · Depende de: T-S1-01 a T-S1-03, prototipo de Fase 1 · Casos: CP-009 · Endpoints: los anteriores vía `HttpApiClient`
+- Requisitos: RF-01, RF-02, RF-17 · Depende de: T-S1-01 a T-S1-03, componentes de `s0/web-base` · Casos: CP-009 · Endpoints: los anteriores vía `HttpApiClient`
 - Archivos: `src/web/src/features/acceso/*`, `src/web/src/features/padre/Perfiles.tsx`, `src/web/src/stores/sesionStore.ts`, `src/web/tests/e2e/acceso.spec.ts`
 - Aceptación: CP-009 en PASS en ambos viewports.
 

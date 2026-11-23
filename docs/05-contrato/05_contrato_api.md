@@ -1,6 +1,6 @@
 # 05 · Contrato de API
 
-**Proyecto:** Tareas en Familia · **Versión:** 1.0 (borrador; se congela al cerrar Fase 1) · **Fecha:** 2026-11-22
+**Proyecto:** Tareas en Familia · **Versión:** 1.0 (borrador; se congela al cerrar el Sprint 2, ADR-008) · **Fecha:** 2026-11-22
 
 ## 1. Convenciones
 
@@ -116,7 +116,7 @@ Las instancias de tipo `actividad` con 0 puntos pasan de `hecha` a `aprobada` au
 
 ## 3. Tipos y `ApiClient` (contrato único)
 
-Archivo: `src/web/src/api/ApiClient.ts`. Es el único punto de acceso a la API desde la SPA. Al cerrar la Fase 1, esta sección se congela; cualquier cambio posterior sigue el control de cambios de la Metodología v4 §11.
+Archivo: `src/web/src/api/ApiClient.ts`. Es el único punto de acceso a la API desde la SPA. Al cerrar el Sprint 2, esta sección se congela; cualquier cambio posterior sigue el control de cambios de la Metodología v4 §11.
 
 ```ts
 // ===== Tipos base =====
@@ -265,6 +265,5 @@ E-02 (`GET /csrf`) no aparece en la interfaz: la implementación lo llama intern
 | Implementación | Archivo | Uso |
 |---|---|---|
 | `HttpApiClient` | `src/web/src/api/HttpApiClient.ts` | Producción y desarrollo contra CI4 |
-| `MockApiClient` | `src/web/src/api/MockApiClient.ts` | Demo de Fase 1 y pruebas de componentes, datos en memoria con la forma de `DemoSeeder` |
 
-Ambas implementan exactamente la interfaz `ApiClient`. La selección se hace con `VITE_API_MODO=http|mock`.
+`HttpApiClient` es la única implementación (ADR-008). Las pruebas de componentes usan dobles por prueba con la forma de `ApiClient`.
