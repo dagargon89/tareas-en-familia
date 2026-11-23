@@ -65,6 +65,7 @@ abstract class ApiTestCase extends CIUnitTestCase
 
         // El Throttler compartido conserva la caché de una prueba anterior: se recrea con la caché simulada nueva.
         Services::resetSingle('throttler');
+        Services::resetSingle('response'); // la respuesta compartida conservaría headers de la prueba anterior
         cache()->clean();
         $this->sesion = [];
     }

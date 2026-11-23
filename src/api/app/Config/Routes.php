@@ -29,12 +29,14 @@ $routes->group('api/v1', $opciones, static function (RouteCollection $routes) us
         $routes->post('perfiles/(:num)/entrar', 'PerfilesController::entrar/$1'); // E-07
         $routes->post('modo-padre', 'ModoPadreController::entrar');             // E-09
         $routes->delete('modo-padre', 'ModoPadreController::salir');            // E-10
+        $routes->get('evidencias/(:num)', 'EvidenciasController::ver/$1');      // E-36 (dueña o modo padre)
     });
 
     // Hija con perfil activo (filtros `sesion` + `perfilActivo`)
     $routes->group('yo', $opciones + ['filter' => ['sesion', 'perfilActivo']], static function (RouteCollection $routes): void {
         $routes->get('dia', 'YoController::dia');                                  // E-11
         $routes->post('instancias/(:num)/hecha', 'YoController::marcarHecha/$1');  // E-12
+        $routes->get('progreso', 'YoController::progreso');                        // E-13
         $routes->get('tareas', 'YoController::tareas');                            // E-18
         $routes->post('tareas', 'YoController::crearTarea');                       // E-19
         $routes->put('tareas/(:num)', 'YoController::editarTarea/$1');             // E-20
@@ -53,6 +55,9 @@ $routes->group('api/v1', $opciones, static function (RouteCollection $routes) us
         $routes->put('tareas/(:num)', 'TareasController::editar/$1');                      // E-30
         $routes->delete('tareas/(:num)', 'TareasController::desactivar/$1');               // E-31
         $routes->get('categorias', 'TareasController::categorias');                        // E-32
+        $routes->get('aprobaciones', 'AprobacionesController::index');                     // E-33
+        $routes->post('instancias/revision-lote', 'AprobacionesController::lote');         // E-35
+        $routes->post('instancias/(:num)/revision', 'AprobacionesController::revisar/$1'); // E-34
 
         // Comodín: cualquier otra ruta admin/* exige sesión y modo padre (403) antes de responder 404.
         $routes->match(['GET', 'POST', 'PUT', 'PATCH', 'DELETE'], '(:any)', '\App\Controllers\Errores::noEncontrado');
