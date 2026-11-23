@@ -20,6 +20,7 @@ class ApiException extends RuntimeException implements ResponsableInterface
     /**
      * @param array<string, string>|null $campos
      * @param array<string, mixed>       $extra
+     * @param array<string, string>      $headers
      */
     public function __construct(
         private readonly int $estado,
@@ -27,6 +28,7 @@ class ApiException extends RuntimeException implements ResponsableInterface
         string $mensaje,
         private readonly ?array $campos = null,
         private readonly array $extra = [],
+        private readonly array $headers = [],
     ) {
         parent::__construct($mensaje, $estado);
     }
@@ -54,6 +56,41 @@ class ApiException extends RuntimeException implements ResponsableInterface
         return new self(409, 'ESTADO_INVALIDO', $mensaje);
     }
 
+    public static function sinSesion(): self
+    {
+        return new self(401, 'SIN_SESION', 'Inicia sesión para continuar.');
+    }
+
+    public static function credenciales(): self
+    {
+        return new self(401, 'CREDENCIALES', 'El correo o la contraseña no coinciden.');
+    }
+
+    public static function pinIncorrecto(int $intentosRestantes): self
+    {
+        return new self(401, 'PIN_INCORRECTO', 'Ese PIN no es. Inténtalo otra vez.', null, ['intentos_restantes' => $intentosRestantes]);
+    }
+
+    public static function bloqueado(string $bloqueadoHasta): self
+    {
+        return new self(423, 'BLOQUEADO', 'Vamos a esperar un ratito antes de intentarlo otra vez.', null, ['bloqueado_hasta' => $bloqueadoHasta]);
+    }
+
+    public static function demasiadosIntentos(int $segundos): self
+    {
+        return new self(429, 'DEMASIADOS_INTENTOS', 'Demasiados intentos. Espera un minuto.', null, [], ['Retry-After' => (string) max(1, $segundos)]);
+    }
+
+    public static function modoPadreRequerido(): self
+    {
+        return new self(403, 'MODO_PADRE_REQUERIDO', 'Entra a modo padre para continuar.');
+    }
+
+    public static function sinPerfil(): self
+    {
+        return new self(403, 'SIN_PERFIL', 'Elige tu perfil para continuar.');
+    }
+
     public function getCodigo(): string
     {
         return $this->codigo;
@@ -66,6 +103,12 @@ class ApiException extends RuntimeException implements ResponsableInterface
 
     public function getResponse(): ResponseInterface
     {
-        return ErrorApi::respuesta($this->estado, $this->codigo, $this->getMessage(), $this->campos, $this->extra);
+        $respuesta = ErrorApi::respuesta($this->estado, $this->codigo, $this->getMessage(), $this->campos, $this->extra);
+
+        foreach ($this->headers as $nombre => $valor) {
+            $respuesta->setHeader($nombre, $valor);
+        }
+
+        return $respuesta;
     }
 }

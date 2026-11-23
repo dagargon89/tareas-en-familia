@@ -33,6 +33,20 @@ class DemoSeeder extends Seeder
         ['apodo' => 'Estrella', 'avatar' => 'gato', 'color' => 'menta', 'nivel_ux' => 'pro', 'pin' => '8462'],
     ];
 
+    /**
+     * Hashes ya calculados en este proceso. Las pruebas siembran la demo antes
+     * de cada caso; reutilizar el hash (que sigue siendo Argon2id/BCRYPT con sal)
+     * evita recalcularlo cada vez.
+     *
+     * @var array<string, string>
+     */
+    private static array $hashes = [];
+
+    private static function hash(string $secreto): string
+    {
+        return self::$hashes[$secreto] ??= Hash::crear($secreto);
+    }
+
     public function run(): void
     {
         if (ENVIRONMENT === 'production') {
@@ -51,8 +65,8 @@ class DemoSeeder extends Seeder
         $this->db->table('usuarios')->insert([
             'nombre'        => 'Papá Demo',
             'email'         => self::EMAIL,
-            'password_hash' => Hash::crear(self::PASSWORD),
-            'pin_hash'      => Hash::crear(self::PIN),
+            'password_hash' => self::hash(self::PASSWORD),
+            'pin_hash'      => self::hash(self::PIN),
             'created_at'    => $ahora,
             'updated_at'    => $ahora,
         ]);
@@ -66,7 +80,7 @@ class DemoSeeder extends Seeder
                 'avatar'     => $perfil['avatar'],
                 'color'      => $perfil['color'],
                 'nivel_ux'   => $perfil['nivel_ux'],
-                'pin_hash'   => Hash::crear($perfil['pin']),
+                'pin_hash'   => self::hash($perfil['pin']),
                 'orden'      => $orden,
                 'created_at' => $ahora,
                 'updated_at' => $ahora,
