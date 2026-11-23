@@ -196,7 +196,8 @@ final class MiDiaTest extends ApiTestCase
 
         $this->assertSame('aprobada', $instancia['estado']);
         $this->assertNotNull($this->instancia($tarea['id'], $this->hoy())['aprobada_en']);
-        $this->assertSame(0, $this->db->table('movimientos_puntos')->countAllResults());
+        // Desde el S5 la aprobación automática evalúa insignias ("Primera misión"), pero la tarea no acredita puntos.
+        $this->assertSame(0, $this->db->table('movimientos_puntos')->where('origen', 'tarea')->countAllResults());
         $this->assertSame(['total' => 1, 'hechas' => 1, 'aprobadas' => 1], $this->dia()['resumen']);
     }
 

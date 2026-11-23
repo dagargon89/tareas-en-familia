@@ -17,8 +17,9 @@ use CodeIgniter\I18n\Time;
 use InvalidArgumentException;
 
 /**
- * Tareas del padre (RF-03, RF-13: E-28 a E-32) y escolares propias de las
- * hijas (RF-19: E-18 a E-21). Toda escritura regenera las instancias en una transacción.
+ * Tareas del padre (RF-03, RF-13: E-28 a E-32) y tareas propias de las hijas (E-18 a E-21):
+ * escolares de Aventureras y Pro (RF-19) y rutinas de cualquier tipo de Pro (RF-15).
+ * Toda escritura regenera las instancias en una transacción.
  */
 final class TareasService
 {
@@ -126,7 +127,7 @@ final class TareasService
         ], $filas);
     }
 
-    // ===== Escolares propias (RF-19) =====
+    // ===== Tareas propias (RF-15, RF-19) =====
 
     /**
      * E-18 · Tareas propias activas del perfil.
@@ -141,7 +142,8 @@ final class TareasService
     }
 
     /**
-     * E-19 · El servidor fija perfil, `creada_por`, puntos, categoría "Escuela" y `una_vez` desde hoy.
+     * E-19 · El servidor fija perfil, `creada_por` y puntos (`puntos_tarea_propia`). Una escolar va
+     * siempre en "Escuela" y `una_vez` desde hoy; una rutina de Pro usa la categoría elegida o la de su tipo.
      *
      * @param array<string, mixed> $entrada `TareaPropiaEntrada`
      *
@@ -150,13 +152,21 @@ final class TareasService
     public function crearPropia(Perfil $perfil, array $entrada): array
     {
         $this->exigirAutonomia($perfil);
-        $this->exigirEscolar($entrada);
+        $tipo = $entrada['tipo'] ?? 'escolar';
+
+        if ($tipo !== 'escolar') {
+            $this->exigirPro($perfil);
+            [$tarea, $recurrencia] = $this->validarRutina($perfil, $entrada, null);
+
+            return $this->guardarNueva($tarea + ['creada_por' => 'perfil', 'creada_por_usuario_id' => null], $recurrencia);
+        }
+
         [$tarea, $recurrencia] = $this->validarPropia($entrada, $this->hoy());
 
         return $this->guardarNueva($tarea + [
             'perfil_id'             => $perfil->id,
-            'categoria_id'          => $this->categoriaEscuela(),
-            'puntos'                => model(ConfiguracionModel::class)->entero('puntos_tarea_propia', self::PUNTOS_PROPIA_POR_OMISION),
+            'categoria_id'          => $this->categoriaPorNombre('Escuela'),
+            'puntos'                => $this->puntosPropia(),
             'tipo'                  => 'escolar',
             'creada_por'            => 'perfil',
             'creada_por_usuario_id' => null,
@@ -164,7 +174,8 @@ final class TareasService
     }
 
     /**
-     * E-20 · Editar una propia no aprobada (conserva puntos y fecha de inicio).
+     * E-20 · Editar una propia (conserva puntos). Una escolar no cambia a otro tipo ni al revés.
+     * En una rutina, como en las del padre, solo cambian las instancias pendientes desde hoy.
      *
      * @param array<string, mixed> $entrada
      *
@@ -173,14 +184,29 @@ final class TareasService
     public function editarPropia(Perfil $perfil, int $id, array $entrada): array
     {
         $actual = $this->propiaEditable($perfil, $id);
-        $this->exigirEscolar($entrada);
+        $tipo   = $entrada['tipo'] ?? 'escolar';
+
+        if ($tipo !== 'escolar') {
+            $this->exigirPro($perfil);
+        }
+
+        if (($actual['tipo'] === 'escolar') !== ($tipo === 'escolar')) {
+            throw ApiException::validacion(['tipo' => 'Una tarea de la escuela no se puede cambiar a otro tipo (ni al revés).']);
+        }
+
+        if ($tipo !== 'escolar') {
+            [$tarea, $recurrencia] = $this->validarRutina($perfil, $entrada, $actual);
+
+            return $this->guardarCambios($id, $tarea, $recurrencia);
+        }
+
         [$tarea, $recurrencia] = $this->validarPropia($entrada, (string) $actual['fecha_inicio']);
 
         return $this->guardarCambios($id, $tarea, $recurrencia);
     }
 
     /**
-     * E-21 · Desactivar una propia no aprobada.
+     * E-21 · Desactivar una propia (una de una sola vez ya aprobada no se desactiva).
      */
     public function desactivarPropia(Perfil $perfil, int $id): void
     {
@@ -296,15 +322,20 @@ final class TareasService
         return self::aTarea($guardada);
     }
 
-    private function categoriaEscuela(): int
+    private function categoriaPorNombre(string $nombre): int
     {
-        $fila = $this->db->table('categorias')->select('id')->where('nombre', 'Escuela')->get()->getRowArray();
+        $fila = $this->db->table('categorias')->select('id')->where('nombre', $nombre)->get()->getRowArray();
 
         if ($fila === null) {
-            throw new \RuntimeException('Falta la categoría "Escuela" (CatalogoSeeder).');
+            throw new \RuntimeException("Falta la categoría \"{$nombre}\" (CatalogoSeeder).");
         }
 
         return (int) $fila['id'];
+    }
+
+    private function puntosPropia(): int
+    {
+        return model(ConfiguracionModel::class)->entero('puntos_tarea_propia', self::PUNTOS_PROPIA_POR_OMISION);
     }
 
     /**
@@ -318,19 +349,18 @@ final class TareasService
     }
 
     /**
-     * RF-19: en el S2 Aventureras y Pro solo crean escolares (Pro amplía a otros tipos en el S5).
-     *
-     * @param array<string, mixed> $entrada
+     * RF-15 y RF-19: solo Pro crea tareas propias que no son escolares.
      */
-    private function exigirEscolar(array $entrada): void
+    private function exigirPro(Perfil $perfil): void
     {
-        if (($entrada['tipo'] ?? 'escolar') !== 'escolar') {
-            throw ApiException::prohibido('Por ahora solo puedes crear tareas de la escuela.');
+        if ($perfil->nivel_ux !== 'pro') {
+            throw ApiException::prohibido('Tu nivel crea solo tareas de la escuela.');
         }
     }
 
     /**
-     * Propia del perfil, activa y sin instancias aprobadas.
+     * Propia del perfil y activa. Una de una sola vez (escolar o no) con su instancia aprobada ya no
+     * cambia (409); una rutina sí, porque editar o desactivar solo toca las pendientes desde hoy.
      *
      * @return array<string, mixed>
      */
@@ -349,7 +379,7 @@ final class TareasService
 
         $aprobadas = $this->db->table('tarea_instancias')->where(['tarea_id' => $id, 'estado' => 'aprobada'])->countAllResults();
 
-        if ($aprobadas > 0) {
+        if ($aprobadas > 0 && $actual['frecuencia'] === 'una_vez') {
             throw ApiException::estadoInvalido('Esta tarea ya se aprobó; ya no se puede cambiar.');
         }
 
@@ -386,6 +416,49 @@ final class TareasService
             $tarea + ['materia' => $materia, 'fecha_entrega' => $entrega],
             ['frecuencia' => 'una_vez', 'dias_semana' => null, 'hora' => $hora, 'fecha_inicio' => $fechaInicio, 'fecha_fin' => null],
         ];
+    }
+
+    /**
+     * Valida la rutina de Pro (`TareaPropiaEntrada` no escolar) con las reglas de `TareaEntrada`:
+     * perfil, puntos y categoría (si no la manda) los fija el servidor. El inicio no puede ser antes
+     * de hoy, salvo que se conserve el de la tarea que se edita.
+     *
+     * @param array<string, mixed>      $entrada
+     * @param array<string, mixed>|null $actual
+     *
+     * @return array{0: array<string, mixed>, 1: array<string, mixed>}
+     */
+    private function validarRutina(Perfil $perfil, array $entrada, ?array $actual): array
+    {
+        $tipo      = $entrada['tipo'] ?? null;
+        $categoria = $entrada['categoria_id'] ?? null;
+
+        if ($categoria === null) {
+            $categoria = $this->categoriaPorNombre($tipo === 'actividad' ? 'Actividad' : 'Casa');
+        }
+
+        $completa = array_merge($entrada, [
+            'perfil_id' => $perfil->id, 'puntos' => $this->puntosPropia(), 'categoria_id' => $categoria, 'materia' => null, 'fecha_entrega' => null,
+        ]);
+
+        $campos = [];
+        $inicio = $entrada['recurrencia']['fecha_inicio'] ?? null;
+
+        if (is_string($inicio) && $inicio < $this->hoy() && $inicio !== ($actual['fecha_inicio'] ?? null)) {
+            $campos['fecha_inicio'] = 'Elige una fecha desde hoy.';
+        }
+
+        try {
+            $validada = $this->validar($completa, $actual);
+        } catch (ApiException $e) {
+            throw ApiException::validacion(($e->getCampos() ?? []) + $campos);
+        }
+
+        if ($campos !== []) {
+            throw ApiException::validacion($campos);
+        }
+
+        return $validada;
     }
 
     /**

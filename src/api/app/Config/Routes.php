@@ -40,6 +40,7 @@ $routes->group('api/v1', $opciones, static function (RouteCollection $routes) us
         $routes->get('recompensas', 'YoController::recompensas');                  // E-14
         $routes->post('canjes', 'YoController::solicitarCanje');                   // E-15
         $routes->get('canjes', 'YoController::canjes');                            // E-16
+        $routes->get('semana', 'YoController::semana');                            // E-17
         $routes->get('tareas', 'YoController::tareas');                            // E-18
         $routes->post('tareas', 'YoController::crearTarea');                       // E-19
         $routes->put('tareas/(:num)', 'YoController::editarTarea/$1');             // E-20
@@ -70,6 +71,8 @@ $routes->group('api/v1', $opciones, static function (RouteCollection $routes) us
         $routes->get('metas', 'MetasController::index');                                   // E-42
         $routes->post('metas', 'MetasController::crear');                                  // E-43
         $routes->put('metas/(:num)', 'MetasController::editar/$1');                        // E-44
+        $routes->get('panel', 'PanelController::index');                                   // E-45
+        $routes->get('semana', 'PanelController::semana');                                 // E-46
         $routes->get('configuracion', 'ConfiguracionController::ver');                     // E-47
         $routes->put('configuracion', 'ConfiguracionController::guardar');                 // E-48
 

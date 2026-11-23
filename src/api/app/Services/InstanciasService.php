@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Domain\Calendario;
 use App\Domain\ReglaRecurrencia;
+use App\Domain\SemanaIso;
 use App\Exceptions\ApiException;
 use App\Libraries\Fechas;
 use CodeIgniter\Database\BaseBuilder;
@@ -68,8 +69,98 @@ final class InstanciasService
             ->orderBy('i.id')
             ->get()->getResultArray();
 
-        $instancias = array_map(self::aInstancia(...), $filas);
-        $estados    = array_column($instancias, 'estado');
+        return $this->aDia($fecha, $hoy, array_map(self::aInstancia(...), $filas));
+    }
+
+    /**
+     * E-17 y E-46 · `Semana` ISO (lunes a domingo) que contiene `desde`. Cada instancia aparece solo en
+     * su `fecha` (una escolar no se repite hasta su entrega; la entrega va en `fecha_entrega`).
+     * Con `$perfilId` null trae las de todas las hijas activas (modo padre).
+     *
+     * @return array{desde: string, hasta: string, dias: list<array<string, mixed>>}
+     */
+    public function semana(?int $perfilId, mixed $desde): array
+    {
+        $hoy   = $this->hoy();
+        $desde = $desde === null || $desde === '' ? $hoy : $desde;
+
+        if (! is_string($desde) || ! ReglaRecurrencia::esFechaValida($desde)) {
+            throw ApiException::validacion(['desde' => 'Elige una fecha válida.']);
+        }
+
+        $semana = SemanaIso::desdeFecha($desde);
+
+        // Como en "Mi día": cubre un cron retrasado solo dentro de una semana antes y después de hoy.
+        $inicio = max($semana->lunes(), Calendario::sumarDias($hoy, -self::RANGO_DIAS));
+        $fin    = min($semana->domingo(), Calendario::sumarDias($hoy, self::RANGO_DIAS));
+
+        if ($inicio <= $fin) {
+            (new GeneradorInstancias($this->db))->generar($inicio, $fin);
+        }
+
+        $consulta = $this->consulta()
+            ->join('perfiles p', 'p.id = i.perfil_id')
+            ->where('i.fecha >=', $semana->lunes())
+            ->where('i.fecha <=', $semana->domingo())
+            ->orderBy('i.fecha')
+            ->orderBy('i.hora IS NULL', '', false)
+            ->orderBy('i.hora')
+            ->orderBy('p.orden')
+            ->orderBy('i.id');
+
+        if ($perfilId === null) {
+            $consulta->where('p.activo', 1);
+        } else {
+            $consulta->where('i.perfil_id', $perfilId);
+        }
+
+        $porFecha = array_fill_keys($semana->dias(), []);
+
+        foreach ($consulta->get()->getResultArray() as $fila) {
+            $porFecha[$fila['fecha']][] = self::aInstancia($fila);
+        }
+
+        $dias = [];
+
+        foreach ($porFecha as $fecha => $instancias) {
+            $dias[] = $this->aDia($fecha, $hoy, $instancias);
+        }
+
+        return ['desde' => $semana->lunes(), 'hasta' => $semana->domingo(), 'dias' => $dias];
+    }
+
+    /**
+     * E-46 · `perfil_id` opcional del query string: una hija (activa o no) o todas las activas.
+     *
+     * @return array{desde: string, hasta: string, dias: list<array<string, mixed>>}
+     */
+    public function semanaAdmin(mixed $perfilId, mixed $desde): array
+    {
+        if ($perfilId === null || $perfilId === '') {
+            return $this->semana(null, $desde);
+        }
+
+        if (! is_string($perfilId) || ! ctype_digit($perfilId)) {
+            throw ApiException::validacion(['perfil_id' => 'Elige una hija.']);
+        }
+
+        if ($this->db->table('perfiles')->where('id', (int) $perfilId)->countAllResults() === 0) {
+            throw ApiException::noEncontrado();
+        }
+
+        return $this->semana((int) $perfilId, $desde);
+    }
+
+    /**
+     * Forma `Dia` del contrato con su resumen.
+     *
+     * @param list<array<string, mixed>> $instancias
+     *
+     * @return array{fecha: string, es_hoy: bool, instancias: list<array<string, mixed>>, resumen: array{total: int, hechas: int, aprobadas: int}}
+     */
+    private function aDia(string $fecha, string $hoy, array $instancias): array
+    {
+        $estados = array_column($instancias, 'estado');
 
         return [
             'fecha'      => $fecha,
@@ -132,6 +223,11 @@ final class InstanciasService
 
             if ($nueva !== null) {
                 $anterior = $evidencias->registrar($instanciaId, $nueva);
+            }
+
+            // La aprobación automática también cuenta para las insignias (doc 03 §5); 0 puntos no suman a la meta.
+            if ($sinPunto) {
+                (new InsigniasService($this->db))->evaluar($perfilId);
             }
 
             $this->db->transCommit();

@@ -81,6 +81,12 @@ Reglas de E-18 a E-21 (RF-15, RF-19):
 - El servidor fija `perfil_id` (perfil activo), `creada_por = perfil` y `puntos = puntos_tarea_propia`; ignora esos campos si llegan en el cuerpo.
 - En una escolar propia el servidor usa siempre la categoría "Escuela" y `una_vez` desde hoy; `categoria_id` es opcional y solo lo usa Pro en tareas no escolares. Si Pro no lo envía (no tiene acceso a E-32), el servidor asigna la categoría por tipo: `casa` → "Casa", `actividad` → "Actividad". *Aclaración de comportamiento del 2026-11-23, posterior al freeze y sin cambio de forma: no requiere ADR.*
 - Editar o desactivar una tarea ajena, o una propia ya aprobada, responde 403 `PROHIBIDO` o 409 `ESTADO_INVALIDO` respectivamente.
+- "Ya aprobada" aplica a las propias de una sola vez (`una_vez`, como toda escolar). Una rutina de Pro (`diaria` o `semanal`) se puede editar o desactivar aunque tenga instancias aprobadas: igual que las del padre (RF-03), solo cambian o se borran las pendientes desde hoy y el historial se conserva. Una escolar no cambia a otro tipo ni al revés (400 `VALIDACION` en `tipo`), y al crear una rutina la `fecha_inicio` no puede ser anterior a hoy. *Aclaración de comportamiento del 2026-11-23 (S5), sin cambio de forma: no requiere ADR.*
+
+Reglas de E-17, E-22 y E-46 (*aclaraciones de comportamiento del 2026-11-23, sin cambio de forma*):
+
+- E-17 y E-46 devuelven la semana ISO (lunes a domingo) que contiene `desde`; sin `desde`, la semana en curso. Cada instancia aparece solo en su `fecha` (una escolar no se repite cada día hasta su entrega; la entrega viene en `fecha_entrega`). E-46 sin `perfil_id` trae las de todas las hijas activas.
+- E-22: el nivel Exploradoras no tiene modo oscuro (doc 08 §3), así que solo acepta `tema = claro`; otro valor responde 400 `VALIDACION`.
 
 ### 2.3 Padre (modo padre)
 
