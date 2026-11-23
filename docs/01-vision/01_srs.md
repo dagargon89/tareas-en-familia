@@ -48,6 +48,7 @@ Prioridad: Alta · Sprint: S1
 - Cuando desde cualquier pantalla se toca "Modo padre" y se escribe el PIN del padre que abrió la sesión del dispositivo (`usuario_id` de la sesión), entonces se habilitan las pantallas de administración.
 - Cuando pasan 10 minutos sin actividad en modo padre, entonces el modo padre se cierra solo.
 - En modo padre, un padre puede dar de alta al otro (nombre, correo, contraseña y PIN) desde Ajustes, hasta un máximo de 2 padres (ADR-009).
+- En modo padre, cada padre cambia su contraseña escribiendo la actual, y puede restablecer la del otro si la olvidó (ADR-010).
 
 **RF-20 · Instalación inicial**
 Prioridad: Alta · Sprint: S1

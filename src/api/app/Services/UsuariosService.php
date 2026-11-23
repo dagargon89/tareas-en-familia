@@ -6,13 +6,14 @@ namespace App\Services;
 
 use App\Exceptions\ApiException;
 use App\Libraries\Hash;
+use App\Libraries\LimiteIntentos;
 use App\Models\UsuarioModel;
 use CodeIgniter\Database\BaseConnection;
 use CodeIgniter\Database\Exceptions\DatabaseException;
 use CodeIgniter\I18n\Time;
 
 /**
- * Padres de la familia (máximo 2, doc 03): E-51 y E-52 (ADR-009) y `php spark usuarios:crear`.
+ * Padres de la familia (máximo 2, doc 03): E-51 y E-52 (ADR-009), E-53 (ADR-010) y `php spark usuarios:crear`.
  * Las reglas de alta viven solo aquí; la instalación inicial (RF-20) conserva su propio flujo con bloqueo.
  */
 final class UsuariosService
@@ -77,6 +78,51 @@ final class UsuariosService
         }
 
         return self::aUsuario(['id' => $id, 'nombre' => $datos['nombre'], 'email' => $datos['email']], $actualId);
+    }
+
+    /**
+     * E-53 · Cambia la contraseña de un padre. Si es el de la sesión, exige la actual y comparte el
+     * límite del login (5 por minuto por IP); si es el otro, es un restablecimiento sin la actual (ADR-010).
+     *
+     * @param array<string, mixed> $entrada `CambioPasswordEntrada`
+     *
+     * @return array{id: int, nombre: string, email: string, es_actual: bool} `UsuarioAdmin` del padre
+     */
+    public function cambiarPassword(int $id, array $entrada, int $actualId, string $ip): array
+    {
+        $usuario = $this->db->table('usuarios')->select('id, nombre, email, password_hash')->where('id', $id)->get()->getRowArray()
+            ?? throw ApiException::noEncontrado();
+        $propio  = $id === $actualId;
+
+        if ($propio) {
+            LimiteIntentos::verificar($ip);
+        }
+
+        $campos   = [];
+        $password = $entrada['password'] ?? null;
+        $actual   = $entrada['password_actual'] ?? null;
+
+        if ($propio && (! is_string($actual) || $actual === '')) {
+            $campos['password_actual'] = 'Escribe tu contraseña actual.';
+        } elseif ($propio && ! Hash::verificar((string) $actual, (string) $usuario['password_hash'])) {
+            $campos['password_actual'] = 'La contraseña actual no es correcta.';
+        }
+
+        if (! is_string($password) || mb_strlen($password) < 10) {
+            $campos['password'] = 'La contraseña debe tener al menos 10 caracteres.';
+        }
+
+        if ($campos !== []) {
+            throw ApiException::validacion($campos);
+        }
+
+        /** @var string $password */
+        $this->db->table('usuarios')->where('id', $id)->update([
+            'password_hash' => Hash::crear($password),
+            'updated_at'    => Time::now()->toDateTimeString(),
+        ]);
+
+        return self::aUsuario($usuario, $actualId);
     }
 
     /**

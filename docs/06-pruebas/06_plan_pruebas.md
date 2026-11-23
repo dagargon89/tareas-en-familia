@@ -44,6 +44,9 @@ Columna **Tipo**: U unitario backend · I integración API · F unitario fronten
 | CP-017 | RF-02 | I | En modo padre, `POST /admin/usuarios` con datos válidos (ADR-009) | 201 `UsuarioAdmin` sin hashes; el nuevo padre inicia sesión y su PIN abre el modo padre |
 | CP-018 | RF-02 | I | `POST /admin/usuarios` con 2 padres ya registrados | 409 `ESTADO_INVALIDO`; no se crea nada |
 | CP-019 | RF-02 | I | `POST /admin/usuarios` sin modo padre (o sin sesión) | 403 `MODO_PADRE_REQUERIDO` (o 401 `SIN_SESION`) |
+| CP-088 | RF-02 | I | Padre cambia su contraseña con la actual correcta (ADR-010) | 200 `UsuarioAdmin`; entra con la nueva y ya no con la anterior |
+| CP-089 | RF-02 | I | Padre cambia su contraseña con la actual incorrecta | 400 `VALIDACION` en `password_actual`; la contraseña no cambia; al sexto intento en un minuto, 429 |
+| CP-090 | RF-02 | I | Padre restablece la contraseña del otro sin la actual | 200 `UsuarioAdmin`; el otro entra con la nueva |
 
 ### 2.2 Tareas (RF-03, RF-04, RF-05, RF-13, RF-19)
 
@@ -149,7 +152,7 @@ Columna **Tipo**: U unitario backend · I integración API · F unitario fronten
 | RF | Casos | Sprint |
 |---|---|---|
 | RF-01 | CP-003, CP-004, CP-005, CP-006, CP-009 | S1 |
-| RF-02 | CP-001, CP-002, CP-007, CP-008; CP-017 a CP-019 (ADR-009) | S1; cambio ADR-009 |
+| RF-02 | CP-001, CP-002, CP-007, CP-008; CP-017 a CP-019 (ADR-009); CP-088 a CP-090 (ADR-010) | S1; cambios ADR-009 y ADR-010 |
 | RF-03 | CP-020 a CP-026 | S2 |
 | RF-04 | CP-027, CP-028, CP-034 | S2 |
 | RF-05 | CP-029 a CP-032 | S2 |

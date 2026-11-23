@@ -77,6 +77,7 @@ $routes->group('api/v1', $opciones, static function (RouteCollection $routes) us
         $routes->put('configuracion', 'ConfiguracionController::guardar');                 // E-48
         $routes->get('usuarios', 'UsuariosController::index');                             // E-51 (ADR-009)
         $routes->post('usuarios', 'UsuariosController::crear');                            // E-52 (ADR-009)
+        $routes->put('usuarios/(:num)/password', 'UsuariosController::cambiarPassword/$1');  // E-53 (ADR-010)
 
         // Comodín: cualquier otra ruta admin/* exige sesión y modo padre (403) antes de responder 404.
         $routes->match(['GET', 'POST', 'PUT', 'PATCH', 'DELETE'], '(:any)', '\App\Controllers\Errores::noEncontrado');

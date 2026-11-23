@@ -90,6 +90,7 @@ export interface Configuracion { racha_umbral: number; sonidos_default: boolean;
 export interface ConfiguracionEntrada { racha_umbral?: number; sonidos_default?: boolean; pin_padre?: string; } // pin_padre cambia el PIN del usuario de la sesión
 export interface UsuarioAdmin { id: number; nombre: string; email: string; es_actual: boolean; } // es_actual: el padre de esta sesión (ADR-009)
 export interface UsuarioEntrada { nombre: string; email: string; password: string; pin: string; }      // ADR-009
+export interface CambioPasswordEntrada { password: string; password_actual?: string; }                  // ADR-010: la actual solo para la propia
 
 // ===== Cliente único =====
 export interface ApiClient {
@@ -147,4 +148,5 @@ export interface ApiClient {
   guardarConfiguracion(c: ConfiguracionEntrada): Promise<Configuracion>;       // E-48
   adminUsuarios(): Promise<UsuarioAdmin[]>;                                    // E-51 (ADR-009)
   crearUsuario(u: UsuarioEntrada): Promise<UsuarioAdmin>;                      // E-52 (ADR-009)
+  cambiarPassword(usuarioId: number, datos: CambioPasswordEntrada): Promise<UsuarioAdmin>; // E-53 (ADR-010)
 }

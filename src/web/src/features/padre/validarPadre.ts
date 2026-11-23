@@ -28,3 +28,22 @@ export function validarPadre(d: PadreBorrador): ErroresPadre {
 export function aEntradaPadre(d: PadreBorrador): UsuarioEntrada {
   return { nombre: d.nombre.trim(), email: d.email.trim(), password: d.password, pin: d.pin };
 }
+
+/** Borrador del cambio de contraseña (ADR-010): la actual solo se pide para la propia. */
+export interface PasswordBorrador {
+  actual: string;
+  nueva: string;
+  confirmar: string;
+}
+
+export type ErroresPassword = Partial<Record<keyof PasswordBorrador, string>>;
+
+export const PASSWORD_VACIO: PasswordBorrador = { actual: '', nueva: '', confirmar: '' };
+
+export function validarPassword(d: PasswordBorrador, propia: boolean): ErroresPassword {
+  const e: ErroresPassword = {};
+  if (propia && !d.actual) e.actual = 'Escribe tu contraseña actual';
+  if (d.nueva.length < 10) e.nueva = 'Mínimo 10 caracteres';
+  if (d.confirmar !== d.nueva) e.confirmar = 'Las contraseñas no coinciden';
+  return e;
+}

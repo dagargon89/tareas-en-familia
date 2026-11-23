@@ -1,6 +1,7 @@
 import type {
   ApiClient,
   ApiError,
+  CambioPasswordEntrada,
   Canje,
   Categoria,
   Configuracion,
@@ -300,6 +301,9 @@ export class HttpApiClient implements ApiClient {
   }
   crearUsuario(u: UsuarioEntrada) {
     return this.peticion<UsuarioAdmin>('POST', '/admin/usuarios', u);
+  }
+  cambiarPassword(usuarioId: number, datos: CambioPasswordEntrada) {
+    return this.peticion<UsuarioAdmin>('PUT', `/admin/usuarios/${usuarioId}/password`, datos);
   }
 }
 
