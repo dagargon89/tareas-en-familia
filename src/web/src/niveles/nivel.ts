@@ -1,5 +1,6 @@
-// NivelUx se moverá a src/api/ApiClient.ts (doc 05 §3) en T-F1-02 y se importará desde ahí.
-export type NivelUx = 'exploradoras' | 'aventureras' | 'pro';
+import type { NivelUx } from '../api/ApiClient.ts';
+
+export type { NivelUx };
 
 export const NIVELES: readonly NivelUx[] = ['exploradoras', 'aventureras', 'pro'];
 

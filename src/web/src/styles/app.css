@@ -25,3 +25,40 @@
     outline-offset: 3px;
   }
 }
+
+/* Formas vivas (doc 08 §3): muchas y flotando, algunas estáticas o ninguna según el nivel. */
+.formas-vivas .forma {
+  position: absolute;
+  opacity: 0.7;
+}
+.forma-flor { top: -40px; right: -40px; }
+.forma-pildora { bottom: 12%; left: -60px; transform: rotate(-18deg); }
+.forma-gota { bottom: -30px; right: 10%; }
+
+[data-nivel='exploradoras'] .formas-vivas .forma {
+  animation: flotar 6s ease-in-out infinite alternate;
+}
+[data-nivel='exploradoras'] .forma-pildora { animation-delay: -2s; }
+[data-nivel='exploradoras'] .forma-gota { animation-delay: -4s; }
+[data-nivel='aventureras'] .forma-gota { display: none; }
+[data-nivel='pro'] .formas-vivas { display: none; }
+
+@keyframes flotar {
+  from { translate: 0 0; }
+  to { translate: 0 -14px; }
+}
+
+/* PinPad: sacudida suave sin rojo (doc 08 §4). */
+@keyframes sacudir {
+  0%, 100% { translate: 0; }
+  25% { translate: -8px; }
+  75% { translate: 8px; }
+}
+.sacudir { animation: sacudir 300ms ease-in-out; }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-nivel] .formas-vivas .forma,
+  .sacudir {
+    animation: none;
+  }
+}
