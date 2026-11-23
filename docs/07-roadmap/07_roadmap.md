@@ -33,7 +33,7 @@ Duraciones estimadas para un solo desarrollador a tiempo parcial. S0 dura 1 sema
 |---|---|---|---|
 | S0 | Base técnica y despliegue a pruebas | — | CP-SEG-04, CP-SEG-06 |
 | S1 | Acceso y perfiles | RF-01, RF-02, RF-17 | CP-001 a CP-012, CP-SEG-01 a CP-SEG-03, CP-SEG-07 |
-| S2 | Tareas, recurrencias y Mi día | RF-03, RF-04, RF-05, RF-13 | CP-020 a CP-034, CP-SEG-05 |
+| S2 | Tareas, recurrencias, Mi día y escolares propias | RF-03, RF-04, RF-05, RF-13, RF-19 | CP-020 a CP-039, CP-SEG-05 |
 | S3 | Evidencias, aprobación y puntos | RF-06, RF-07, RF-08 | CP-040 a CP-052 |
 | S4 | Recompensas, rachas, insignias, meta, configuración | RF-09 a RF-12, RF-18 | CP-060 a CP-072, CP-086 |
 | S5 | Calendario, nivel Pro, panel, PWA y no funcionales | RF-14, RF-15, RF-16 | CP-080 a CP-085, CP-087, CP-SEG-08, CP-SEG-09, CP-NF-01 a CP-NF-06 |
@@ -116,6 +116,11 @@ Formato: **Requisitos** · **Depende de** · **Casos** · **Endpoints** · **Arc
 - Archivos: `src/web/src/features/mi-dia/*`, `src/web/src/features/padre/Tareas.tsx`, `FormTarea.tsx`, `src/web/src/lib/sonidos.ts`, `src/web/tests/unit/mi-dia/*`
 - Aceptación: CP-032 en PASS; sesión con las hijas registrada.
 
+**T-S2-05 · Escolares propias (RF-19)**
+- Requisitos: RF-19 · Depende de: T-S2-02 · Casos: CP-035 a CP-039 · Endpoints: E-18 a E-21 (solo `escolar` para Aventureras; Pro también limitada a `escolar` hasta el S5)
+- Archivos: métodos de tareas propias en `app/Controllers/Api/V1/YoController.php` y `app/Services/TareasService.php`, `src/web/src/features/mis-tareas/*`, filtro "Creadas por ellas" en `src/web/src/features/padre/Tareas.tsx`
+- Aceptación: casos en PASS; el servidor nunca toma `puntos`, `perfil_id` ni `creada_por` del cliente.
+
 ### S3 · Evidencias, aprobación y puntos
 
 **T-S3-01 · Evidencias**
@@ -157,7 +162,7 @@ Formato: **Requisitos** · **Depende de** · **Casos** · **Endpoints** · **Arc
 - Archivos: `src/web/src/features/calendario/WeekCalendar.tsx`, método `semana()` en `InstanciasService.php`
 
 **T-S5-02 · Nivel Pro**
-- Requisitos: RF-15 · Depende de: T-S2-02 · Casos: CP-082 a CP-084 · Endpoints: E-18 a E-21
+- Requisitos: RF-15 · Depende de: T-S2-05 · Casos: CP-082 a CP-084 · Endpoints: E-18 a E-21 (amplía a cualquier tipo para Pro)
 - Archivos: métodos de tareas propias en `YoController.php` y `TareasService.php`, `src/web/src/features/pro/*`
 
 **T-S5-03 · Panel del padre**

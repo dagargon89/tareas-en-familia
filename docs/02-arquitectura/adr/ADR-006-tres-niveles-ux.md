@@ -8,7 +8,7 @@ Las usuarias van de 1° de primaria a secundaria. Una interfaz infantil molesta 
 
 ## Decisión
 
-Un atributo `perfiles.nivel_ux` (`exploradoras`, `aventureras`, `pro`) que cambia tamaños, vocabulario, navegación y nivel de animación mediante `data-nivel` en `<html>` y un objeto de tema por nivel. Los componentes, la API y las reglas de negocio son las mismas. Solo el nivel Pro agrega una capacidad: crear tareas propias (RF-15).
+Un atributo `perfiles.nivel_ux` (`exploradoras`, `aventureras`, `pro`) que cambia tamaños, vocabulario, navegación y nivel de animación mediante `data-nivel` en `<html>` y un objeto de tema por nivel. Los componentes, la API y las reglas de negocio son las mismas. Las capacidades extra por nivel son: Aventureras y Pro crean sus tareas escolares (RF-19), y Pro crea además tareas propias de cualquier tipo (RF-15).
 
 ## Consecuencias
 
