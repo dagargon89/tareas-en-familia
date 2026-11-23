@@ -195,6 +195,7 @@ El pipeline completo y el `.htaccess` se documentan en el doc 11 (Fase 3). El Sp
 | `session.savePath` | `writable/session` | `../compartido/writable/session` |
 | `cookie.secure` (CI4 4.7; antes `app.cookieSecure`) | `false` | `true` |
 | `encryption.key` | Generada con `php spark key:generate` | Propia, solo en el servidor |
+| `instalacion.token` | Vacío (no se pide) | Aleatorio de 32+ caracteres; se puede borrar tras la instalación (RF-20) |
 
 ## 8. Arranque local
 
