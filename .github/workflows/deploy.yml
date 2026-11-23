@@ -1,0 +1,150 @@
+# Despliegue al subdominio de pruebas (T-S0-05, doc 02 §6, doc 11).
+# Se dispara cuando el CI de main termina bien y usa el paquete que dejó su job "paquete".
+# También se puede correr a mano (Actions → Despliegue → Run workflow), incluso para revertir.
+#
+# Configuración en GitHub → Settings → Environments → "pruebas" (doc 11 §2):
+#   Secrets:   SSH_KEY (llave privada de despliegue), SSH_KNOWN_HOSTS (salida de ssh-keyscan)
+#   Variables: SSH_HOST, SSH_PORT, SSH_USER, DEPLOY_BASE (p. ej. /home/u123/domains/pruebas.ejemplo.com),
+#              URL_PRUEBAS (https://pruebas.ejemplo.com), y opcionales DEPLOY_PUBLICO y DEPLOY_PHP.
+# Mientras falten, el workflow termina con un aviso y sin desplegar.
+name: Despliegue
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      accion:
+        description: Qué hacer
+        type: choice
+        options: [desplegar, revertir]
+        default: desplegar
+      run_id:
+        description: Run del CI con el paquete (vacío = el último exitoso de main)
+        required: false
+
+concurrency:
+  group: despliegue-pruebas
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  pruebas:
+    name: Subdominio de pruebas
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    environment:
+      name: pruebas
+      url: ${{ vars.URL_PRUEBAS }}
+    env:
+      ACCION: ${{ inputs.accion || 'desplegar' }}
+      SSH_HOST: ${{ vars.SSH_HOST }}
+      SSH_PORT: ${{ vars.SSH_PORT || '22' }}
+      SSH_USER: ${{ vars.SSH_USER }}
+      DEPLOY_BASE: ${{ vars.DEPLOY_BASE }}
+      DEPLOY_PUBLICO: ${{ vars.DEPLOY_PUBLICO }}
+      DEPLOY_PHP: ${{ vars.DEPLOY_PHP || 'php' }}
+      URL_PRUEBAS: ${{ vars.URL_PRUEBAS }}
+    steps:
+      - name: ¿Está configurado?
+        id: config
+        env:
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+        run: |
+          faltan=()
+          for v in SSH_HOST SSH_USER DEPLOY_BASE URL_PRUEBAS SSH_KEY SSH_KNOWN_HOSTS; do
+            [[ -n "${!v}" ]] || faltan+=("$v")
+          done
+          if (( ${#faltan[@]} )); then
+            echo "::notice title=Despliegue no configurado::Faltan en el environment 'pruebas': ${faltan[*]} (doc 11 §2). No se desplegó."
+            echo "listo=no" >> "$GITHUB_OUTPUT"
+          else
+            echo "listo=si" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Llave SSH
+        if: steps.config.outputs.listo == 'si'
+        env:
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/despliegue
+          chmod 600 ~/.ssh/despliegue
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          cat > ~/.ssh/config <<EOF
+          Host servidor
+            HostName $SSH_HOST
+            Port $SSH_PORT
+            User $SSH_USER
+            IdentityFile ~/.ssh/despliegue
+            IdentitiesOnly yes
+            StrictHostKeyChecking yes
+          EOF
+
+      - name: Run del CI con el paquete
+        id: run
+        if: steps.config.outputs.listo == 'si' && env.ACCION == 'desplegar'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_PEDIDO: ${{ inputs.run_id || github.event.workflow_run.id }}
+        run: |
+          id="$RUN_PEDIDO"
+          if [[ -z "$id" ]]; then
+            id="$(gh run list --repo "$GITHUB_REPOSITORY" --workflow CI --branch main --status success --limit 1 --json databaseId --jq '.[0].databaseId')"
+          fi
+          [[ -n "$id" ]] || { echo "::error::No hay un CI exitoso de main con paquete"; exit 1; }
+          echo "id=$id" >> "$GITHUB_OUTPUT"
+
+      - name: Paquete del CI
+        if: steps.config.outputs.listo == 'si' && env.ACCION == 'desplegar'
+        uses: actions/download-artifact@v4
+        with:
+          name: release
+          path: release
+          run-id: ${{ steps.run.outputs.id }}
+          github-token: ${{ github.token }}
+
+      - name: Desplegar
+        if: steps.config.outputs.listo == 'si' && env.ACCION == 'desplegar'
+        run: |
+          # Las rutas se arman en el runner y viajan al servidor entre comillas simples.
+          remoto="$DEPLOY_BASE/compartido/subidas"
+          # shellcheck disable=SC2029
+          ssh servidor "mkdir -p '$remoto'"
+          scp release/build/release.tar.gz release/scripts/deploy_remoto.sh "servidor:$remoto/"
+          # shellcheck disable=SC2029
+          ssh servidor "bash '$remoto/deploy_remoto.sh' desplegar --base '$DEPLOY_BASE' --paquete '$remoto/release.tar.gz' --php '$DEPLOY_PHP' ${DEPLOY_PUBLICO:+--publico '$DEPLOY_PUBLICO'}"
+
+      - name: Revertir (manual)
+        if: steps.config.outputs.listo == 'si' && env.ACCION == 'revertir'
+        run: |
+          # shellcheck disable=SC2029  # las rutas se arman a propósito en el runner y viajan entre comillas simples
+          ssh servidor "bash '$DEPLOY_BASE/compartido/subidas/deploy_remoto.sh' revertir --base '$DEPLOY_BASE' --php '$DEPLOY_PHP' ${DEPLOY_PUBLICO:+--publico '$DEPLOY_PUBLICO'}"
+
+      - name: Verificar salud por HTTPS
+        id: salud
+        if: steps.config.outputs.listo == 'si'
+        run: |
+          for intento in 1 2 3 4 5 6; do
+            if curl -fsS --max-time 10 "$URL_PRUEBAS/api/v1/salud" | grep -q '"ok"' \
+              && curl -fsS --max-time 10 -o /dev/null "$URL_PRUEBAS/app/"; then
+              echo "Salud OK en el intento $intento"; exit 0
+            fi
+            sleep 5
+          done
+          echo "::error::$URL_PRUEBAS no responde bien después del despliegue"
+          exit 1
+
+      - name: Revertir si la verificación falla
+        if: failure() && steps.salud.outcome == 'failure' && env.ACCION == 'desplegar'
+        run: |
+          # shellcheck disable=SC2029  # las rutas se arman a propósito en el runner y viajan entre comillas simples
+          ssh servidor "bash '$DEPLOY_BASE/compartido/subidas/deploy_remoto.sh' revertir --base '$DEPLOY_BASE' --php '$DEPLOY_PHP' ${DEPLOY_PUBLICO:+--publico '$DEPLOY_PUBLICO'}"
+          echo "::warning::Se revirtió al release anterior."
