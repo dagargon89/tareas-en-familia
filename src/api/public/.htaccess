@@ -68,8 +68,10 @@ DirectoryIndex index.php
 	Header always set X-Robots-Tag "noindex, nofollow"
 	Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains" "expr=%{HTTPS} == 'on'"
 
-	# index.html de la SPA nunca en caché (los assets llevan hash).
-	<FilesMatch "^index\.html$">
+	# Sin caché los archivos de la SPA que no llevan hash: index.html, el service worker del PWA,
+	# su registro y el manifiesto. Así una versión nueva llega en la siguiente visita; los assets
+	# con hash sí se guardan (LiteSpeed les da 7 días).
+	<FilesMatch "^(index\.html|sw\.js|registerSW\.js|manifest\.webmanifest)$">
 		Header set Cache-Control "no-cache"
 	</FilesMatch>
 </IfModule>
