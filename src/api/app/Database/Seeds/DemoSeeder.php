@@ -28,8 +28,8 @@ class DemoSeeder extends Seeder
      * @var list<array{apodo: string, avatar: string, color: string, nivel_ux: string, pin: string}>
      */
     public const PERFILES = [
-        ['apodo' => 'Luna', 'avatar' => 'zorro', 'color' => 'rosa', 'nivel_ux' => 'exploradoras', 'pin' => '3917'],
-        ['apodo' => 'Sol', 'avatar' => 'buho', 'color' => 'ambar', 'nivel_ux' => 'aventureras', 'pin' => '5203'],
+        ['apodo' => 'Luna', 'avatar' => 'conejo', 'color' => 'rosa', 'nivel_ux' => 'exploradoras', 'pin' => '3917'],
+        ['apodo' => 'Sol', 'avatar' => 'pajaro', 'color' => 'ambar', 'nivel_ux' => 'aventureras', 'pin' => '5203'],
         ['apodo' => 'Estrella', 'avatar' => 'gato', 'color' => 'menta', 'nivel_ux' => 'pro', 'pin' => '8462'],
     ];
 
@@ -121,10 +121,10 @@ class DemoSeeder extends Seeder
         }
 
         foreach ([
-            ['titulo' => 'Elegir la película del viernes', 'icono' => 'clapperboard', 'costo' => 50],
-            ['titulo' => '30 minutos extra de pantalla', 'icono' => 'tablet', 'costo' => 80],
-            ['titulo' => 'Un helado', 'icono' => 'ice-cream-cone', 'costo' => 120],
-            ['titulo' => 'Tarde en el parque', 'icono' => 'trees', 'costo' => 200],
+            ['titulo' => 'Elegir la película del viernes', 'icono' => 'cine', 'costo' => 50],
+            ['titulo' => '30 minutos extra de pantalla', 'icono' => 'tableta', 'costo' => 80],
+            ['titulo' => 'Un helado', 'icono' => 'helado', 'costo' => 120],
+            ['titulo' => 'Tarde en el parque', 'icono' => 'arboles', 'costo' => 200],
         ] as $recompensa) {
             $this->db->table('recompensas')->insert($recompensa + ['created_at' => $ahora, 'updated_at' => $ahora]);
         }
@@ -155,20 +155,20 @@ class DemoSeeder extends Seeder
     {
         return [
             // Luna · exploradoras
-            ['perfil' => 'Luna', 'categoria' => 'Casa', 'titulo' => 'Tender la cama', 'icono' => 'bed', 'puntos' => 5, 'tipo' => 'casa', 'frecuencia' => 'diaria'],
-            ['perfil' => 'Luna', 'categoria' => 'Cuidado personal', 'titulo' => 'Lavarme los dientes', 'icono' => 'smile', 'puntos' => 3, 'tipo' => 'casa', 'frecuencia' => 'diaria'],
-            ['perfil' => 'Luna', 'categoria' => 'Casa', 'titulo' => 'Guardar mis juguetes', 'icono' => 'toy-brick', 'puntos' => 5, 'tipo' => 'casa', 'frecuencia' => 'semanal', 'dias' => 'lu,mi,vi'],
-            ['perfil' => 'Luna', 'categoria' => 'Actividad', 'titulo' => 'Clase de natación', 'icono' => 'waves', 'puntos' => 0, 'tipo' => 'actividad', 'frecuencia' => 'semanal', 'dias' => 'ma,ju', 'hora' => '17:00:00'],
+            ['perfil' => 'Luna', 'categoria' => 'Casa', 'titulo' => 'Tender la cama', 'icono' => 'cama', 'puntos' => 5, 'tipo' => 'casa', 'frecuencia' => 'diaria'],
+            ['perfil' => 'Luna', 'categoria' => 'Cuidado personal', 'titulo' => 'Lavarme los dientes', 'icono' => 'dientes', 'puntos' => 3, 'tipo' => 'casa', 'frecuencia' => 'diaria'],
+            ['perfil' => 'Luna', 'categoria' => 'Casa', 'titulo' => 'Guardar mis juguetes', 'icono' => 'rompecabezas', 'puntos' => 5, 'tipo' => 'casa', 'frecuencia' => 'semanal', 'dias' => 'lu,mi,vi'],
+            ['perfil' => 'Luna', 'categoria' => 'Actividad', 'titulo' => 'Clase de natación', 'icono' => 'nadar', 'puntos' => 0, 'tipo' => 'actividad', 'frecuencia' => 'semanal', 'dias' => 'ma,ju', 'hora' => '17:00:00'],
             // Sol · aventureras
-            ['perfil' => 'Sol', 'categoria' => 'Casa', 'titulo' => 'Tender la cama', 'icono' => 'bed', 'puntos' => 5, 'tipo' => 'casa', 'frecuencia' => 'diaria'],
-            ['perfil' => 'Sol', 'categoria' => 'Hábito', 'titulo' => 'Leer 20 minutos', 'icono' => 'book', 'puntos' => 10, 'tipo' => 'casa', 'frecuencia' => 'diaria'],
-            ['perfil' => 'Sol', 'categoria' => 'Escuela', 'titulo' => 'Tarea de matemáticas', 'icono' => 'calculator', 'puntos' => 15, 'tipo' => 'escolar', 'frecuencia' => 'una_vez', 'materia' => 'Matemáticas', 'fecha_entrega' => $hoy->addDays(3)->toDateString(), 'requiere_foto' => 1],
-            ['perfil' => 'Sol', 'categoria' => 'Casa', 'titulo' => 'Poner la mesa', 'icono' => 'utensils', 'puntos' => 5, 'tipo' => 'casa', 'frecuencia' => 'semanal', 'dias' => 'lu,ma,mi,ju,vi'],
+            ['perfil' => 'Sol', 'categoria' => 'Casa', 'titulo' => 'Tender la cama', 'icono' => 'cama', 'puntos' => 5, 'tipo' => 'casa', 'frecuencia' => 'diaria'],
+            ['perfil' => 'Sol', 'categoria' => 'Hábito', 'titulo' => 'Leer 20 minutos', 'icono' => 'libro', 'puntos' => 10, 'tipo' => 'casa', 'frecuencia' => 'diaria'],
+            ['perfil' => 'Sol', 'categoria' => 'Escuela', 'titulo' => 'Tarea de matemáticas', 'icono' => 'calculadora', 'puntos' => 15, 'tipo' => 'escolar', 'frecuencia' => 'una_vez', 'materia' => 'Matemáticas', 'fecha_entrega' => $hoy->addDays(3)->toDateString(), 'requiere_foto' => 1],
+            ['perfil' => 'Sol', 'categoria' => 'Casa', 'titulo' => 'Poner la mesa', 'icono' => 'comida', 'puntos' => 5, 'tipo' => 'casa', 'frecuencia' => 'semanal', 'dias' => 'lu,ma,mi,ju,vi'],
             // Estrella · pro
-            ['perfil' => 'Estrella', 'categoria' => 'Casa', 'titulo' => 'Lavar los trastes', 'icono' => 'droplets', 'puntos' => 10, 'tipo' => 'casa', 'frecuencia' => 'diaria', 'requiere_foto' => 1],
-            ['perfil' => 'Estrella', 'categoria' => 'Escuela', 'titulo' => 'Proyecto de ciencias', 'icono' => 'flask-conical', 'puntos' => 20, 'tipo' => 'escolar', 'frecuencia' => 'una_vez', 'materia' => 'Ciencias', 'fecha_entrega' => $hoy->addDays(7)->toDateString()],
-            ['perfil' => 'Estrella', 'categoria' => 'Actividad', 'titulo' => 'Practicar piano', 'icono' => 'music', 'puntos' => 5, 'tipo' => 'actividad', 'frecuencia' => 'semanal', 'dias' => 'lu,mi', 'hora' => '18:00:00'],
-            ['perfil' => 'Estrella', 'categoria' => 'Hábito', 'titulo' => 'Hacer ejercicio', 'icono' => 'dumbbell', 'puntos' => 10, 'tipo' => 'casa', 'frecuencia' => 'semanal', 'dias' => 'sa'],
+            ['perfil' => 'Estrella', 'categoria' => 'Casa', 'titulo' => 'Lavar los trastes', 'icono' => 'agua', 'puntos' => 10, 'tipo' => 'casa', 'frecuencia' => 'diaria', 'requiere_foto' => 1],
+            ['perfil' => 'Estrella', 'categoria' => 'Escuela', 'titulo' => 'Proyecto de ciencias', 'icono' => 'ciencia', 'puntos' => 20, 'tipo' => 'escolar', 'frecuencia' => 'una_vez', 'materia' => 'Ciencias', 'fecha_entrega' => $hoy->addDays(7)->toDateString()],
+            ['perfil' => 'Estrella', 'categoria' => 'Actividad', 'titulo' => 'Practicar piano', 'icono' => 'musica', 'puntos' => 5, 'tipo' => 'actividad', 'frecuencia' => 'semanal', 'dias' => 'lu,mi', 'hora' => '18:00:00'],
+            ['perfil' => 'Estrella', 'categoria' => 'Hábito', 'titulo' => 'Hacer ejercicio', 'icono' => 'ejercicio', 'puntos' => 10, 'tipo' => 'casa', 'frecuencia' => 'semanal', 'dias' => 'sa'],
         ];
     }
 }

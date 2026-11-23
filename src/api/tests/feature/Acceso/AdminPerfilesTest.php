@@ -40,7 +40,7 @@ final class AdminPerfilesTest extends ApiTestCase
 
         $this->assertSame(['Luna', 'Sol', 'Estrella'], array_column($perfiles, 'apodo'));
         $this->assertSame([
-            'id' => $this->perfilId('Sol'), 'apodo' => 'Sol', 'avatar' => 'buho', 'color' => 'ambar',
+            'id' => $this->perfilId('Sol'), 'apodo' => 'Sol', 'avatar' => 'pajaro', 'color' => 'ambar',
             'nivel_ux' => 'aventureras', 'sonidos' => true, 'tema' => 'claro', 'bloqueado_hasta' => null,
             'activo' => false, 'orden' => 1, 'pin_intentos' => 2,
         ], $perfiles[1]);
@@ -93,7 +93,7 @@ final class AdminPerfilesTest extends ApiTestCase
         $id = $this->perfilId('Luna');
 
         $perfil = $this->cuerpo($this->conEstado($this->api('put', "admin/perfiles/{$id}", [
-            'apodo' => 'Lunita', 'avatar' => 'zorro', 'color' => 'indigo', 'nivel_ux' => 'aventureras', 'activo' => false,
+            'apodo' => 'Lunita', 'avatar' => 'conejo', 'color' => 'indigo', 'nivel_ux' => 'aventureras', 'activo' => false,
         ]), 200));
 
         $this->assertSame('Lunita', $perfil['apodo']);
