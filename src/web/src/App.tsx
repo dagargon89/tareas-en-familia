@@ -1,9 +1,11 @@
 import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { MotionConfig } from 'motion/react';
+import { LazyMotion, MotionConfig } from 'motion/react';
 import { RouterProvider } from 'react-router';
 import { ErrorApi } from './api/HttpApiClient.ts';
 import { CLAVE_SESION } from './hooks/useSesion.ts';
 import { router } from './router.tsx';
+
+const cargarFuncionesMotion = () => import('./lib/funcionesMotion.ts').then((m) => m.default);
 
 /**
  * Si cualquier petición dice que la sesión, el perfil o el modo padre ya no son válidos,
@@ -34,7 +36,10 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       {/* Respeta prefers-reduced-motion en todas las animaciones de Motion (RNF-04). */}
       <MotionConfig reducedMotion="user">
-        <RouterProvider router={router} />
+        {/* Las funciones de animación se cargan aparte; `strict` impide usar `motion.*` (cargaría todo). */}
+        <LazyMotion features={cargarFuncionesMotion} strict>
+          <RouterProvider router={router} />
+        </LazyMotion>
       </MotionConfig>
     </QueryClientProvider>
   );

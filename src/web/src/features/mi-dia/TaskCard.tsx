@@ -1,5 +1,5 @@
 import { CircleCheck, Hourglass, MessageCircleHeart } from 'lucide-react';
-import { motion } from 'motion/react';
+import { m } from 'motion/react';
 import type { Instancia, NivelUx } from '../../api/ApiClient.ts';
 import { fechaCorta } from '../../lib/fechas.ts';
 import { VOCABULARIO } from '../../niveles/vocabulario.ts';
@@ -23,7 +23,7 @@ export function TaskCard({ instancia: i, nivel, puedeMarcar, cargando = false, o
   const detalle = [i.materia, i.hora].filter(Boolean).join(' · ');
 
   return (
-    <motion.article
+    <m.article
       layout
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0, scale: i.estado === 'hecha' ? [1, 1.04, 1] : 1 }}
@@ -74,6 +74,6 @@ export function TaskCard({ instancia: i, nivel, puedeMarcar, cargando = false, o
           onListo={(origen) => onListo(i, origen)}
         />
       )}
-    </motion.article>
+    </m.article>
   );
 }

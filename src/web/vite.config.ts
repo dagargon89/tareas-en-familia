@@ -45,6 +45,19 @@ export default defineConfig({
   build: {
     outDir: '../api/public/app',
     emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        // Librerías estables en archivos propios: el navegador y el PWA las conservan entre despliegues.
+        // Motion y Howler NO van aquí: se cargan bajo demanda (LazyMotion y el primer sonido).
+        manualChunks(id) {
+          if (!id.includes('/node_modules/')) return undefined;
+          if (/\/node_modules\/(react|react-dom|scheduler)\//.test(id)) return 'react';
+          if (id.includes('/node_modules/react-router')) return 'router';
+          if (id.includes('/node_modules/@tanstack/')) return 'query';
+          return undefined;
+        },
+      },
+    },
   },
   server: {
     port: 5173,
