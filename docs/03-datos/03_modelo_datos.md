@@ -96,7 +96,7 @@ La vista `v_saldos_perfil` devuelve `xp`, `saldo` y `reservado` por perfil.
 | `sonidos_default` | `true` | Valor inicial de `perfiles.sonidos` |
 | `dias_generacion` | `7` | Días hacia adelante que genera el cron |
 | `evidencia_dias_retencion` | `30` | Días antes de borrar fotos aprobadas |
-| `puntos_tarea_propia_pro` | `5` | Puntos de las tareas creadas por la hija Pro |
+| `puntos_tarea_propia` | `5` | Puntos de las tareas creadas por una hija (escolares de Aventureras y Pro, y cualquier tarea propia de Pro) |
 
 ## 7. Semillas
 

@@ -6,7 +6,7 @@
 |---|---|---|---|---|
 | S0 | `sprint-00.md` | 2 | 2 | 🟡 En curso (falta T-S0-04 y T-S0-05) |
 | S1 | `sprint-01.md` | 16 | 0 | ⬜ No iniciado |
-| S2 | `sprint-02.md` | 16 | 0 | ⬜ No iniciado |
+| S2 | `sprint-02.md` | 21 | 0 | ⬜ No iniciado |
 | S3 | `sprint-03.md` | 13 | 0 | ⬜ No iniciado |
 | S4 | `sprint-04.md` | 14 | 0 | ⬜ No iniciado |
 | S5 | `sprint-05.md` | 15 | 0 | ⬜ No iniciado |
