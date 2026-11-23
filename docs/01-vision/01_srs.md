@@ -48,6 +48,13 @@ Prioridad: Alta · Sprint: S1
 - Cuando desde cualquier pantalla se toca "Modo padre" y se escribe el PIN del padre que abrió la sesión del dispositivo (`usuario_id` de la sesión), entonces se habilitan las pantallas de administración.
 - Cuando pasan 10 minutos sin actividad en modo padre, entonces el modo padre se cierra solo.
 
+**RF-20 · Instalación inicial**
+Prioridad: Alta · Sprint: S1
+- Dado que la base no tiene ningún usuario, cuando se abre la app, entonces se muestra la pantalla "Configura la app" en lugar del login.
+- El padre escribe nombre, correo, contraseña (mínimo 10 caracteres) y su PIN de modo padre (sin PIN trivial); al terminar queda creado y con la sesión del dispositivo abierta.
+- En producción se pide además el token de instalación definido en el `.env` del servidor (`instalacion.token`); en desarrollo no.
+- En cuanto existe un usuario, la instalación queda cerrada para siempre: la pantalla ya no se ofrece y el endpoint responde 409. Los usuarios siguientes (el segundo padre) se crean con `php spark usuarios:crear`.
+
 ### Tareas
 
 **RF-03 · Crear y editar tareas**
@@ -131,9 +138,18 @@ Prioridad: Media · Sprint: S5
 
 **RF-15 · Autonomía del nivel Pro**
 Prioridad: Media · Sprint: S5
-- La hija Pro puede crear, editar y desactivar sus propias tareas (`creada_por = perfil`).
-- Sus tareas propias valen puntos fijos de 5 y requieren aprobación del padre como las demás.
+- La hija Pro puede crear, editar y desactivar sus propias tareas de cualquier tipo (`creada_por = perfil`). Las escolares propias se adelantan al S2 con RF-19.
+- Sus tareas propias valen los puntos fijos de `puntos_tarea_propia` (5 por defecto) y requieren aprobación del padre como las demás.
 - No puede ver ni editar tareas de otros perfiles ni las creadas por el padre (solo completarlas).
+
+**RF-19 · Tareas escolares propias (Aventureras y Pro)**
+Prioridad: Alta · Sprint: S2
+- Las hijas de nivel Aventureras y Pro pueden crear sus propias tareas escolares (título, materia, fecha de entrega, ícono y hora opcional), para que el padre sepa qué les dejaron en la escuela.
+- La tarea queda con `creada_por = perfil`, asignada a quien la creó, categoría "Escuela", recurrencia `una_vez` desde el día en que se crea, y vale los puntos fijos de `puntos_tarea_propia` (5 por defecto).
+- Los puntos solo se acreditan cuando el padre aprueba que la hizo (RN-03), igual que cualquier otra tarea; crearla no da puntos.
+- Puede editar o desactivar sus propias escolares mientras no estén aprobadas. No puede ver ni editar tareas de otros perfiles ni las del padre.
+- Las Aventureras solo pueden crear tareas de tipo `escolar`. Las Exploradoras no crean tareas.
+- El padre ve las escolares creadas por las hijas en su lista de tareas, marcadas como "creada por ella" y con un filtro para verlas juntas, y puede editarlas o desactivarlas. También aparecen en las próximas entregas del panel (RF-16).
 
 **RF-16 · Panel del padre**
 Prioridad: Alta · Sprint: S5

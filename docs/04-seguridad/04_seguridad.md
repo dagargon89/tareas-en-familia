@@ -18,7 +18,7 @@ Principio: **minimizar.** Si un dato no es indispensable para una función del S
 
 | ID | Amenaza | Actor | Impacto | Control |
 |---|---|---|---|---|
-| A-01 | Alguien en internet entra a la app | Externo | Alto | Login con contraseña, throttling, HTTPS, sin registro público |
+| A-01 | Alguien en internet entra a la app | Externo | Alto | Login con contraseña, throttling, HTTPS, sin registro público. La única alta por web es la instalación inicial (RF-20): solo con 0 usuarios, en transacción con bloqueo y, en producción, con token de `.env` |
 | A-02 | Una hija entra a modo padre | Interno | Medio | PIN de padre distinto, Filter `modoPadre`, expiración de 10 min |
 | A-03 | Una hija entra al perfil de su hermana | Interno | Bajo | PIN por perfil y bloqueo tras 5 intentos |
 | A-04 | Una hija se suma puntos manipulando peticiones | Interno | Medio | Puntos solo se acreditan en el servidor al aprobar (RN-03); la API ignora puntos enviados por el cliente |
@@ -49,7 +49,7 @@ Principio: **minimizar.** Si un dato no es indispensable para una función del S
 
 | Filter | Aplica a | Regla |
 |---|---|---|
-| `sesion` | Todo `/api/v1/*` excepto `POST /auth/login`, `GET /csrf`, `GET /salud` | Debe existir `usuario_id` en sesión |
+| `sesion` | Todo `/api/v1/*` excepto `POST /auth/login`, `GET /csrf`, `GET /salud`, `GET /instalacion` y `POST /instalacion` | Debe existir `usuario_id` en sesión |
 | `perfilActivo` | `/api/v1/yo/*` | Debe existir `perfil_activo_id` y el perfil debe estar activo |
 | `modoPadre` | Rutas de administración (doc 05) | `modo_padre_hasta` mayor a ahora; renueva 10 min |
 | Propiedad | Services | Todo acceso a instancia, evidencia o tarea propia compara `perfil_id` con el perfil activo |
@@ -86,6 +86,7 @@ X-Robots-Tag: noindex, nofollow
 | Secreto | Dónde vive | Nunca en |
 |---|---|---|
 | Credenciales de base | `.env` del servidor (`compartido/.env`) | Repositorio, logs |
+| `instalacion.token` (RF-20) | `.env` del servidor; se puede borrar después de instalar | Repositorio, logs, URL |
 | `encryption.key` | `.env` del servidor | Repositorio |
 | Llave SSH de despliegue | Secret `SSH_KEY` de GitHub Actions | Repositorio |
 | Datos de conexión SSH | Secrets `SSH_HOST`, `SSH_USER`, `SSH_PORT` | Repositorio |

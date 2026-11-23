@@ -70,7 +70,7 @@ final class SemillasTest extends CIUnitTestCase
         $this->assertSame([
             'dias_generacion'          => 7,
             'evidencia_dias_retencion' => 30,
-            'puntos_tarea_propia_pro'  => 5,
+            'puntos_tarea_propia'      => 5,
             'racha_umbral'             => 80,
             'sonidos_default'          => true,
         ], $valores);
