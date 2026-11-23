@@ -88,6 +88,17 @@ final class AdminPerfilesTest extends ApiTestCase
         );
     }
 
+    public function testAvatarFueraDelCatalogo(): void
+    {
+        $r = $this->api('post', 'admin/perfiles', $this->entrada(['avatar' => 'zorro']));
+        $this->assertError($r, 400, 'VALIDACION');
+        $this->assertSame(['avatar'], array_keys($this->cuerpo($r)['error']['campos']));
+
+        $id = $this->perfilId('Luna');
+        $r  = $this->api('put', "admin/perfiles/{$id}", $this->entrada(['avatar' => 'bed']));
+        $this->assertSame(['avatar'], array_keys($this->cuerpo($r)['error']['campos']));
+    }
+
     public function testEditarSinPinNoLoCambia(): void
     {
         $id = $this->perfilId('Luna');

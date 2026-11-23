@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Domain\Catalogo;
 use App\Entities\Perfil;
 use App\Exceptions\ApiException;
 use App\Libraries\Hash;
@@ -202,8 +203,8 @@ final class PerfilesService
             $campos['apodo'] = 'Escribe un apodo de hasta 30 caracteres.';
         }
 
-        if ($avatar === '' || mb_strlen($avatar) > 40) {
-            $campos['avatar'] = 'Elige un avatar.';
+        if (! Catalogo::esAvatar($avatar)) {
+            $campos['avatar'] = 'Elige un avatar de la lista.';
         }
 
         if (! in_array($entrada['color'] ?? null, PerfilModel::COLORES, true)) {

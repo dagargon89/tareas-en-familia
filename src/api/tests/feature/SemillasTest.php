@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Database\Seeds\DemoSeeder;
+use App\Domain\Catalogo;
 use App\Libraries\Hash;
 use CodeIgniter\I18n\Time;
 use CodeIgniter\Test\CIUnitTestCase;
@@ -141,5 +142,18 @@ final class SemillasTest extends CIUnitTestCase
         $usuario = $this->db->table('usuarios')->get()->getRowArray();
         $this->assertGreaterThanOrEqual(10, strlen(DemoSeeder::PASSWORD), 'Doc 04 §3.1: mínimo 10 caracteres.');
         $this->assertTrue(Hash::verificar(DemoSeeder::PASSWORD, $usuario['password_hash']));
+    }
+
+    public function testSemillasUsanClavesDelCatalogo(): void
+    {
+        foreach (['categorias', 'insignias', 'recompensas', 'tareas'] as $tabla) {
+            foreach (array_column($this->db->table($tabla)->get()->getResultArray(), 'icono') as $icono) {
+                $this->assertTrue(Catalogo::esIcono($icono), "{$tabla}.icono = {$icono}");
+            }
+        }
+
+        foreach (array_column($this->db->table('perfiles')->get()->getResultArray(), 'avatar') as $avatar) {
+            $this->assertTrue(Catalogo::esAvatar($avatar), "perfiles.avatar = {$avatar}");
+        }
     }
 }
