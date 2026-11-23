@@ -71,6 +71,7 @@ class Filters extends BaseFilters
             'performance', // Performance Metrics
             'toolbar',     // Debug Toolbar
             'securityHeaders', // Headers del doc 04 §3.4 en TODA respuesta (incluye errores)
+            'csrfHeader',      // Token CSRF renovado en toda respuesta de /api/* salvo salud
         ],
     ];
 
@@ -88,9 +89,7 @@ class Filters extends BaseFilters
             // CSRF por header X-CSRF-TOKEN en POST/PUT/PATCH/DELETE. `salud` no abre sesión.
             'csrf' => ['except' => ['api/v1/salud']],
         ],
-        'after' => [
-            'csrfHeader' => ['except' => ['api/v1/salud']],
-        ],
+        'after' => [],
     ];
 
     /**

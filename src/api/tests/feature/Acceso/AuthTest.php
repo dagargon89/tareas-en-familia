@@ -180,6 +180,27 @@ final class AuthTest extends ApiTestCase
         $this->assertArrayNotHasKey('usuario_id', $this->sesion);
     }
 
+    /**
+     * Las respuestas de error también renuevan el token: tras un 400 el cliente
+     * usa el `X-CSRF-TOKEN` recibido y la siguiente petición mutante pasa.
+     */
+    public function testRespuestaDeErrorTraeElTokenRenovado(): void
+    {
+        $anterior = csrf_hash();
+        $error    = $this->api('post', 'auth/login', ['email' => 'no-es-correo']);
+
+        $this->assertError($error, 400, 'VALIDACION');
+        $nuevo = $error->response()->getHeaderLine('X-CSRF-TOKEN');
+        $this->assertNotSame('', $nuevo);
+        $this->assertNotSame($anterior, $nuevo);
+        $this->assertSame(csrf_hash(), $nuevo);
+    }
+
+    public function testSaludNoLlevaTokenNiAbreSesion(): void
+    {
+        $this->assertSame('', $this->api('get', 'salud')->response()->getHeaderLine('X-CSRF-TOKEN'));
+    }
+
     public function testNoExisteEndpointDeRegistro(): void
     {
         $this->assertError($this->api('post', 'auth/registro', ['email' => 'x@y.z']), 404, 'NO_ENCONTRADO');
