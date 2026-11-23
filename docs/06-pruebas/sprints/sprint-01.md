@@ -1,6 +1,6 @@
 # Sprint 01 · Acceso y perfiles
 
-Fechas: 2026-11-23 a —
+Fechas: 2026-11-23 a 2026-11-23
 
 Ramas: `s1/api-acceso` (T-S1-01, T-S1-02, T-S1-03, T-S1-05) · rama web del S1 (T-S1-04 y la pantalla de T-S1-05).
 
@@ -14,7 +14,7 @@ Ramas: `s1/api-acceso` (T-S1-01, T-S1-02, T-S1-03, T-S1-05) · rama web del S1 (
 | CP-006 | RF-01 | PASS | `src/api/tests/feature/Acceso/PerfilesTest.php::testPinCorrectoDuranteElBloqueo` · `cd src/api && composer test -- --filter testPinCorrectoDuranteElBloqueo` | 2026-11-23 |
 | CP-007 | RF-02 | PASS | `src/api/tests/feature/Acceso/ModoPadreTest.php::testEntrarConPinDelPadre` · `cd src/api && composer test -- --filter testEntrarConPinDelPadre` | 2026-11-23 |
 | CP-008 | RF-02 | PASS | `src/api/tests/unit/Filters/AccesoFiltersTest.php::testModoPadreExpiraTrasDiezMinutosSinActividad` · `cd src/api && composer test -- --filter testModoPadreExpiraTrasDiezMinutosSinActividad` | 2026-11-23 |
-| CP-009 | RF-01 | PENDIENTE | e2e del frontend (`src/web/tests/e2e/acceso.spec.ts`, T-S1-04, rama web) | — |
+| CP-009 | RF-01 | PASS | `src/web/tests/e2e/acceso.spec.ts` contra la API real y `tareas_dev` sembrada, viewports 768×1024 y 360×780 · `cd src/web && npm run e2e` (2 passed) | 2026-11-23 |
 | CP-010 | RF-17 | PASS | `src/api/tests/feature/Acceso/AdminPerfilesTest.php::testCrearPerfilConPinTrivial` · `cd src/api && composer test -- --filter testCrearPerfilConPinTrivial` | 2026-11-23 |
 | CP-011 | RF-17 | PASS | `src/api/tests/feature/Acceso/AdminPerfilesTest.php::testDesbloquearPerfil` · `cd src/api && composer test -- --filter testDesbloquearPerfil` | 2026-11-23 |
 | CP-012 | RF-17 | PASS | `src/api/tests/feature/Acceso/AdminPerfilesTest.php::testBorradoDefinitivo` · `cd src/api && composer test -- --filter testBorradoDefinitivo` | 2026-11-23 |
@@ -40,3 +40,5 @@ Suite completa de `s1/api-acceso` (2026-11-23, tras integrar `main` con RF-19 y 
 7. **Validación**: los Services validan con comprobaciones explícitas de tipo (p. ej. `activo` debe ser booleano JSON, `orden` entero 0–255, `pin` cadena de 4 dígitos) en lugar de las reglas de `Validation` de CI4 que cita el doc 04 §3.3, porque estas no distinguen `true` de `"1"`. Los mensajes van por campo, sin la regla interna.
 8. **`php spark usuarios:crear`** pide los datos con `CLI::prompt` (la contraseña se ve al escribirla; CI4 no tiene entrada oculta) o los toma de `--nombre --email --password --pin`. Rechaza un tercer usuario (máximo 2, doc 03 §3).
 9. **Pruebas**: `tests/_support/ApiTestCase.php` vacía y vuelve a sembrar la base antes de cada caso, conserva la sesión entre peticiones y recrea el `Throttler` (el servicio compartido retenía la caché simulada de la prueba anterior). `DemoSeeder` reutiliza los hashes ya calculados en el mismo proceso para que la suite no tarde más de un minuto.
+
+- CP-009: Chromium de Playwright en WSL necesita `libnss3`, `libnspr4` y `libasound2`. Sin sudo, se instalaron con Homebrew y se enlazan en `~/.local/lib/playwright-libs`; `playwright.config.ts` los usa solo si esa carpeta existe. En CI (GitHub Actions) se usa `npx playwright install --with-deps chromium`.
