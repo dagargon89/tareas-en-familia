@@ -55,6 +55,7 @@ Particularidades de Hostinger (CloudLinux con CageFS) encontradas al activar el 
 - En la web, PHP deshabilita `exec`, `shell_exec`, `proc_open` y `symlink`; en la CLI están disponibles (los respaldos de la Fase 3 van por cron).
 - LiteSpeed agrega un segundo encabezado `Content-Security-Policy: upgrade-insecure-requests`; se combina con el del doc 04 sin conflicto.
 - La raíz del subdominio trae un `default.php` de relleno; `.htaccess` fija `DirectoryIndex index.php` para que no le gane a la app.
+- **El CDN de Hostinger está apagado para este subdominio (2026-11-23) y debe seguir así.** Con el CDN, el primer byte tardaba de 2 a 20 s incluso en `robots.txt` (el propio CDN reportaba esa espera en `x-hcdn-upstream-rt`), mientras el servidor respondía en 12–36 ms por dentro y en 80–100 ms directo por internet. Sin CDN: 80–105 ms en `/api/v1/salud`, `/api/v1/csrf`, `/app/` y estáticos, y la pantalla de inicio lista en 0,8–1,1 s con caché vacía. LiteSpeed ya comprime con Brotli y da caché de 7 días a los assets con hash; el certificado de Hostinger y HSTS siguen activos. Se cambia con el conector de Hostinger (`hosting_websites_update-settings`, `cdn`) o en hPanel. `scalegridtech.com` y `crm.scalegridtech.com` conservan su CDN.
 
 ## 3. Configuración única en GitHub
 
