@@ -14,7 +14,7 @@ use CodeIgniter\I18n\Time;
  * Cron de cada minuto (doc 02 §3.4, ADR-005). Decide qué subtareas tocan
  * según la hora local y usa un candado de archivo para no superponerse.
  *
- * Subtareas implementadas: "generar" (S2). Las demás llegan en S3 a S5.
+ * Subtareas implementadas: "generar" (S2) y "purgar" (S3). Las demás llegan en S4 y S5.
  */
 class TareasProgramadas extends BaseCommand
 {
@@ -27,12 +27,13 @@ class TareasProgramadas extends BaseCommand
      * @var array<string, string>
      */
     protected $options = [
-        '--forzar' => 'Ejecuta "generar" aunque no sea su hora.',
+        '--forzar' => 'Ejecuta todas las subtareas aunque no sea su hora.',
     ];
 
     private const CANDADO          = 'cache/cron.lock';
     private const ULTIMA_GENERACION = 'cache/generacion.ultima';
     private const HORA_GENERAR     = '00:05';
+    private const HORA_PURGAR      = '03:00';
 
     /**
      * @param array<int|string, string|null> $params
@@ -57,6 +58,11 @@ class TareasProgramadas extends BaseCommand
                 $nuevas    = $generador->generarProximos($hoy);
                 file_put_contents(WRITEPATH . self::ULTIMA_GENERACION, $hoy);
                 $this->registrar("generar: {$nuevas} instancias nuevas de {$hoy} a " . Calendario::sumarDias($hoy, $generador->diasGeneracion()));
+            }
+
+            if ($forzar || $ahora->format('H:i') === self::HORA_PURGAR) {
+                $borradas = service('evidencias')->purgar($hoy);
+                $this->registrar("purgar: {$borradas} evidencias vencidas borradas");
             }
         } finally {
             flock($candado, LOCK_UN);

@@ -200,7 +200,10 @@ final class MiDiaTest extends ApiTestCase
         $this->assertSame(['total' => 1, 'hechas' => 1, 'aprobadas' => 1], $this->dia()['resumen']);
     }
 
-    public function testFotoEnElMultipartSeIgnoraEnElS2(): void
+    /**
+     * Desde el S3 la foto es obligatoria si la tarea la pide: un campo `foto` de texto no cuenta.
+     */
+    public function testCampoFotoDeTextoNoCuentaComoFoto(): void
     {
         $tarea = $this->crearTarea('Luna', ['requiere_foto' => true]);
         $this->entrarPerfil('Luna');
@@ -209,8 +212,10 @@ final class MiDiaTest extends ApiTestCase
         $r = $this->withSession($this->sesion)->withHeaders(['X-CSRF-TOKEN' => csrf_hash()])
             ->post("api/v1/yo/instancias/{$id}/hecha", ['foto' => 'no-es-un-archivo']);
 
-        $r->assertStatus(200);
+        $this->assertError($r, 400, 'VALIDACION');
+        $this->assertArrayHasKey('foto', $this->cuerpo($r)['error']['campos']);
         $this->assertSame(0, $this->db->table('evidencias')->countAllResults());
+        $this->assertSame('pendiente', $this->instancia($tarea['id'], $this->hoy())['estado']);
     }
 
     /**

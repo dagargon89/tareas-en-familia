@@ -9,12 +9,13 @@ use App\Entities\Perfil;
 use App\Exceptions\ApiException;
 use App\Models\PerfilModel;
 use App\Services\InstanciasService;
+use App\Services\ProgresoService;
 use App\Services\SesionService;
 use App\Services\TareasService;
 use CodeIgniter\HTTP\ResponseInterface;
 
 /**
- * Rutas de la hija con perfil activo (`/yo/*`): E-11, E-12 y E-18 a E-21.
+ * Rutas de la hija con perfil activo (`/yo/*`): E-11, E-12, E-13 y E-18 a E-21.
  */
 final class YoController extends BaseApiController
 {
@@ -31,11 +32,18 @@ final class YoController extends BaseApiController
     }
 
     /**
-     * El campo `foto` del multipart se ignora en el S2 (lo procesa el S3, RF-06).
+     * `multipart/form-data` con `foto` opcional (obligatoria si la tarea la pide, RF-06).
      */
     public function marcarHecha(string $id): ResponseInterface
     {
-        return $this->ok((new InstanciasService(db_connect()))->marcarHecha($this->perfil()->id, (int) $id));
+        $foto = $this->request->getFile('foto');
+
+        return $this->ok((new InstanciasService(db_connect()))->marcarHecha($this->perfil()->id, (int) $id, $foto));
+    }
+
+    public function progreso(): ResponseInterface
+    {
+        return $this->ok((new ProgresoService(db_connect()))->progreso($this->perfil()->id));
     }
 
     public function tareas(): ResponseInterface

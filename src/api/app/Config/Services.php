@@ -2,6 +2,7 @@
 
 namespace Config;
 
+use App\Services\EvidenciasService;
 use CodeIgniter\Config\BaseService;
 
 /**
@@ -19,6 +20,19 @@ use CodeIgniter\Config\BaseService;
  */
 class Services extends BaseService
 {
+    /**
+     * Fotos de evidencia (RF-06). Servicio para poder sustituir en pruebas la comprobación
+     * `is_uploaded_file()`, que en CLI siempre es falsa.
+     */
+    public static function evidencias(bool $getShared = true): EvidenciasService
+    {
+        if ($getShared) {
+            return static::getSharedInstance('evidencias');
+        }
+
+        return new EvidenciasService(db_connect());
+    }
+
     /*
      * public static function example($getShared = true)
      * {

@@ -10,10 +10,11 @@ use App\Exceptions\ApiException;
 use App\Libraries\Fechas;
 use CodeIgniter\Database\BaseBuilder;
 use CodeIgniter\Database\BaseConnection;
+use CodeIgniter\HTTP\Files\UploadedFile;
 use CodeIgniter\I18n\Time;
 
 /**
- * "Mi día" (RF-04, RF-13: E-11) y marcar hecha (RF-05: E-12).
+ * "Mi día" (RF-04, RF-13: E-11) y marcar hecha con foto opcional u obligatoria (RF-05, RF-06: E-12).
  */
 final class InstanciasService
 {
@@ -22,8 +23,10 @@ final class InstanciasService
      */
     public const RANGO_DIAS = 7;
 
-    public function __construct(private readonly BaseConnection $db)
-    {
+    public function __construct(
+        private readonly BaseConnection $db,
+        private readonly ?EvidenciasService $evidencias = null,
+    ) {
     }
 
     private function hoy(): string
@@ -82,37 +85,40 @@ final class InstanciasService
 
     /**
      * E-12 · `pendiente`/`devuelta` → `hecha` (o `aprobada` si es actividad de 0 puntos).
-     * No acredita puntos (RN-03). La foto la procesa el S3.
+     * No acredita puntos (RN-03). Si la tarea pide foto, es obligatoria; si llega una foto,
+     * se valida, se re-codifica y reemplaza a la anterior (RF-06).
      *
      * @return array<string, mixed>
      */
-    public function marcarHecha(int $perfilId, int $instanciaId): array
+    public function marcarHecha(int $perfilId, int $instanciaId, ?UploadedFile $foto = null): array
     {
+        $fila = $this->db->query(
+            'SELECT i.id, i.perfil_id, i.fecha, i.estado, i.puntos, t.tipo, t.requiere_foto
+               FROM tarea_instancias i JOIN tareas t ON t.id = i.tarea_id WHERE i.id = ?',
+            [$instanciaId],
+        )->getRowArray();
+
+        $this->validarMarcable($fila, $perfilId);
+
+        /** @var array<string, mixed> $fila */
+        $hayFoto = $foto !== null && $foto->getError() !== UPLOAD_ERR_NO_FILE;
+
+        if (! $hayFoto && (int) $fila['requiere_foto'] === 1) {
+            throw ApiException::validacion(['foto' => 'Esta tarea necesita una foto.']);
+        }
+
+        $evidencias = $this->evidencias ?? service('evidencias');
+        $nueva      = $hayFoto ? $evidencias->preparar($perfilId, $foto) : null;
+        $anterior   = null;
+
         $this->db->transBegin();
 
         try {
-            $fila = $this->db->query(
-                'SELECT i.id, i.perfil_id, i.fecha, i.estado, i.puntos, t.tipo
-                   FROM tarea_instancias i JOIN tareas t ON t.id = i.tarea_id
-                  WHERE i.id = ? FOR UPDATE',
+            $bloqueada = $this->db->query(
+                'SELECT i.id, i.perfil_id, i.fecha, i.estado FROM tarea_instancias i WHERE i.id = ? FOR UPDATE',
                 [$instanciaId],
             )->getRowArray();
-
-            if ($fila === null) {
-                throw ApiException::noEncontrado();
-            }
-
-            if ((int) $fila['perfil_id'] !== $perfilId) {
-                throw ApiException::prohibido('Esta tarea es de otra persona.');
-            }
-
-            if ($fila['fecha'] > $this->hoy()) {
-                throw ApiException::estadoInvalido('Esta tarea es de un día que todavía no llega.');
-            }
-
-            if (! in_array($fila['estado'], ['pendiente', 'devuelta'], true)) {
-                throw ApiException::estadoInvalido('Esta tarea ya está marcada.');
-            }
+            $this->validarMarcable($bloqueada, $perfilId);
 
             $ahora    = Time::now()->toDateTimeString();
             $sinPunto = $fila['tipo'] === 'actividad' && (int) $fila['puntos'] === 0;
@@ -124,17 +130,62 @@ final class InstanciasService
                 'updated_at'    => $ahora,
             ]);
 
+            if ($nueva !== null) {
+                $anterior = $evidencias->registrar($instanciaId, $nueva);
+            }
+
             $this->db->transCommit();
         } catch (\Throwable $e) {
             $this->db->transRollback();
 
+            if ($nueva !== null) {
+                $evidencias->borrarArchivo($nueva['ruta']);
+            }
+
             throw $e;
         }
 
-        return self::aInstancia($this->consulta()->where('i.id', $instanciaId)->get()->getRowArray() ?? []);
+        $evidencias->borrarArchivo($anterior);
+
+        return $this->instancia($instanciaId);
     }
 
-    private function consulta(): BaseBuilder
+    /**
+     * @param array<string, mixed>|null $fila
+     */
+    private function validarMarcable(?array $fila, int $perfilId): void
+    {
+        if ($fila === null) {
+            throw ApiException::noEncontrado();
+        }
+
+        if ((int) $fila['perfil_id'] !== $perfilId) {
+            throw ApiException::prohibido('Esta tarea es de otra persona.');
+        }
+
+        if ($fila['fecha'] > $this->hoy()) {
+            throw ApiException::estadoInvalido('Esta tarea es de un día que todavía no llega.');
+        }
+
+        if (! in_array($fila['estado'], ['pendiente', 'devuelta'], true)) {
+            throw ApiException::estadoInvalido('Esta tarea ya está marcada.');
+        }
+    }
+
+    /**
+     * Una instancia con la forma `Instancia`.
+     *
+     * @return array<string, mixed>
+     */
+    public function instancia(int $id): array
+    {
+        return self::aInstancia($this->consulta()->where('i.id', $id)->get()->getRowArray() ?? throw ApiException::noEncontrado());
+    }
+
+    /**
+     * Consulta base de `Instancia` (tarea, color de la categoría y evidencia).
+     */
+    public function consulta(): BaseBuilder
     {
         return $this->db->table('tarea_instancias i')
             ->select('i.*, t.titulo, t.icono, t.tipo, t.materia, t.requiere_foto, c.color, e.id AS evidencia_id')
