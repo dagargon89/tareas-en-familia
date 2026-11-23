@@ -9,7 +9,7 @@ Instrucciones para cualquier agente que desarrolle este proyecto. Léelas comple
 | Descubrimiento | ✅ Completa |
 | Fase 0 · Documentación | ✅ Completa (cierre manual, 22-nov-2026) |
 | Fase 1 · Demo UX | ⏭️ Reducida a T-F1-01 (ADR-008) |
-| Fase 2 · Construcción | 🟡 En curso (S1 y S2 completos; S0 abierto por despliegue) |
+| Fase 2 · Construcción | 🟡 En curso (S1 a S4 completos; S0 abierto por despliegue) |
 | Fase 3 · Despliegue | ⬜ Pendiente |
 
 No se trabaja en una fase cuyo gate anterior no esté cerrado. Esta tabla debe coincidir con la del README.
