@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type BrowserContext, type BrowserContextOptions, type Page } from '@playwright/test';
-import { HIJAS, abrirSesion, entrarComo, esperarCarga, modoPadre } from './ayuda.ts';
+import { HIJAS, abrirSesion, api, entrarComo, esperarCarga, modoPadre } from './ayuda.ts';
 
 /**
  * CP-NF-03 (RNF-04): axe en las pantallas principales de los 3 niveles y del padre,
@@ -47,6 +47,22 @@ for (const hija of Object.values(HIJAS)) {
     }
   });
 }
+
+// Modo oscuro (solo Aventureras y Pro, doc 08): mismo axe, incluido el contraste de color.
+test('pantallas en modo oscuro de Sol y Estrella', async () => {
+  for (const hija of [HIJAS.sol, HIJAS.estrella]) {
+    await entrarComo(page.request, hija);
+    await api(page.request, 'PATCH', '/api/v1/yo/preferencias', { tema: 'oscuro' });
+    try {
+      for (const ruta of ['/app/hoy', '/app/premios', '/app/logros', '/app/calendario', '/app/mis-tareas/nueva']) {
+        await revisar(ruta);
+        await expect(page.locator('html')).toHaveAttribute('data-tema', 'oscuro');
+      }
+    } finally {
+      await api(page.request, 'PATCH', '/api/v1/yo/preferencias', { tema: 'claro' });
+    }
+  }
+});
 
 test('pantallas del padre', async () => {
   await modoPadre(page.request);

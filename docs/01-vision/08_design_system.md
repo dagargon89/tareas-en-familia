@@ -32,7 +32,14 @@ Se publican como variables CSS en `src/web/src/styles/tokens.css` y se exponen a
 
 Validación obligatoria en Sprint 0: todo texto sobre su fondo debe cumplir contraste 4.5:1 (texto normal) o 3:1 (texto de 24 px o más). Si un par falla, se oscurece el texto, nunca se cambia el tono del fondo.
 
-Modo oscuro (solo nivel Pro y opcional en Aventureras): fondo `#15151C`, superficie `#20202A`, texto `#F2F2F7`; los acentos se usan al 20 % de opacidad como fondo de tarjeta.
+Modo oscuro (solo nivel Pro y opcional en Aventureras): fondo `#15151C`, superficie `#20202A`, tarjeta `#2B2B37`, texto `#F2F2F7` y texto secundario `#B8B8C4`. Los acentos de fondo pasan a tonos oscuros del mismo color: lavanda `#2C3160`, ámbar `#4F4113`, menta `#1C4630` y rosa `#56293A`; el índigo de texto e íconos (`indigo-700`) pasa a `#B3BBFF`. El índigo de los botones (`#3F4FB8` con texto blanco) no cambia. Contraste verificado el 2026-11-23: todos los pares de texto cumplen 4.5:1 (el más bajo, texto secundario sobre ámbar, 5.1:1).
+
+Reglas para que el modo oscuro funcione solo:
+
+- Las superficies blancas usan `bg-tarjeta`, nunca `bg-blanco`: `blanco` queda solo para texto o detalles sobre índigo.
+- Íconos y texto de acento usan `text-indigo-700` (en oscuro se aclara); `indigo-600` es para fondos de botón.
+- El hover de los botones índigo usa `indigo-hover`, que no cambia con el tema.
+- Los acentos pastel (`lavanda-100`, `ambar-200`, `menta-200`, `rosa-200`) son solo fondos, nunca color de texto.
 
 ### 2.2 Tipografía
 

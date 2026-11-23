@@ -30,7 +30,7 @@ function etiqueta(i: Instancia, perfil?: PerfilPublico): string {
 /** Tareas del día ya hechas por la hija (esperando o aprobadas). */
 const listasDe = (d: Dia) => d.instancias.filter((i) => i.estado === 'hecha' || i.estado === 'aprobada').length;
 
-const fondoEstado = (e: EstadoInstancia) => (e === 'aprobada' ? 'bg-menta-200' : 'bg-blanco');
+const fondoEstado = (e: EstadoInstancia) => (e === 'aprobada' ? 'bg-menta-200' : 'bg-tarjeta');
 
 function AvatarPerfil({ perfil, tamano = 'size-8' }: { perfil: PerfilPublico; tamano?: string }) {
   const Avatar = avatarDe(perfil.avatar);
@@ -241,7 +241,7 @@ function Agenda({ semana, hoy, perfiles }: Pick<Props, 'semana' | 'hoy' | 'perfi
           )}
         </header>
         {dia.instancias.length === 0 ? (
-          <p className="m-0 flex items-center gap-2 rounded-tarjeta-interna bg-blanco p-4 text-cuerpo text-tinta-600">
+          <p className="m-0 flex items-center gap-2 rounded-tarjeta-interna bg-tarjeta p-4 text-cuerpo text-tinta-600">
             <Sun className="size-5 text-indigo-700" aria-hidden="true" /> Día libre
           </p>
         ) : (
