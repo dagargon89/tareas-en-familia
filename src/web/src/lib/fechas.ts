@@ -50,3 +50,17 @@ export function diasEntre(a: string, b: string): number {
   };
   return Math.round((ms(b) - ms(a)) / 86_400_000);
 }
+
+/** Lunes de la semana ISO que contiene la fecha YYYY-MM-DD. */
+export function lunesDe(ymd: string): string {
+  const [a, m, d] = ymd.split('-').map(Number);
+  const dia = new Date(Date.UTC(a, m - 1, d)).getUTCDay(); // 0 = domingo
+  return sumarDias(ymd, dia === 0 ? -6 : 1 - dia);
+}
+
+/** "lun 23" a partir de YYYY-MM-DD. */
+export function diaCorto(ymd: string): { semana: string; numero: number } {
+  const [a, m, d] = ymd.split('-').map(Number);
+  const semana = new Intl.DateTimeFormat('es-MX', { weekday: 'short', timeZone: 'UTC' }).format(new Date(Date.UTC(a, m - 1, d))).replace('.', '');
+  return { semana, numero: d };
+}

@@ -6,12 +6,12 @@ import { LoginPadre } from './features/acceso/LoginPadre.tsx';
 import { ModoPadrePin } from './features/acceso/ModoPadrePin.tsx';
 import { SelectorPerfil } from './features/acceso/SelectorPerfil.tsx';
 import { HijaLayout } from './features/hija/HijaLayout.tsx';
+import { Calendario } from './features/calendario/Calendario.tsx';
 import { MiDia } from './features/mi-dia/MiDia.tsx';
 import { Premios } from './features/premios/Premios.tsx';
 import { MisLogros } from './features/progreso/MisLogros.tsx';
 import { EditarTareaPropia, MisTareas } from './features/mis-tareas/MisTareas.tsx';
 import { PadreLayout } from './features/padre/PadreLayout.tsx';
-import { EnConstruccion } from './ui/EnConstruccion.tsx';
 
 /**
  * Rutas de la SPA (doc 02 §4.2). Las pantallas del padre se cargan bajo demanda para que
@@ -30,7 +30,7 @@ export const router = createBrowserRouter(
         { path: '/hoy', element: <MiDia /> },
         { path: '/premios', element: <Premios /> },
         { path: '/logros', element: <MisLogros /> },
-        { path: '/calendario', element: <EnConstruccion pantalla="Semana" sprint="Sprint 5" /> },
+        { path: '/calendario', element: <Calendario /> },
         // RF-19: Aventureras y Pro crean sus escolares; las Exploradoras regresan a Mi día.
         { path: '/mis-tareas', element: <RequierePerfil puedeCrear><MisTareas /></RequierePerfil> },
         { path: '/mis-tareas/nueva', element: <RequierePerfil puedeCrear><EditarTareaPropia /></RequierePerfil> },
@@ -41,7 +41,8 @@ export const router = createBrowserRouter(
       path: '/padre',
       element: <RequiereModoPadre><PadreLayout /></RequiereModoPadre>,
       children: [
-        { index: true, element: <EnConstruccion pantalla="Panel" sprint="Sprint 5" /> },
+        { index: true, lazy: async () => ({ Component: (await import('./features/padre/Panel.tsx')).Panel }) },
+        { path: 'semana', lazy: async () => ({ Component: (await import('./features/calendario/Calendario.tsx')).SemanaPadre }) },
         { path: 'aprobaciones', lazy: async () => ({ Component: (await import('./features/padre/Aprobaciones.tsx')).Aprobaciones }) },
         { path: 'tareas', lazy: async () => ({ Component: (await import('./features/padre/Tareas.tsx')).Tareas }) },
         { path: 'perfiles', lazy: async () => ({ Component: (await import('./features/padre/Perfiles.tsx')).Perfiles }) },

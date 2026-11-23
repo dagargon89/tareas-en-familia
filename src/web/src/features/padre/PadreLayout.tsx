@@ -1,4 +1,4 @@
-import { ChartColumn, Gift, Inbox, ListChecks, LogOut, Settings, Target, Users } from 'lucide-react';
+import { CalendarDays, ChartColumn, Gift, Inbox, ListChecks, LogOut, Settings, Target, Users } from 'lucide-react';
 import { useEffect } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router';
 import { useLogout, useSalirModoPadre, useSesion } from '../../hooks/useSesion.ts';
@@ -8,6 +8,7 @@ const SECCIONES = [
   { a: '/padre', texto: 'Panel', Icono: ChartColumn, fin: true },
   { a: '/padre/aprobaciones', texto: 'Aprobar', Icono: Inbox },
   { a: '/padre/tareas', texto: 'Tareas', Icono: ListChecks },
+  { a: '/padre/semana', texto: 'Semana', Icono: CalendarDays },
   { a: '/padre/perfiles', texto: 'Perfiles', Icono: Users },
   { a: '/padre/premios', texto: 'Premios', Icono: Gift },
   { a: '/padre/metas', texto: 'Metas', Icono: Target },
