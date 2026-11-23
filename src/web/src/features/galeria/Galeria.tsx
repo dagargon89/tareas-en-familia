@@ -22,8 +22,11 @@ import { MisTareasVista } from '../mis-tareas/MisTareas.tsx';
 import { AprobacionesVista } from '../padre/Aprobaciones.tsx';
 import { resumirResultados } from '../padre/resumirResultados.ts';
 import { MisLogrosVista } from '../progreso/MisLogros.tsx';
-import { RewardCard } from '../premios/RewardCard.tsx';
-import { BANDEJA, CATEGORIAS, TAREAS, INSIGNIAS, INSTANCIAS, META, NIVEL_ACTUAL, NIVEL_SIGUIENTE, PERFILES, PERFILES_ADMIN, RECOMPENSAS } from './datosGaleria.ts';
+import { PremiosVista } from '../premios/Premios.tsx';
+import { ConfiguracionVista } from '../padre/Configuracion.tsx';
+import { MetasVista } from '../padre/Metas.tsx';
+import { RecompensasVista } from '../padre/Recompensas.tsx';
+import { CANJES, RECOMPENSAS_ADMIN, BANDEJA, CATEGORIAS, TAREAS, INSIGNIAS, INSTANCIAS, META, NIVEL_ACTUAL, NIVEL_SIGUIENTE, PERFILES, PERFILES_ADMIN, RECOMPENSAS } from './datosGaleria.ts';
 
 function Seccion({ titulo, nota, children }: { titulo: string; nota?: string; children: ReactNode }) {
   return (
@@ -74,6 +77,7 @@ export function Galeria() {
   const [fallos, setFallos] = useState(0);
   const [pinMsg, setPinMsg] = useState<string | null>(null);
   const [pedidas, setPedidas] = useState<number[]>([]);
+  const [editandoPremio, setEditandoPremio] = useState<(typeof RECOMPENSAS_ADMIN)[number] | 'nueva' | null>(null);
   const v = VOCABULARIO[nivel];
 
   function marcar(i: Instancia, origen: { x: number; y: number }) {
@@ -243,12 +247,52 @@ export function Galeria() {
           </Marco>
         </Seccion>
 
-        <Seccion titulo="Premios" nota="RF-09 · CP-064">
-          <div className="grid gap-4 sm:grid-cols-2">
-            {RECOMPENSAS.map((r) => (
-              <RewardCard key={r.id} recompensa={r} nivel={nivel} solicitada={pedidas.includes(r.id)} onCanjear={(x) => setPedidas((p) => [...p, x.id])} />
-            ))}
-          </div>
+        <Seccion titulo="Sprint 4 · Premios de la hija" nota="RF-09 · lo que ya alcanza va primero; toca Canjear">
+          <Marco titulo="/premios" alto={820}>
+            <div className="p-4">
+              <PremiosVista
+                recompensas={RECOMPENSAS}
+                canjes={[...CANJES, ...pedidas.map((id, i) => ({ id: 100 + i, perfil_id: 2, recompensa: RECOMPENSAS.find((r) => r.id === id)!, costo: RECOMPENSAS.find((r) => r.id === id)!.costo, estado: 'solicitado' as const, created_at: new Date().toISOString() }))]}
+                disponible={88}
+                nivel={nivel}
+                pidiendo={null}
+                aviso={pedidas.length ? '¡Listo! Papá o mamá lo revisan.' : null}
+                onCanjear={(r) => {
+                  sonar('canje', true);
+                  setPedidas((p) => [...p, r.id]);
+                }}
+              />
+            </div>
+          </Marco>
+        </Seccion>
+
+        <Seccion titulo="Sprint 4 · Modo padre" nota="RF-09, RF-12 y RF-18">
+          <Marco titulo="/padre/premios" alto={820}>
+            <div className="p-4">
+              <RecompensasVista
+                canjes={CANJES}
+                recompensas={RECOMPENSAS_ADMIN}
+                perfiles={PERFILES}
+                ocupado={false}
+                aviso={null}
+                editando={editandoPremio}
+                guardando={false}
+                onRevisar={() => undefined}
+                onEditar={setEditandoPremio}
+                onGuardar={() => setEditandoPremio(null)}
+              />
+            </div>
+          </Marco>
+          <Marco titulo="/padre/metas" alto={520}>
+            <div className="p-4">
+              <MetasVista metas={[META, { ...META, id: 2, titulo: 'Paseo al parque', estado: 'cumplida', progreso_puntos: 300, objetivo_puntos: 300 }]} perfiles={PERFILES} hoy={hoy} editando={null} guardando={false} aviso={null} onEditar={() => undefined} onGuardar={() => undefined} onCancelarMeta={() => undefined} />
+            </div>
+          </Marco>
+          <Marco titulo="/padre/ajustes (prueba un PIN como 1111)" alto={820}>
+            <div className="p-4">
+              <ConfiguracionVista config={{ racha_umbral: 80, sonidos_default: true, dias_generacion: 7, evidencia_dias_retencion: 30, puntos_tarea_propia: 5 }} enviando={false} aviso={null} onGuardar={() => undefined} />
+            </div>
+          </Marco>
         </Seccion>
 
         <Seccion titulo="Sprint 3 · Aprobaciones" nota="RF-07 · aprueba una, varias en lote, o devuelve con mensaje">

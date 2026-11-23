@@ -2,6 +2,7 @@ import { useEffect, type ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router';
 import { useModoPadreVigente, useSesion } from '../../hooks/useSesion.ts';
 import { useSesionStore } from '../../stores/sesionStore.ts';
+import { aplicarTema } from '../../niveles/nivel.ts';
 import { Cargando } from '../../ui/Cargando.tsx';
 import { puedeCrearTareas } from '../mis-tareas/escolarPropia.ts';
 
@@ -24,6 +25,7 @@ export function RequierePerfil({ children, puedeCrear = false }: { children: Rea
     if (perfil) {
       setNivel(perfil.nivel_ux);
       setSonidos(perfil.sonidos);
+      aplicarTema(perfil.tema);
     }
   }, [perfil, setNivel, setSonidos]);
 

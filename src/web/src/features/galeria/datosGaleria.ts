@@ -2,7 +2,7 @@
  * Datos fijos SOLO para la galería de componentes (ADR-008). No implementan ApiClient
  * ni se usan fuera de /app/galeria.
  */
-import type { Categoria, Tarea, PerfilAdmin, Insignia, Instancia, InstanciaRevision, Meta, Nivel, PerfilPublico, RecompensaParaPerfil } from '../../api/ApiClient.ts';
+import type { Canje, Recompensa, Categoria, Tarea, PerfilAdmin, Insignia, Instancia, InstanciaRevision, Meta, Nivel, PerfilPublico, RecompensaParaPerfil } from '../../api/ApiClient.ts';
 import { fechaLocal } from '../../lib/fechas.ts';
 
 const hoy = fechaLocal();
@@ -70,4 +70,16 @@ export const TAREAS: Tarea[] = [
   { id: 6, perfil_id: 2, categoria_id: 2, titulo: 'Maqueta del sistema solar', icono: 'ciencia', puntos: 5, tipo: 'escolar', materia: 'Ciencias', fecha_entrega: enDias(4), requiere_foto: false, creada_por: 'perfil', activa: true, recurrencia: rec({ frecuencia: 'una_vez', hora: '17:00' }) },
   { id: 7, perfil_id: 2, categoria_id: 2, titulo: 'Página 45 del libro', icono: 'calculadora', puntos: 5, tipo: 'escolar', materia: 'Matemáticas', fecha_entrega: enDias(1), requiere_foto: false, creada_por: 'perfil', activa: true, recurrencia: rec({ frecuencia: 'una_vez' }) },
   { id: 5, perfil_id: 1, categoria_id: 1, titulo: 'Recoger mi cuarto', icono: 'brillo', puntos: 6, tipo: 'casa', materia: null, fecha_entrega: null, requiere_foto: true, creada_por: 'padre', activa: true, recurrencia: rec({}) },
+];
+
+export const RECOMPENSAS_ADMIN: Recompensa[] = [
+  ...RECOMPENSAS.map(({ id, titulo, icono, costo, activa }) => ({ id, titulo, icono, costo, activa })),
+  { id: 4, titulo: 'Dormir en casa de la abuela', icono: 'corazon', costo: 300, activa: false },
+];
+
+export const CANJES: Canje[] = [
+  { id: 1, perfil_id: 2, recompensa: RECOMPENSAS_ADMIN[0], costo: 40, estado: 'solicitado', created_at: `${hoy}T17:20:00-07:00` },
+  { id: 2, perfil_id: 1, recompensa: RECOMPENSAS_ADMIN[1], costo: 80, estado: 'aprobado', created_at: `${enDias(-2)}T18:00:00-07:00` },
+  { id: 3, perfil_id: 2, recompensa: RECOMPENSAS_ADMIN[2], costo: 150, estado: 'entregado', created_at: `${enDias(-6)}T19:10:00-07:00` },
+  { id: 4, perfil_id: 2, recompensa: RECOMPENSAS_ADMIN[1], costo: 80, estado: 'rechazado', created_at: `${enDias(-8)}T16:00:00-07:00` },
 ];
