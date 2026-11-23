@@ -22,7 +22,7 @@
 | 400 | `VALIDACION` | Campos inválidos (`campos` trae el detalle) |
 | 401 | `SIN_SESION` | No hay sesión de dispositivo |
 | 401 | `CREDENCIALES` | Correo o contraseña incorrectos |
-| 401 | `PIN_INCORRECTO` | PIN incorrecto; incluye `intentos_restantes` |
+| 401 | `PIN_INCORRECTO` | PIN incorrecto; incluye `intentos_restantes`. Un PIN que no son 4 dígitos responde 400 `VALIDACION` y no cuenta como intento |
 | 403 | `SIN_PERFIL` | Ruta `/yo/*` sin perfil activo |
 | 403 | `MODO_PADRE_REQUERIDO` | Ruta de administración sin modo padre vigente |
 | 403 | `PROHIBIDO` | El recurso pertenece a otro perfil |
@@ -30,7 +30,7 @@
 | 404 | `NO_ENCONTRADO` | Recurso inexistente |
 | 409 | `ESTADO_INVALIDO` | Transición no permitida (aprobar algo no `hecha`, marcar un día futuro) |
 | 409 | `SALDO_INSUFICIENTE` | Canje sin puntos disponibles |
-| 423 | `BLOQUEADO` | Perfil o modo padre bloqueado; incluye `bloqueado_hasta` |
+| 423 | `BLOQUEADO` | Perfil o modo padre bloqueado; incluye `bloqueado_hasta`. Un bloqueo ya vencido se devuelve como `bloqueado_hasta: null` |
 | 429 | `DEMASIADOS_INTENTOS` | Throttling |
 | 500 | `ERROR_INTERNO` | Error no controlado; sin traza en producción (la traza va a `writable/logs`) |
 
@@ -55,7 +55,7 @@ Columna **Filtro**: `—` público · `S` sesión de dispositivo · `P` perfil a
 | E-49 | `GET /instalacion` | — | — | `EstadoInstalacion` | RF-20 |
 | E-50 | `POST /instalacion` | — (CSRF) | `InstalacionEntrada` | `Sesion` (201) | RF-20 |
 
-E-50 solo funciona con 0 usuarios: comprueba y crea dentro de una transacción con bloqueo (`SELECT … FOR UPDATE` sobre `usuarios`). Con usuarios existentes responde 409 `ESTADO_INVALIDO`; con token ausente o incorrecto (cuando se requiere) responde 403 `PROHIBIDO`; con datos inválidos 400 `VALIDACION`. Tiene el mismo throttling que el login. Al crear, regenera el id de sesión y deja `usuario_id` en sesión.
+E-50 solo funciona con 0 usuarios: comprueba y crea dentro de una transacción con bloqueo (`GET_LOCK` con nombre fijo más `SELECT … FOR UPDATE` sobre `usuarios`; con la tabla vacía, `FOR UPDATE` solo podría acabar en un deadlock). Con usuarios existentes responde 409 `ESTADO_INVALIDO`; con token ausente o incorrecto (cuando se requiere) responde 403 `PROHIBIDO`; con datos inválidos 400 `VALIDACION`. Tiene el mismo throttling que el login. Al crear, regenera el id de sesión y deja `usuario_id` en sesión.
 
 ### 2.2 Hija (perfil activo)
 

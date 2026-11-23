@@ -74,7 +74,7 @@ erDiagram
 | Escolares en "Mi día" | La tarea escolar usa recurrencia `una_vez` con `fecha` = día de creación. "Mi día" de la fecha D incluye, además de las instancias con `fecha = D`, las escolares del perfil con `fecha <= D <= fecha_entrega` y estado distinto de `aprobada`. Es lógica de consulta, no del generador |
 | Cierre semanal sin tareas | Si un perfil tuvo 0 instancias asignadas en la semana, no se inserta fila en `rachas` |
 | `origen_id` por origen | `tarea` → `tarea_instancias.id`; `insignia` → `perfil_insignias.id`; `canje` → `canjes.id`; `ajuste` → `NULL` |
-| Borrado definitivo de perfil | Por los `ON DELETE RESTRICT`, `PerfilesService::borrar()` borra en este orden dentro de una transacción: archivos de evidencias, `movimientos_puntos`, `canjes`, `tarea_instancias` (arrastra evidencias y revisiones), `tareas` (arrastra recurrencias), `perfil_insignias`, `rachas` y por último `perfiles` |
+| Borrado definitivo de perfil | Por los `ON DELETE RESTRICT`, `PerfilesService::borrar()` borra en este orden dentro de una transacción: `movimientos_puntos`, `canjes`, `tarea_instancias` (arrastra evidencias y revisiones), `tareas` (arrastra recurrencias), `perfil_insignias`, `rachas` y por último `perfiles`. Los archivos de `writable/evidencias/<perfil_id>/` se borran después de confirmar la transacción, para que un fallo de la base no deje filas apuntando a fotos ya borradas |
 
 La vista `v_saldos_perfil` devuelve `xp`, `saldo` y `reservado` por perfil.
 

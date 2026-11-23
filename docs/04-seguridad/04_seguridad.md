@@ -41,7 +41,7 @@ Principio: **minimizar.** Si un dato no es indispensable para una función del S
 | Contraseña del padre | Mínimo 10 caracteres |
 | PIN | 4 dígitos; se rechazan `0000`, `1234`, `1111` a `9999` repetidos y secuencias |
 | Bloqueo de PIN | 5 intentos fallidos → `bloqueado_hasta = ahora + 15 min` |
-| Throttling de login | 5 intentos por minuto por IP con `Throttler` de CI4 |
+| Throttling de login | 5 intentos por minuto por IP (contador compartido por login e instalación inicial; cuenta todos los intentos, no solo los fallidos); al sexto, 429 con `Retry-After` |
 | Sesión | `FileHandler`, `sessionExpiration = 2592000` (30 días), `sessionRegenerateDestroy = true`, regenerar id al iniciar sesión y al entrar a modo padre |
 | Cookie | `HttpOnly`, `Secure` (producción), `SameSite=Lax`, nombre `tf_sesion` |
 
@@ -56,7 +56,7 @@ Principio: **minimizar.** Si un dato no es indispensable para una función del S
 
 ### 3.3 Entrada y salida
 
-- Reglas de validación de CI4 en cada endpoint de escritura; los mensajes de error devuelven el campo, no la regla interna.
+- Validación explícita en cada endpoint de escritura, con comprobación de tipo (las reglas de `Validation` de CI4 no distinguen `true` de `"1"`); los mensajes de error devuelven el campo, no la regla interna.
 - Respuestas JSON con `Content-Type: application/json; charset=utf-8`.
 - Errores en producción sin traza: `{ "error": { "codigo": "...", "mensaje": "..." } }`; la traza va a `writable/logs`.
 

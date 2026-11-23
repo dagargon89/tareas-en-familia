@@ -47,7 +47,7 @@ flowchart TB
 
 | Capa | Responsabilidad | Regla |
 |---|---|---|
-| Filters | Autenticación, rol, CSRF, throttling, headers de seguridad | Toda ruta `/api/v1/*` pasa por `sesion`; las de administración por `modoPadre` |
+| Filters | Autenticación, rol, CSRF, throttling, headers de seguridad | Toda ruta `/api/v1/*` pasa por `sesion`; las de administración por `modoPadre`. El grupo `admin` termina con un comodín (403 sin modo padre, 404 con él): las rutas admin nuevas se declaran antes |
 | Controllers | Traducir HTTP a llamadas de Service y devolver JSON | Sin lógica de negocio ni consultas directas |
 | Services | Reglas de negocio y transacciones | Únicos que escriben en más de una tabla |
 | Models + Entities | Acceso a datos con Query Builder | Validación de campos en `$validationRules` |
