@@ -56,6 +56,11 @@ class ApiException extends RuntimeException implements ResponsableInterface
         return new self(409, 'ESTADO_INVALIDO', $mensaje);
     }
 
+    public static function saldoInsuficiente(): self
+    {
+        return new self(409, 'SALDO_INSUFICIENTE', 'Todavía no te alcanzan los puntos para este premio.');
+    }
+
     public static function sinSesion(): self
     {
         return new self(401, 'SIN_SESION', 'Inicia sesión para continuar.');

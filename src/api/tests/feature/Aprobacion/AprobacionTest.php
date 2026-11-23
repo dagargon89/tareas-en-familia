@@ -41,9 +41,12 @@ final class AprobacionTest extends ApiTestCase
         return $this->api('post', "admin/instancias/{$id}/revision", $cuerpo);
     }
 
+    /**
+     * Movimientos de origen `tarea` (los de insignias del S4 no cuentan aquí).
+     */
     private function movimientos(?int $instanciaId = null): int
     {
-        $q = $this->db->table('movimientos_puntos');
+        $q = $this->db->table('movimientos_puntos')->where('origen', 'tarea');
 
         if ($instanciaId !== null) {
             $q->where(['origen' => 'tarea', 'origen_id' => $instanciaId]);
@@ -82,7 +85,7 @@ final class AprobacionTest extends ApiTestCase
         $this->assertSame('aprobada', $resultado['instancia']['estado']);
         $this->assertSame($id, $resultado['instancia']['id']);
         $this->assertSame(7, $resultado['puntos_acreditados']);
-        $this->assertSame([], $resultado['insignias_nuevas']);
+        $this->assertSame(['primera_mision'], array_column($resultado['insignias_nuevas'], 'codigo'), 'Desde el S4 (CP-069)');
         $this->assertFalse($resultado['meta_cumplida']);
 
         $this->assertNotNull($this->fila('tarea_instancias', $id)['aprobada_en']);
@@ -213,20 +216,24 @@ final class AprobacionTest extends ApiTestCase
     public function testCanjeAprobadoNoBajaElXp(): void
     {
         $this->revisar($this->hecha('Luna', 10), ['decision' => 'aprobada'])->assertStatus(200);
+        $ahora = date('Y-m-d H:i:s');
+        $this->db->table('recompensas')->insert(['titulo' => 'Estampa', 'icono' => 'regalo', 'costo' => 6, 'activa' => 1, 'created_at' => $ahora, 'updated_at' => $ahora]);
+        $recompensa = (int) $this->db->insertID();
         $this->entrarPerfil('Luna');
         $antes = $this->cuerpo($this->api('get', 'yo/progreso'));
 
-        // Sin canjes en el S3: el movimiento del canje aprobado se inserta desde la prueba.
-        $this->db->table('movimientos_puntos')->insert([
-            'perfil_id' => $this->perfilId('Luna'), 'origen' => 'canje', 'origen_id' => 1, 'puntos' => -6,
-            'descripcion' => 'Canje de prueba', 'created_at' => date('Y-m-d H:i:s'),
-        ]);
+        // Desde el S4 el canje sigue el flujo real: la hija lo pide (E-15) y el padre lo aprueba (E-41).
+        $canje = $this->cuerpo($this->conEstado($this->api('post', 'yo/canjes', ['recompensa_id' => $recompensa]), 201));
+        $this->entrarModoPadre();
+        $this->conEstado($this->api('post', "admin/canjes/{$canje['id']}/revision", ['decision' => 'aprobado']), 200);
+        $this->entrarPerfil('Luna');
         $despues = $this->cuerpo($this->api('get', 'yo/progreso'));
 
-        $this->assertSame([10, 10], [$antes['xp'], $antes['saldo']]);
-        $this->assertSame(10, $despues['xp']);
-        $this->assertSame(4, $despues['saldo']);
-        $this->assertSame(4, $despues['disponible']);
+        // 10 de la tarea + 20 de "Primera misión".
+        $this->assertSame([30, 30], [$antes['xp'], $antes['saldo']]);
+        $this->assertSame(30, $despues['xp']);
+        $this->assertSame(24, $despues['saldo']);
+        $this->assertSame(24, $despues['disponible']);
     }
 
     /**

@@ -6,8 +6,8 @@ namespace App\Services;
 
 use App\Domain\Calendario;
 use App\Domain\Niveles;
+use App\Domain\Rachas;
 use App\Domain\SemanaIso;
-use App\Libraries\Fechas;
 use CodeIgniter\Database\BaseConnection;
 use CodeIgniter\I18n\Time;
 
@@ -51,20 +51,10 @@ final class ProgresoService
             ->select('cumplida')
             ->where('perfil_id', $perfilId)
             ->where('semana_iso <', $actual)
-            ->orderBy('semana_iso', 'DESC')
+            ->orderBy('semana_iso', 'ASC')
             ->get()->getResultArray();
 
-        $racha = 0;
-
-        foreach ($filas as $fila) {
-            if ((int) $fila['cumplida'] !== 1) {
-                break;
-            }
-
-            $racha++;
-        }
-
-        return $racha;
+        return Rachas::contar(array_map(static fn (array $fila): bool => (int) $fila['cumplida'] === 1, $filas));
     }
 
     /**
@@ -107,45 +97,16 @@ final class ProgresoService
         );
         $filas = $this->db->table('insignias')->orderBy('orden')->orderBy('id')->get()->getResultArray();
 
-        return array_map(static fn (array $f): array => [
-            'codigo'      => $f['codigo'],
-            'nombre'      => $f['nombre'],
-            'descripcion' => $f['descripcion'],
-            'icono'       => $f['icono'],
-            'color'       => $f['color'],
-            'obtenida_en' => Fechas::iso($obtenidas[$f['id']] ?? null),
-        ], $filas);
+        return array_map(static fn (array $f): array => InsigniasService::aInsignia($f, $obtenidas[$f['id']] ?? null), $filas);
     }
 
     /**
-     * Meta activa con `progreso_puntos` = movimientos de origen `tarea` de todos los perfiles
-     * desde `fecha_inicio` (doc 03 §4), o null.
+     * Meta activa con su progreso (doc 03 §4), o null.
      *
      * @return array<string, mixed>|null
      */
     public function metaFamiliar(): ?array
     {
-        $meta = $this->db->table('metas_familiares')->where('estado', 'activa')->get()->getRowArray();
-
-        if ($meta === null) {
-            return null;
-        }
-
-        $progreso = $this->db->table('movimientos_puntos')
-            ->selectSum('puntos', 'total')
-            ->where('origen', 'tarea')
-            ->where('created_at >=', $meta['fecha_inicio'] . ' 00:00:00')
-            ->get()->getRowArray();
-
-        return [
-            'id'              => (int) $meta['id'],
-            'titulo'          => $meta['titulo'],
-            'premio'          => $meta['premio'],
-            'objetivo_puntos' => (int) $meta['objetivo_puntos'],
-            'progreso_puntos' => (int) ($progreso['total'] ?? 0),
-            'fecha_inicio'    => $meta['fecha_inicio'],
-            'fecha_limite'    => $meta['fecha_limite'],
-            'estado'          => $meta['estado'],
-        ];
+        return (new MetasService($this->db))->activa();
     }
 }
