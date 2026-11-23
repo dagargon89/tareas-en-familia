@@ -37,6 +37,10 @@ Columna **Tipo**: U unitario backend · I integración API · F unitario fronten
 | CP-010 | RF-17 | I | Crear perfil con PIN trivial `1234` | 400 `VALIDACION` en `pin` |
 | CP-011 | RF-17 | I | Desbloquear perfil bloqueado | `bloqueado_hasta` null, intentos en 0 |
 | CP-012 | RF-17 | I | Borrado definitivo de perfil | Sin filas del perfil en ninguna tabla; fotos borradas |
+| CP-013 | RF-20 | I | `GET /instalacion` con 0 usuarios y con 1 usuario | `requerida: true` y luego `requerida: false` |
+| CP-014 | RF-20 | I | `POST /instalacion` válido con 0 usuarios (en producción, con token correcto) | 201, usuario creado con hash Argon2id/bcrypt, `Sesion.usuario` lleno, cookie de sesión |
+| CP-015 | RF-20 | I | `POST /instalacion` cuando ya existe un usuario | 409 `ESTADO_INVALIDO`; no se crea nada |
+| CP-016 | RF-20 | I | Producción: `POST /instalacion` sin token o con token incorrecto | 403 `PROHIBIDO`; no se crea nada |
 
 ### 2.2 Tareas (RF-03, RF-04, RF-05, RF-13, RF-19)
 
@@ -159,6 +163,7 @@ Columna **Tipo**: U unitario backend · I integración API · F unitario fronten
 | RF-16 | CP-085, CP-087 | S5 |
 | RF-17 | CP-010 a CP-012 | S1 |
 | RF-18 | CP-086 | S4 |
+| RF-20 | CP-013 a CP-016 | S1 |
 | RF-19 | CP-035 a CP-039 | S2 |
 
 ## 4. Datos de prueba

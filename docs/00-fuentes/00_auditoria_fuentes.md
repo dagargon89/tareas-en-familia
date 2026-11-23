@@ -28,6 +28,7 @@ Registrar de dónde sale cada decisión de esta documentación, qué se verific�
 | D-06 | Estilo visual: "Formas vivas" (colores suaves, formas redondeadas, DM Sans) | F-01, F-03 | 2026-11-22 |
 | D-07 | La app debe ser divertida y amigable para niñas, sin castigos | F-01 | 2026-11-22 |
 | D-08 | Aventureras y Pro crean sus propias tareas escolares para que el padre las vea; valen puntos fijos y se acreditan solo con aprobación (RF-19) | Chat con David | 2026-11-23 |
+| D-09 | Si no hay usuarios, la app permite crear el primer padre (administrador) desde la web; protegido con token de `.env` en producción (RF-20) | Chat con David | 2026-11-23 |
 
 ## 4. Datos verificados del hosting (F-04)
 

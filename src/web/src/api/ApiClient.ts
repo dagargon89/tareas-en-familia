@@ -28,6 +28,9 @@ export interface PerfilAdmin extends PerfilPublico { activo: boolean; orden: num
 export interface PerfilEntrada { apodo: string; avatar: string; color: ColorToken; nivel_ux: NivelUx;
   pin?: string; orden?: number; activo?: boolean; }
 
+export interface EstadoInstalacion { requerida: boolean; requiere_token: boolean; }
+export interface InstalacionEntrada { nombre: string; email: string; password: string; pin: string; token?: string; }
+
 // ===== Tareas =====
 export interface Recurrencia { frecuencia: Frecuencia; dias_semana: DiaSemana[] | null;
   hora: string | null; fecha_inicio: string; fecha_fin: string | null; }
@@ -97,6 +100,8 @@ export interface ApiClient {
   salirPerfil(): Promise<Sesion>;                                              // E-08
   entrarModoPadre(pin: string): Promise<Sesion>;                               // E-09
   salirModoPadre(): Promise<Sesion>;                                           // E-10
+  estadoInstalacion(): Promise<EstadoInstalacion>;                             // E-49
+  instalar(datos: InstalacionEntrada): Promise<Sesion>;                        // E-50
   // Hija
   dia(fecha?: string): Promise<Dia>;                                           // E-11
   marcarHecha(instanciaId: number, foto?: File): Promise<Instancia>;           // E-12
