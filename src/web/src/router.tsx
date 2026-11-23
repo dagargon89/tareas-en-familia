@@ -1,22 +1,59 @@
-import { createBrowserRouter } from 'react-router';
+import { createBrowserRouter, Navigate } from 'react-router';
+import { EntrarPerfil } from './features/acceso/EntrarPerfil.tsx';
+import { RequiereModoPadre, RequierePerfil, RequiereSesion } from './features/acceso/Guardias.tsx';
+import { Instalacion } from './features/acceso/Instalacion.tsx';
+import { LoginPadre } from './features/acceso/LoginPadre.tsx';
+import { ModoPadrePin } from './features/acceso/ModoPadrePin.tsx';
+import { SelectorPerfil } from './features/acceso/SelectorPerfil.tsx';
+import { HijaLayout } from './features/hija/HijaLayout.tsx';
+import { MiDia } from './features/mi-dia/MiDia.tsx';
+import { MisLogros } from './features/progreso/MisLogros.tsx';
+import { EditarTareaPropia, MisTareas } from './features/mis-tareas/MisTareas.tsx';
+import { PadreLayout } from './features/padre/PadreLayout.tsx';
 import { EnConstruccion } from './ui/EnConstruccion.tsx';
 
-/** Rutas de la SPA (doc 02 §4.2). Las pantallas se conectan a la API en su sprint. */
+/**
+ * Rutas de la SPA (doc 02 §4.2). Las pantallas del padre se cargan bajo demanda para que
+ * "Mi día" baje lo mínimo en el dispositivo de las hijas (RNF-01).
+ */
 export const router = createBrowserRouter(
   [
-    { path: '/', element: <EnConstruccion pantalla="Tareas en Familia" sprint="Sprint 1 (selector de perfil)" /> },
-    { path: '/login', element: <EnConstruccion pantalla="Entrar" sprint="Sprint 1" /> },
-    { path: '/hoy', element: <EnConstruccion pantalla="Mi día" sprint="Sprint 2" /> },
-    { path: '/premios', element: <EnConstruccion pantalla="Premios" sprint="Sprint 4" /> },
-    { path: '/logros', element: <EnConstruccion pantalla="Mis logros" sprint="Sprint 3" /> },
-    { path: '/calendario', element: <EnConstruccion pantalla="Calendario" sprint="Sprint 5" /> },
-    { path: '/mis-tareas', element: <EnConstruccion pantalla="Mis tareas" sprint="Sprint 5" /> },
-    { path: '/padre/*', element: <EnConstruccion pantalla="Modo padre" sprint="Sprint 1" /> },
+    { path: '/login', element: <LoginPadre /> },
+    { path: '/instalacion', element: <Instalacion /> },
+    { path: '/', element: <RequiereSesion><SelectorPerfil /></RequiereSesion> },
+    { path: '/entrar/:id', element: <RequiereSesion><EntrarPerfil /></RequiereSesion> },
+    { path: '/modo-padre', element: <RequiereSesion><ModoPadrePin /></RequiereSesion> },
+    {
+      element: <RequierePerfil><HijaLayout /></RequierePerfil>,
+      children: [
+        { path: '/hoy', element: <MiDia /> },
+        { path: '/premios', element: <EnConstruccion pantalla="Premios" sprint="Sprint 4" /> },
+        { path: '/logros', element: <MisLogros /> },
+        { path: '/calendario', element: <EnConstruccion pantalla="Semana" sprint="Sprint 5" /> },
+        // RF-19: Aventureras y Pro crean sus escolares; las Exploradoras regresan a Mi día.
+        { path: '/mis-tareas', element: <RequierePerfil puedeCrear><MisTareas /></RequierePerfil> },
+        { path: '/mis-tareas/nueva', element: <RequierePerfil puedeCrear><EditarTareaPropia /></RequierePerfil> },
+        { path: '/mis-tareas/:id', element: <RequierePerfil puedeCrear><EditarTareaPropia /></RequierePerfil> },
+      ],
+    },
+    {
+      path: '/padre',
+      element: <RequiereModoPadre><PadreLayout /></RequiereModoPadre>,
+      children: [
+        { index: true, element: <EnConstruccion pantalla="Panel" sprint="Sprint 5" /> },
+        { path: 'aprobaciones', lazy: async () => ({ Component: (await import('./features/padre/Aprobaciones.tsx')).Aprobaciones }) },
+        { path: 'tareas', lazy: async () => ({ Component: (await import('./features/padre/Tareas.tsx')).Tareas }) },
+        { path: 'perfiles', lazy: async () => ({ Component: (await import('./features/padre/Perfiles.tsx')).Perfiles }) },
+        { path: 'premios', element: <EnConstruccion pantalla="Premios" sprint="Sprint 4" /> },
+        { path: 'metas', element: <EnConstruccion pantalla="Metas" sprint="Sprint 4" /> },
+        { path: 'ajustes', element: <EnConstruccion pantalla="Ajustes" sprint="Sprint 4" /> },
+      ],
+    },
     // La galería solo existe en desarrollo; en el build de producción esta rama se elimina.
     ...(import.meta.env.DEV
       ? [{ path: '/galeria', lazy: async () => ({ Component: (await import('./features/galeria/Galeria.tsx')).Galeria }) }]
       : []),
-    { path: '*', element: <EnConstruccion pantalla="No encontramos esta pantalla" sprint="—" /> },
+    { path: '*', element: <Navigate to="/" replace /> },
   ],
   { basename: '/app' },
 );

@@ -34,3 +34,19 @@ export function fechaCorta(ymd: string): string {
     .format(new Date(Date.UTC(a, m - 1, d)))
     .replace('.', '');
 }
+
+/** Suma días a una fecha YYYY-MM-DD sin pasar por la zona del dispositivo. */
+export function sumarDias(ymd: string, dias: number): string {
+  const [a, m, d] = ymd.split('-').map(Number);
+  const f = new Date(Date.UTC(a, m - 1, d + dias));
+  return f.toISOString().slice(0, 10);
+}
+
+/** Diferencia en días entre dos fechas YYYY-MM-DD (b - a). */
+export function diasEntre(a: string, b: string): number {
+  const ms = (s: string) => {
+    const [y, m, d] = s.split('-').map(Number);
+    return Date.UTC(y, m - 1, d);
+  };
+  return Math.round((ms(b) - ms(a)) / 86_400_000);
+}
