@@ -35,7 +35,25 @@ final class PuntosService
     }
 
     /**
-     * Inserta un movimiento. Uso interno de los servicios de puntos (insignias, canjes y ajustes en S4).
+     * Débito de un canje aprobado (`origen = canje`, `origen_id = canje`).
+     */
+    public function debitarCanje(int $perfilId, int $canjeId, int $costo, string $titulo): void
+    {
+        $this->registrar($perfilId, 'canje', $canjeId, -abs($costo), 'Canje: ' . mb_substr($titulo, 0, 100));
+    }
+
+    /**
+     * XP de una insignia obtenida (`origen = insignia`, `origen_id = perfil_insignias.id`).
+     */
+    public function acreditarInsignia(int $perfilId, int $perfilInsigniaId, int $xp, string $nombre): void
+    {
+        if ($xp > 0) {
+            $this->registrar($perfilId, 'insignia', $perfilInsigniaId, $xp, 'Insignia: ' . mb_substr($nombre, 0, 100));
+        }
+    }
+
+    /**
+     * Inserta un movimiento. Prefiere los métodos con nombre (tarea, canje, insignia).
      */
     public function registrar(int $perfilId, string $origen, ?int $origenId, int $puntos, string $descripcion): void
     {

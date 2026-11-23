@@ -138,7 +138,7 @@ final class AprobacionService
             $this->insertarRevision($instanciaId, $usuarioId, 'aprobada', null);
             $acreditados = $this->puntos->acreditarTarea((int) $fila['perfil_id'], $instanciaId, (int) $fila['puntos'], (string) $fila['titulo']);
             $this->evidencias->programarBorrado($instanciaId, Calendario::hoy($ahora));
-            [$insignias, $metaCumplida] = $this->alAprobar((int) $fila['perfil_id'], $instanciaId);
+            [$insignias, $metaCumplida] = $this->alAprobar((int) $fila['perfil_id']);
 
             $this->db->transCommit();
         } catch (\Throwable $e) {
@@ -186,16 +186,17 @@ final class AprobacionService
     }
 
     /**
-     * Punto de extensión dentro de la transacción de aprobar: en el S4 evalúa insignias
-     * (`InsigniasService`) y la meta familiar (`MetasService`). En el S3 no otorga nada.
+     * Dentro de la transacción de aprobar: evalúa las insignias del perfil y si la meta
+     * familiar activa alcanzó su objetivo (doc 03 §9).
      *
      * @return array{0: list<array<string, mixed>>, 1: bool} Insignias nuevas y si se cumplió la meta
      */
-    private function alAprobar(int $perfilId, int $instanciaId): array
+    private function alAprobar(int $perfilId): array
     {
-        unset($perfilId, $instanciaId);
-
-        return [[], false];
+        return [
+            (new InsigniasService($this->db))->evaluar($perfilId),
+            (new MetasService($this->db))->evaluarCumplimiento(),
+        ];
     }
 
     /**

@@ -167,6 +167,45 @@ final class PerfilesService
         $this->olvidarSiEsElActivo($id);
     }
 
+    /**
+     * E-22 · `sonidos` y `tema` del perfil activo (`PerfilPublico`).
+     *
+     * @param array<string, mixed> $entrada `{ sonidos?, tema? }`
+     *
+     * @return array<string, mixed>
+     */
+    public function preferencias(int $id, array $entrada): array
+    {
+        $campos = [];
+        $datos  = [];
+
+        if (array_key_exists('sonidos', $entrada)) {
+            if (is_bool($entrada['sonidos'])) {
+                $datos['sonidos'] = $entrada['sonidos'] ? 1 : 0;
+            } else {
+                $campos['sonidos'] = 'Debe ser verdadero o falso.';
+            }
+        }
+
+        if (array_key_exists('tema', $entrada)) {
+            if (in_array($entrada['tema'], ['claro', 'oscuro', 'sistema'], true)) {
+                $datos['tema'] = $entrada['tema'];
+            } else {
+                $campos['tema'] = 'Elige claro, oscuro o sistema.';
+            }
+        }
+
+        if ($campos !== []) {
+            throw ApiException::validacion($campos);
+        }
+
+        if ($datos !== []) {
+            $this->perfiles->update($id, $datos);
+        }
+
+        return $this->buscar($id)->publico();
+    }
+
     private function buscar(int $id): Perfil
     {
         return $this->perfiles->find($id) ?? throw ApiException::noEncontrado();

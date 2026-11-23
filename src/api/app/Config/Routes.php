@@ -37,6 +37,10 @@ $routes->group('api/v1', $opciones, static function (RouteCollection $routes) us
         $routes->get('dia', 'YoController::dia');                                  // E-11
         $routes->post('instancias/(:num)/hecha', 'YoController::marcarHecha/$1');  // E-12
         $routes->get('progreso', 'YoController::progreso');                        // E-13
+        $routes->get('recompensas', 'YoController::recompensas');                  // E-14
+        $routes->post('canjes', 'YoController::solicitarCanje');                   // E-15
+        $routes->get('canjes', 'YoController::canjes');                            // E-16
+        $routes->patch('preferencias', 'YoController::preferencias');              // E-22
         $routes->get('tareas', 'YoController::tareas');                            // E-18
         $routes->post('tareas', 'YoController::crearTarea');                       // E-19
         $routes->put('tareas/(:num)', 'YoController::editarTarea/$1');             // E-20
@@ -58,6 +62,16 @@ $routes->group('api/v1', $opciones, static function (RouteCollection $routes) us
         $routes->get('aprobaciones', 'AprobacionesController::index');                     // E-33
         $routes->post('instancias/revision-lote', 'AprobacionesController::lote');         // E-35
         $routes->post('instancias/(:num)/revision', 'AprobacionesController::revisar/$1'); // E-34
+        $routes->get('recompensas', 'RecompensasController::index');                       // E-37
+        $routes->post('recompensas', 'RecompensasController::crear');                      // E-38
+        $routes->put('recompensas/(:num)', 'RecompensasController::editar/$1');            // E-39
+        $routes->get('canjes', 'CanjesController::index');                                 // E-40
+        $routes->post('canjes/(:num)/revision', 'CanjesController::revisar/$1');           // E-41
+        $routes->get('metas', 'MetasController::index');                                   // E-42
+        $routes->post('metas', 'MetasController::crear');                                  // E-43
+        $routes->put('metas/(:num)', 'MetasController::editar/$1');                        // E-44
+        $routes->get('configuracion', 'ConfiguracionController::ver');                     // E-47
+        $routes->put('configuracion', 'ConfiguracionController::guardar');                 // E-48
 
         // Comodín: cualquier otra ruta admin/* exige sesión y modo padre (403) antes de responder 404.
         $routes->match(['GET', 'POST', 'PUT', 'PATCH', 'DELETE'], '(:any)', '\App\Controllers\Errores::noEncontrado');

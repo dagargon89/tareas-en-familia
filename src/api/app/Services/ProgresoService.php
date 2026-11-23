@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Domain\Calendario;
 use App\Domain\Niveles;
+use App\Domain\Racha;
 use App\Domain\SemanaIso;
 use App\Libraries\Fechas;
 use CodeIgniter\Database\BaseConnection;
@@ -41,8 +42,8 @@ final class ProgresoService
     }
 
     /**
-     * Semanas `cumplida = 1` consecutivas desde la última semana cerrada hacia atrás;
-     * las semanas sin registro (sin tareas asignadas) se saltan (doc 03 §4).
+     * Semanas cumplidas consecutivas hasta la última semana cerrada (anterior a la actual);
+     * las semanas sin registro (sin tareas asignadas) se saltan (RF-10, doc 03 §4).
      */
     public function rachaSemanas(int $perfilId): int
     {
@@ -51,20 +52,10 @@ final class ProgresoService
             ->select('cumplida')
             ->where('perfil_id', $perfilId)
             ->where('semana_iso <', $actual)
-            ->orderBy('semana_iso', 'DESC')
+            ->orderBy('semana_iso')
             ->get()->getResultArray();
 
-        $racha = 0;
-
-        foreach ($filas as $fila) {
-            if ((int) $fila['cumplida'] !== 1) {
-                break;
-            }
-
-            $racha++;
-        }
-
-        return $racha;
+        return Racha::actual(array_map(static fn (array $f): bool => (int) $f['cumplida'] === 1, $filas));
     }
 
     /**
@@ -118,34 +109,12 @@ final class ProgresoService
     }
 
     /**
-     * Meta activa con `progreso_puntos` = movimientos de origen `tarea` de todos los perfiles
-     * desde `fecha_inicio` (doc 03 §4), o null.
+     * Meta activa con su progreso (doc 03 §4), o null.
      *
      * @return array<string, mixed>|null
      */
     public function metaFamiliar(): ?array
     {
-        $meta = $this->db->table('metas_familiares')->where('estado', 'activa')->get()->getRowArray();
-
-        if ($meta === null) {
-            return null;
-        }
-
-        $progreso = $this->db->table('movimientos_puntos')
-            ->selectSum('puntos', 'total')
-            ->where('origen', 'tarea')
-            ->where('created_at >=', $meta['fecha_inicio'] . ' 00:00:00')
-            ->get()->getRowArray();
-
-        return [
-            'id'              => (int) $meta['id'],
-            'titulo'          => $meta['titulo'],
-            'premio'          => $meta['premio'],
-            'objetivo_puntos' => (int) $meta['objetivo_puntos'],
-            'progreso_puntos' => (int) ($progreso['total'] ?? 0),
-            'fecha_inicio'    => $meta['fecha_inicio'],
-            'fecha_limite'    => $meta['fecha_limite'],
-            'estado'          => $meta['estado'],
-        ];
+        return (new MetasService($this->db))->activa();
     }
 }

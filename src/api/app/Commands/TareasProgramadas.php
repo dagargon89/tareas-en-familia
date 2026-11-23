@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace App\Commands;
 
 use App\Domain\Calendario;
+use App\Domain\SemanaIso;
 use App\Services\GeneradorInstancias;
+use App\Services\MetasService;
+use App\Services\RachasService;
 use CodeIgniter\CLI\BaseCommand;
 use CodeIgniter\CLI\CLI;
 use CodeIgniter\I18n\Time;
@@ -14,7 +17,8 @@ use CodeIgniter\I18n\Time;
  * Cron de cada minuto (doc 02 §3.4, ADR-005). Decide qué subtareas tocan
  * según la hora local y usa un candado de archivo para no superponerse.
  *
- * Subtareas implementadas: "generar" (S2) y "purgar" (S3). Las demás llegan en S4 y S5.
+ * Subtareas: generar (00:05 y al arrancar el día), cerrar semana (lunes 00:10),
+ * vencer meta (00:15) y purgar evidencias (03:00). El respaldo llega en el S5.
  */
 class TareasProgramadas extends BaseCommand
 {
@@ -34,6 +38,8 @@ class TareasProgramadas extends BaseCommand
     private const ULTIMA_GENERACION = 'cache/generacion.ultima';
     private const HORA_GENERAR     = '00:05';
     private const HORA_PURGAR      = '03:00';
+    private const HORA_CERRAR_SEMANA = '00:10'; // lunes
+    private const HORA_VENCER_META   = '00:15';
 
     /**
      * @param array<int|string, string|null> $params
@@ -58,6 +64,17 @@ class TareasProgramadas extends BaseCommand
                 $nuevas    = $generador->generarProximos($hoy);
                 file_put_contents(WRITEPATH . self::ULTIMA_GENERACION, $hoy);
                 $this->registrar("generar: {$nuevas} instancias nuevas de {$hoy} a " . Calendario::sumarDias($hoy, $generador->diasGeneracion()));
+            }
+
+            if ($forzar || ($ahora->format('N') === '1' && $ahora->format('H:i') === self::HORA_CERRAR_SEMANA)) {
+                $semana = SemanaIso::desdeFecha($hoy)->anterior();
+                $filas  = (new RachasService(db_connect()))->cerrarSemana($semana);
+                $this->registrar("cerrar semana {$semana->codigo()}: {$filas} rachas nuevas");
+            }
+
+            if ($forzar || $ahora->format('H:i') === self::HORA_VENCER_META) {
+                $vencidas = (new MetasService(db_connect()))->vencer($hoy);
+                $this->registrar("vencer meta: {$vencidas} canceladas");
             }
 
             if ($forzar || $ahora->format('H:i') === self::HORA_PURGAR) {

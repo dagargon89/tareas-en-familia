@@ -43,10 +43,11 @@ final class AprobacionTest extends ApiTestCase
 
     private function movimientos(?int $instanciaId = null): int
     {
-        $q = $this->db->table('movimientos_puntos');
+        // Solo los de tareas: desde el S4 aprobar también puede acreditar insignias.
+        $q = $this->db->table('movimientos_puntos')->where('origen', 'tarea');
 
         if ($instanciaId !== null) {
-            $q->where(['origen' => 'tarea', 'origen_id' => $instanciaId]);
+            $q->where('origen_id', $instanciaId);
         }
 
         return $q->countAllResults();
@@ -82,7 +83,7 @@ final class AprobacionTest extends ApiTestCase
         $this->assertSame('aprobada', $resultado['instancia']['estado']);
         $this->assertSame($id, $resultado['instancia']['id']);
         $this->assertSame(7, $resultado['puntos_acreditados']);
-        $this->assertSame([], $resultado['insignias_nuevas']);
+        $this->assertSame(['primera_mision'], array_column($resultado['insignias_nuevas'], 'codigo'), 'Desde el S4 la primera aprobación otorga su insignia.');
         $this->assertFalse($resultado['meta_cumplida']);
 
         $this->assertNotNull($this->fila('tarea_instancias', $id)['aprobada_en']);
@@ -223,10 +224,11 @@ final class AprobacionTest extends ApiTestCase
         ]);
         $despues = $this->cuerpo($this->api('get', 'yo/progreso'));
 
-        $this->assertSame([10, 10], [$antes['xp'], $antes['saldo']]);
-        $this->assertSame(10, $despues['xp']);
-        $this->assertSame(4, $despues['saldo']);
-        $this->assertSame(4, $despues['disponible']);
+        // 10 de la tarea + 20 de "Primera misión" (S4).
+        $this->assertSame([30, 30], [$antes['xp'], $antes['saldo']]);
+        $this->assertSame(30, $despues['xp'], 'El XP no baja.');
+        $this->assertSame(24, $despues['saldo']);
+        $this->assertSame(24, $despues['disponible']);
     }
 
     /**
@@ -244,7 +246,7 @@ final class AprobacionTest extends ApiTestCase
         $this->assertSame('hecha', $instancia['estado']);
         $this->assertSame('6', (string) $this->fila('tarea_instancias', $id)['puntos']);
         $this->assertSame(6, $this->cuerpo($this->revisar($id, ['decision' => 'aprobada']))['puntos_acreditados']);
-        $this->assertSame('6', (string) $this->db->table('movimientos_puntos')->get()->getRowArray()['puntos']);
+        $this->assertSame('6', (string) $this->db->table('movimientos_puntos')->where('origen', 'tarea')->get()->getRowArray()['puntos']);
     }
 
     /**

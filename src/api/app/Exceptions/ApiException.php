@@ -81,6 +81,11 @@ class ApiException extends RuntimeException implements ResponsableInterface
         return new self(429, 'DEMASIADOS_INTENTOS', 'Demasiados intentos. Espera un minuto.', null, [], ['Retry-After' => (string) max(1, $segundos)]);
     }
 
+    public static function saldoInsuficiente(): self
+    {
+        return new self(409, 'SALDO_INSUFICIENTE', 'Todavía no te alcanzan los puntos para este premio.');
+    }
+
     public static function modoPadreRequerido(): self
     {
         return new self(403, 'MODO_PADRE_REQUERIDO', 'Entra a modo padre para continuar.');

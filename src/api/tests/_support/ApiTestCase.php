@@ -212,6 +212,39 @@ abstract class ApiTestCase extends CIUnitTestCase
         return $this->db->table('tarea_instancias')->where(['tarea_id' => $tareaId, 'fecha' => $fecha])->get()->getRowArray() ?? [];
     }
 
+    /**
+     * Inserta instancias del perfil (sobre una tarea suya de la demo) con los estados dados,
+     * una por fecha. Devuelve los ids.
+     *
+     * @param list<string>          $fechas
+     * @param list<string>|string   $estados Uno por fecha, o el mismo para todas
+     *
+     * @return list<int>
+     */
+    protected function insertarInstancias(string $apodo, array $fechas, array|string $estados, int $puntos = 5): array
+    {
+        $perfil = $this->perfilId($apodo);
+        $ahora  = date('Y-m-d H:i:s');
+        $ids    = [];
+
+        foreach (array_values($fechas) as $i => $fecha) {
+            $this->db->table('tareas')->insert([
+                'perfil_id' => $perfil, 'categoria_id' => (int) $this->db->table('categorias')->get()->getRowArray()['id'],
+                'titulo' => "Tarea {$fecha} {$i}", 'icono' => 'casa', 'puntos' => $puntos, 'tipo' => 'casa',
+                'creada_por' => 'padre', 'activa' => 0, 'created_at' => $ahora, 'updated_at' => $ahora,
+            ]);
+            $tarea  = (int) $this->db->insertID();
+            $estado = is_array($estados) ? $estados[$i] : $estados;
+            $this->db->table('tarea_instancias')->insert([
+                'tarea_id' => $tarea, 'perfil_id' => $perfil, 'fecha' => $fecha, 'puntos' => $puntos, 'estado' => $estado,
+                'completada_en' => $estado === 'pendiente' ? null : $ahora, 'created_at' => $ahora, 'updated_at' => $ahora,
+            ]);
+            $ids[] = (int) $this->db->insertID();
+        }
+
+        return $ids;
+    }
+
     protected function perfilId(string $apodo): int
     {
         return (int) $this->db->table('perfiles')->where('apodo', $apodo)->get()->getRowArray()['id'];
