@@ -17,7 +17,7 @@ export function RewardCard({ recompensa: r, nivel, solicitada = false, onCanjear
   return (
     <article className={`flex flex-col gap-4 rounded-tarjeta p-6 ${r.alcanza ? 'bg-lavanda-100' : 'bg-superficie'}`}>
       <div className="flex items-center gap-4">
-        <span className="flex size-14 shrink-0 items-center justify-center rounded-icono bg-blanco text-indigo-600">
+        <span className="flex size-14 shrink-0 items-center justify-center rounded-icono bg-tarjeta text-indigo-700">
           <Icono className="size-7" aria-hidden="true" />
         </span>
         <div className="flex flex-col">

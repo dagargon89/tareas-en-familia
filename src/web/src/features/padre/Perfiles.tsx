@@ -57,11 +57,11 @@ export function PerfilesVista({ perfiles, onNuevo, onEditar, onDesbloquear, onDe
                   <Pencil className="size-4" aria-hidden="true" /> Editar
                 </button>
                 {p.activo && (
-                  <button type="button" className={`${accion} text-tinta-600 hover:bg-blanco`} onClick={() => onDesactivar(p)}>
+                  <button type="button" className={`${accion} text-tinta-600 hover:bg-tarjeta`} onClick={() => onDesactivar(p)}>
                     <EyeOff className="size-4" aria-hidden="true" /> Desactivar
                   </button>
                 )}
-                <button type="button" className={`${accion} text-tinta-600 hover:bg-blanco`} onClick={() => onBorrar(p)} aria-label={`Borrar definitivamente a ${p.apodo}`}>
+                <button type="button" className={`${accion} text-tinta-600 hover:bg-tarjeta`} onClick={() => onBorrar(p)} aria-label={`Borrar definitivamente a ${p.apodo}`}>
                   <Trash2 className="size-4" aria-hidden="true" />
                 </button>
               </div>

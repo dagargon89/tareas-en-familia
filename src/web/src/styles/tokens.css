@@ -1,7 +1,8 @@
 /*
  * Tokens del design system "Formas vivas" (doc 08 §2).
- * Contraste verificado (WCAG 2.2, 2026-11-22): el par más bajo es
- * tinta-600 sobre rosa-200 con 5.19:1; todos cumplen 4.5:1.
+ * Contraste verificado (WCAG 2.2): en claro (2026-11-22) el par más bajo es tinta-600 sobre
+ * rosa-200 con 5.19:1; en oscuro (2026-11-23) es tinta-600 sobre ambar-200 con 5.10:1.
+ * Todos los pares de texto cumplen 4.5:1.
  */
 
 :root {
@@ -17,6 +18,10 @@
   --tf-fondo: #fbfaff;
   --tf-superficie: #f1f1f4;
   --tf-blanco: #ffffff;
+  /* Fondo de tarjetas y campos. Separado de `blanco`, que también es texto sobre índigo. */
+  --tf-tarjeta: #ffffff;
+  /* Hover de botones índigo: no cambia con el tema (indigo-700 sí, porque es color de texto). */
+  --tf-indigo-hover: #2f3c94;
 
   /* 2.4 Movimiento */
   --tf-dur-rapida: 150ms;
@@ -91,9 +96,18 @@
 [data-tema='oscuro']:not([data-nivel='exploradoras']) {
   --tf-fondo: #15151c;
   --tf-superficie: #20202a;
+  --tf-tarjeta: #2b2b37;
   /* --tf-blanco no cambia: se usa como texto sobre índigo y debe seguir siendo blanco. */
   --tf-tinta-900: #f2f2f7;
   --tf-tinta-600: #b8b8c4;
+  /* Índigo de texto e íconos: claro para leerse sobre fondo oscuro (9.9:1 sobre fondo). */
+  --tf-indigo-700: #b3bbff;
+  /* Acentos como fondo: tonos oscuros del mismo color (doc 08: acentos atenuados en oscuro),
+     para que el texto claro se lea encima (5.1:1 o más). */
+  --tf-lavanda-100: #2c3160;
+  --tf-ambar-200: #4f4113;
+  --tf-menta-200: #1c4630;
+  --tf-rosa-200: #56293a;
   color-scheme: dark;
 }
 
@@ -123,6 +137,8 @@
   --color-fondo: var(--tf-fondo);
   --color-superficie: var(--tf-superficie);
   --color-blanco: var(--tf-blanco);
+  --color-tarjeta: var(--tf-tarjeta);
+  --color-indigo-hover: var(--tf-indigo-hover);
   --color-transparent: transparent;
 
   --font-*: initial;

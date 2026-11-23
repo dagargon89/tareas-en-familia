@@ -31,7 +31,7 @@ async function post(request: APIRequestContext, ruta: string, data?: unknown) {
  * Petición a la API con el CSRF vigente (lo renueva con el de cada respuesta). Falla si no es 2xx.
  * Sirve para preparar datos en los e2e sin pasar por la UI.
  */
-export async function api<T = unknown>(request: APIRequestContext, metodo: 'GET' | 'POST' | 'PUT' | 'DELETE', ruta: string, data?: unknown): Promise<T> {
+export async function api<T = unknown>(request: APIRequestContext, metodo: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE', ruta: string, data?: unknown): Promise<T> {
   const r = await request.fetch(ruta, { method: metodo, headers: { 'X-CSRF-TOKEN': csrfActual }, data });
   csrfActual = r.headers()['x-csrf-token'] ?? csrfActual;
   if (!r.ok()) throw new Error(`${metodo} ${ruta} falló: ${r.status()} ${await r.text()}`);

@@ -31,19 +31,19 @@ function TarjetaHija({ h }: { h: PanelHija }) {
       </div>
 
       <dl className="m-0 grid grid-cols-3 gap-2 text-center">
-        <div className="rounded-tarjeta-interna bg-blanco p-2">
+        <div className="rounded-tarjeta-interna bg-tarjeta p-2">
           <dt className="flex items-center justify-center gap-1 text-etiqueta text-tinta-600">
             <Inbox className="size-3.5" aria-hidden="true" /> Por aprobar
           </dt>
           <dd className="m-0 text-titulo">{h.por_aprobar}</dd>
         </div>
-        <div className="rounded-tarjeta-interna bg-blanco p-2">
+        <div className="rounded-tarjeta-interna bg-tarjeta p-2">
           <dt className="flex items-center justify-center gap-1 text-etiqueta text-tinta-600">
             <Flame className="size-3.5" aria-hidden="true" /> Racha
           </dt>
           <dd className="m-0 text-titulo">{h.racha_semanas}</dd>
         </div>
-        <div className="rounded-tarjeta-interna bg-blanco p-2">
+        <div className="rounded-tarjeta-interna bg-tarjeta p-2">
           <dt className="flex items-center justify-center gap-1 text-etiqueta text-tinta-600">
             <Wallet className="size-3.5" aria-hidden="true" /> Puntos
           </dt>

@@ -30,7 +30,7 @@ export function DevolverForm({ item, enviando, onDevolver, onCancelar }: Props) 
       </label>
       <div className="flex flex-wrap gap-2">
         {SUGERENCIAS.map((s) => (
-          <button key={s} type="button" onClick={() => setMensaje(s)} className="min-h-11 rounded-boton bg-blanco px-3 text-etiqueta">
+          <button key={s} type="button" onClick={() => setMensaje(s)} className="min-h-11 rounded-boton bg-tarjeta px-3 text-etiqueta">
             {s}
           </button>
         ))}
@@ -41,7 +41,7 @@ export function DevolverForm({ item, enviando, onDevolver, onCancelar }: Props) 
         maxLength={MAX_MENSAJE}
         value={mensaje}
         onChange={(e) => setMensaje(e.target.value)}
-        className="rounded-tarjeta-interna border-2 border-transparent bg-blanco p-3 text-cuerpo text-tinta-900 outline-none focus:border-indigo-600"
+        className="rounded-tarjeta-interna border-2 border-transparent bg-tarjeta p-3 text-cuerpo text-tinta-900 outline-none focus:border-indigo-600"
       />
       <span className="self-end text-etiqueta">
         {limpio.length}/{MAX_MENSAJE}

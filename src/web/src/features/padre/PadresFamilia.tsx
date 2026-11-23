@@ -120,7 +120,7 @@ export function PadresFamiliaVista({
       </h2>
       <ul className="m-0 flex list-none flex-col gap-2 p-0">
         {padres.map((p) => (
-          <li key={p.id} className="flex flex-col gap-3 rounded-tarjeta-interna bg-blanco p-3">
+          <li key={p.id} className="flex flex-col gap-3 rounded-tarjeta-interna bg-tarjeta p-3">
             <div className="flex flex-wrap items-center gap-3">
               <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-lavanda-100 text-indigo-700" aria-hidden="true">
                 <UserRound className="size-5" />

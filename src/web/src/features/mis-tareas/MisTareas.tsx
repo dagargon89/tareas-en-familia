@@ -48,7 +48,7 @@ export function MisTareasVista({ tareas, hoy, nivel = 'aventureras', aviso, onEd
         <button type="button" onClick={() => onEditar(t)} className="inline-flex min-h-tactil items-center gap-1 rounded-boton px-3 text-etiqueta text-indigo-700 hover:bg-lavanda-100">
           <Pencil className="size-4" aria-hidden="true" /> Editar
         </button>
-        <button type="button" onClick={() => onDesactivar(t)} className="inline-flex min-h-tactil items-center gap-1 rounded-boton px-3 text-etiqueta text-tinta-600 hover:bg-blanco" aria-label={`Quitar ${t.titulo}`}>
+        <button type="button" onClick={() => onDesactivar(t)} className="inline-flex min-h-tactil items-center gap-1 rounded-boton px-3 text-etiqueta text-tinta-600 hover:bg-tarjeta" aria-label={`Quitar ${t.titulo}`}>
           <EyeOff className="size-4" aria-hidden="true" /> Quitar
         </button>
       </div>

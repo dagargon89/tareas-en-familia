@@ -34,7 +34,7 @@ export function FormRecompensa({ recompensa, enviando, onGuardar, onCancelar }: 
         <legend className="mb-2 text-etiqueta">Ícono</legend>
         <div className="grid grid-cols-8 gap-2 sm:grid-cols-12">
           {Object.entries(ICONOS).map(([clave, I]) => (
-            <button key={clave} type="button" aria-label={clave} aria-pressed={r.icono === clave} onClick={() => setR({ ...r, icono: clave })} className={`flex aspect-square items-center justify-center rounded-icono ${r.icono === clave ? FONDO_COLOR.indigo : 'bg-blanco text-tinta-900'}`}>
+            <button key={clave} type="button" aria-label={clave} aria-pressed={r.icono === clave} onClick={() => setR({ ...r, icono: clave })} className={`flex aspect-square items-center justify-center rounded-icono ${r.icono === clave ? FONDO_COLOR.indigo : 'bg-tarjeta text-tinta-900'}`}>
               <I className="size-1/2" aria-hidden="true" />
             </button>
           ))}
@@ -82,7 +82,7 @@ export function RecompensasVista({ canjes, recompensas, perfiles, ocupado, aviso
     const I = iconoDe(c.recompensa.icono);
     return (
       <li key={c.id} className="flex flex-wrap items-center gap-3 rounded-tarjeta bg-superficie p-4">
-        <span className="flex size-11 items-center justify-center rounded-icono bg-blanco text-indigo-600">
+        <span className="flex size-11 items-center justify-center rounded-icono bg-tarjeta text-indigo-700">
           <I className="size-6" aria-hidden="true" />
         </span>
         <div className="flex min-w-0 flex-1 flex-col">
@@ -170,7 +170,7 @@ export function RecompensasVista({ canjes, recompensas, perfiles, ocupado, aviso
               const I = iconoDe(r.icono);
               return (
                 <li key={r.id} className={`flex items-center gap-3 rounded-tarjeta bg-superficie p-4 ${r.activa ? '' : 'opacity-60'}`}>
-                  <span className="flex size-11 items-center justify-center rounded-icono bg-blanco text-indigo-600">
+                  <span className="flex size-11 items-center justify-center rounded-icono bg-tarjeta text-indigo-700">
                     <I className="size-6" aria-hidden="true" />
                   </span>
                   <div className="flex min-w-0 flex-1 flex-col">

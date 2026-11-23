@@ -78,7 +78,7 @@ export function TareasVista({ tareas, perfiles, perfilId, verInactivas, soloDeEl
                   <Pencil className="size-4" aria-hidden="true" /> Editar
                 </button>
                 {t.activa && (
-                  <button type="button" onClick={() => onDesactivar(t)} className="inline-flex min-h-tactil items-center gap-1 rounded-boton px-3 text-etiqueta text-tinta-600 hover:bg-blanco">
+                  <button type="button" onClick={() => onDesactivar(t)} className="inline-flex min-h-tactil items-center gap-1 rounded-boton px-3 text-etiqueta text-tinta-600 hover:bg-tarjeta">
                     <EyeOff className="size-4" aria-hidden="true" /> Desactivar
                   </button>
                 )}

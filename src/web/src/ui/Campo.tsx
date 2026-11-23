@@ -20,7 +20,7 @@ export function Campo({ etiqueta, ayuda, error, className = '', ...resto }: Prop
         id={id}
         aria-invalid={error ? true : undefined}
         aria-describedby={texto ? idAyuda : undefined}
-        className={`min-h-tactil rounded-tarjeta-interna border-2 bg-blanco px-4 text-cuerpo text-tinta-900 outline-none focus:border-indigo-600 ${error ? 'border-indigo-600' : 'border-transparent'} ${className}`}
+        className={`min-h-tactil rounded-tarjeta-interna border-2 bg-tarjeta px-4 text-cuerpo text-tinta-900 outline-none focus:border-indigo-600 ${error ? 'border-indigo-600' : 'border-transparent'} ${className}`}
         {...resto}
       />
       {texto && (
