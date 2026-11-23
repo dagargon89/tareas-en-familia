@@ -6,6 +6,11 @@ import { VOCABULARIO } from '../../niveles/vocabulario.ts';
 import { useSesionStore } from '../../stores/sesionStore.ts';
 import { FormasVivas } from '../../ui/FormasVivas.tsx';
 import { AvatarSelector } from '../acceso/AvatarSelector.tsx';
+import { EntrarPerfilVista } from '../acceso/EntrarPerfil.tsx';
+import { LoginPadreVista } from '../acceso/LoginPadre.tsx';
+import { SelectorPerfilVista } from '../acceso/SelectorPerfil.tsx';
+import { FormPerfil } from '../padre/FormPerfil.tsx';
+import { PerfilesVista } from '../padre/Perfiles.tsx';
 import { PinPad } from '../acceso/PinPad.tsx';
 import { celebrar } from '../mi-dia/Celebracion.ts';
 import { TaskCard } from '../mi-dia/TaskCard.tsx';
@@ -16,7 +21,7 @@ import { FamilyGoalBar } from '../progreso/FamilyGoalBar.tsx';
 import { StatTile } from '../progreso/StatTile.tsx';
 import { StreakBadge } from '../progreso/StreakBadge.tsx';
 import { XpWaveBar } from '../progreso/XpWaveBar.tsx';
-import { BANDEJA, INSIGNIAS, INSTANCIAS, META, NIVEL_ACTUAL, NIVEL_SIGUIENTE, PERFILES, RECOMPENSAS } from './datosGaleria.ts';
+import { BANDEJA, INSIGNIAS, INSTANCIAS, META, NIVEL_ACTUAL, NIVEL_SIGUIENTE, PERFILES, PERFILES_ADMIN, RECOMPENSAS } from './datosGaleria.ts';
 
 function Seccion({ titulo, nota, children }: { titulo: string; nota?: string; children: ReactNode }) {
   return (
@@ -27,6 +32,18 @@ function Seccion({ titulo, nota, children }: { titulo: string; nota?: string; ch
       </div>
       {children}
     </section>
+  );
+}
+
+/** Encierra una pantalla completa: el transform hace que sus elementos fixed queden dentro. */
+function Marco({ titulo, alto = 640, children }: { titulo: string; alto?: number; children: ReactNode }) {
+  return (
+    <figure className="m-0 flex flex-col gap-2">
+      <figcaption className="text-etiqueta text-tinta-600">{titulo}</figcaption>
+      <div className="relative overflow-auto rounded-tarjeta border-2 border-superficie bg-fondo [transform:translateZ(0)]" style={{ height: alto }}>
+        {children}
+      </div>
+    </figure>
   );
 }
 
@@ -71,6 +88,42 @@ export function Galeria() {
             </button>
           </div>
         </header>
+
+        <Seccion titulo="Sprint 1 · pantallas de acceso" nota="Vistas reales con datos fijos; en la app se conectan a la API">
+          <Marco titulo="/login · Login del padre (RF-02)">
+            <LoginPadreVista enviando={false} error="Correo o contraseña incorrectos." onEntrar={() => undefined} />
+          </Marco>
+          <Marco titulo="/ · Selector de perfil (RF-01)">
+            <SelectorPerfilVista perfiles={PERFILES} onElegir={() => undefined} onModoPadre={() => undefined} />
+          </Marco>
+          <Marco titulo="/entrar/2 · PIN de la hija (usa el nivel elegido arriba)" alto={760}>
+            <EntrarPerfilVista
+              perfil={{ ...PERFILES[1], nivel_ux: nivel }}
+              ocupado={false}
+              fallos={fallos}
+              error={pinMsg}
+              bloqueado={null}
+              onVolver={() => undefined}
+              onPin={(pin) => {
+                if (pin === '2580') setPinMsg('¡Bienvenida!');
+                else {
+                  setFallos((f) => f + 1);
+                  setPinMsg(v.pinIncorrecto);
+                }
+              }}
+            />
+          </Marco>
+          <Marco titulo="/padre/perfiles · Lista (RF-17)" alto={520}>
+            <div className="p-4">
+              <PerfilesVista perfiles={PERFILES_ADMIN} onNuevo={() => undefined} onEditar={() => undefined} onDesbloquear={() => undefined} onDesactivar={() => undefined} onBorrar={() => undefined} />
+            </div>
+          </Marco>
+          <Marco titulo="/padre/perfiles · Nuevo perfil (prueba un PIN como 1234)" alto={900}>
+            <div className="p-4">
+              <FormPerfil perfil={null} enviando={false} onGuardar={() => undefined} onCancelar={() => undefined} />
+            </div>
+          </Marco>
+        </Seccion>
 
         <Seccion titulo="Selector de perfil" nota="RF-01 · Vale está bloqueada 9 minutos">
           <AvatarSelector perfiles={PERFILES} onElegir={() => undefined} />

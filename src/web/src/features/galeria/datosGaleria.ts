@@ -2,7 +2,7 @@
  * Datos fijos SOLO para la galería de componentes (ADR-008). No implementan ApiClient
  * ni se usan fuera de /app/galeria.
  */
-import type { Insignia, Instancia, InstanciaRevision, Meta, Nivel, PerfilPublico, RecompensaParaPerfil } from '../../api/ApiClient.ts';
+import type { PerfilAdmin, Insignia, Instancia, InstanciaRevision, Meta, Nivel, PerfilPublico, RecompensaParaPerfil } from '../../api/ApiClient.ts';
 import { fechaLocal } from '../../lib/fechas.ts';
 
 const hoy = fechaLocal();
@@ -47,3 +47,7 @@ export const BANDEJA: InstanciaRevision[] = [
   { ...INSTANCIAS[4], perfil: PERFILES[1] },
   { ...base, id: 21, tarea_id: 7, perfil_id: 1, hora: null, titulo: 'Guardar juguetes', icono: 'rompecabezas', color: 'ambar', tipo: 'casa', puntos: 3, estado: 'hecha', perfil: PERFILES[0] },
 ];
+
+export const PERFILES_ADMIN: PerfilAdmin[] = PERFILES.map((p, i) => ({ ...p, activo: true, orden: i, pin_intentos: p.bloqueado_hasta ? 5 : 0 })).concat([
+  { id: 4, apodo: 'Prueba', avatar: 'nube', color: 'lavanda', nivel_ux: 'aventureras', sonidos: true, tema: 'claro', bloqueado_hasta: null, activo: false, orden: 3, pin_intentos: 0 },
+]);
