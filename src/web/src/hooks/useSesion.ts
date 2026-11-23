@@ -1,6 +1,6 @@
 import { queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
-import type { Sesion } from '../api/ApiClient.ts';
+import type { InstalacionEntrada, Sesion } from '../api/ApiClient.ts';
 import { ErrorApi, api } from '../api/HttpApiClient.ts';
 
 export const CLAVE_SESION = ['sesion'] as const;
@@ -78,4 +78,35 @@ export function useModoPadreVigente(sesion: Sesion | undefined): boolean {
     return () => window.clearInterval(t);
   }, [hasta]);
   return hasta !== null && new Date(hasta).getTime() > ahora;
+}
+
+export const CLAVE_INSTALACION = ['instalacion'] as const;
+
+/**
+ * Estado de la instalación inicial (E-49, RF-20). Si la API no responde se asume que no
+ * hace falta instalar, para que el login siga visible.
+ */
+export function useEstadoInstalacion() {
+  return useQuery({
+    queryKey: CLAVE_INSTALACION,
+    queryFn: async () => {
+      try {
+        return await api.estadoInstalacion();
+      } catch {
+        return { requerida: false, requiere_token: false };
+      }
+    },
+    staleTime: 5 * 60_000,
+  });
+}
+
+export function useInstalar() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (datos: InstalacionEntrada) => api.instalar(datos),
+    onSuccess: (sesion) => {
+      qc.setQueryData(CLAVE_SESION, sesion);
+      qc.setQueryData(CLAVE_INSTALACION, { requerida: false, requiere_token: false });
+    },
+  });
 }

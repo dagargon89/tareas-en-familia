@@ -1,6 +1,7 @@
 import { createBrowserRouter, Navigate } from 'react-router';
 import { EntrarPerfil } from './features/acceso/EntrarPerfil.tsx';
 import { RequiereModoPadre, RequierePerfil, RequiereSesion } from './features/acceso/Guardias.tsx';
+import { Instalacion } from './features/acceso/Instalacion.tsx';
 import { LoginPadre } from './features/acceso/LoginPadre.tsx';
 import { ModoPadrePin } from './features/acceso/ModoPadrePin.tsx';
 import { SelectorPerfil } from './features/acceso/SelectorPerfil.tsx';
@@ -17,6 +18,7 @@ import { EnConstruccion } from './ui/EnConstruccion.tsx';
 export const router = createBrowserRouter(
   [
     { path: '/login', element: <LoginPadre /> },
+    { path: '/instalacion', element: <Instalacion /> },
     { path: '/', element: <RequiereSesion><SelectorPerfil /></RequiereSesion> },
     { path: '/entrar/:id', element: <RequiereSesion><EntrarPerfil /></RequiereSesion> },
     { path: '/modo-padre', element: <RequiereSesion><ModoPadrePin /></RequiereSesion> },

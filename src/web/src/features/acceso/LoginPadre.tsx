@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { Navigate, useNavigate } from 'react-router';
-import { useLogin, useSesion } from '../../hooks/useSesion.ts';
+import { useEstadoInstalacion, useLogin, useSesion } from '../../hooks/useSesion.ts';
 import { detalleError } from '../../lib/errores.ts';
 import { Boton } from '../../ui/Boton.tsx';
 import { Campo } from '../../ui/Campo.tsx';
@@ -52,8 +52,11 @@ export function LoginPadre() {
   const navegar = useNavigate();
   const { data } = useSesion();
   const login = useLogin();
+  const instalacion = useEstadoInstalacion();
 
   if (data?.usuario) return <Navigate to="/" replace />;
+  // RF-20: sin ningún usuario en la base, primero se configura la app.
+  if (instalacion.data?.requerida) return <Navigate to="/instalacion" replace />;
 
   const error = login.error ? (MENSAJES[detalleError(login.error).codigo] ?? detalleError(login.error).mensaje) : null;
   return (
