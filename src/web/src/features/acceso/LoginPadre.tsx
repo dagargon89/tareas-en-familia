@@ -27,7 +27,13 @@ export function LoginPadreVista({ onEntrar, enviando, error }: VistaProps) {
       <FormasVivas />
       <header className="flex flex-col gap-2">
         <h1 className="m-0 text-display">Tareas en Familia</h1>
-        <p className="m-0 text-cuerpo text-tinta-600">Papá o mamá: abre la sesión de este dispositivo. Dura 30 días.</p>
+        <p className="m-0 text-cuerpo text-tinta-600">Papá o mamá: entren una sola vez en este dispositivo.</p>
+        {/* ADR-003: la cuenta del padre abre el dispositivo; las hijas entran con avatar y PIN. */}
+        <ul className="m-0 flex list-disc flex-col gap-1 pl-5 text-etiqueta text-tinta-600">
+          <li>Después, sus hijas abren la app con su avatar y su PIN, sin su contraseña.</li>
+          <li>La sesión se renueva sola mientras se use; solo vence si pasan 30 días sin abrir la app.</li>
+          <li>En iPhone, si instalan la app en la pantalla de inicio, entren una vez también desde ahí.</li>
+        </ul>
       </header>
       <form onSubmit={enviar} className="flex flex-col gap-4 rounded-tarjeta bg-superficie p-6" noValidate>
         <Campo etiqueta="Correo" type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} required />
