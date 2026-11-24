@@ -50,6 +50,7 @@ El número de documento es global y estable. El número de carpeta solo indica o
 | 10 | `06-pruebas/sprints/` | Registro de ejecución por sprint (se llena en Fase 2) |
 | 09 | `demo-ux/` | Omitido por ADR-008 |
 | 11 | `08-operacion/` | Despliegue y operación (Fase 3) |
+| 12 | `08-operacion/12_guia_familia.md` | Guía de uso para la familia: cómo se entra en cada dispositivo, cambiar de perfil vs. cerrar sesión, situaciones frecuentes |
 
 ## Estructura del repositorio de código
 

@@ -63,7 +63,7 @@ export function PadreLayout() {
             title="Cerrar la sesión de este dispositivo"
             aria-label="Cerrar la sesión de este dispositivo"
             onClick={() => {
-              if (window.confirm('¿Cerrar la sesión de este dispositivo? Habrá que volver a entrar con correo y contraseña.')) {
+              if (window.confirm('¿Cerrar la sesión de este dispositivo?\n\nSus hijas ya no podrán entrar con su avatar y PIN hasta que papá o mamá vuelvan a iniciar sesión con correo y contraseña.\n\nPara que entre otra hija, no hace falta cerrar la sesión: usen «Cambiar de perfil».')) {
                 logout.mutate(undefined, { onSuccess: () => navegar('/login', { replace: true }) });
               }
             }}
