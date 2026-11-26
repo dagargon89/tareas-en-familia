@@ -3,7 +3,8 @@ import { useProgreso } from '../../hooks/useProgreso.ts';
 import { usePerfiles } from '../../hooks/useSesion.ts';
 import { VOCABULARIO } from '../../niveles/vocabulario.ts';
 import { useSesionStore } from '../../stores/sesionStore.ts';
-import { Cargando } from '../../ui/Cargando.tsx';
+import { SkeletonLista } from '../../ui/Cargando.tsx';
+import { EstadoError } from '../../ui/EstadoError.tsx';
 import { BadgeGrid } from './BadgeGrid.tsx';
 import { FamilyGoalBar } from './FamilyGoalBar.tsx';
 import { StatTile } from './StatTile.tsx';
@@ -66,7 +67,7 @@ export function MisLogros() {
   const progreso = useProgreso();
   const perfiles = usePerfiles();
   const nivel = useSesionStore((s) => s.nivel);
-  if (progreso.isPending) return <Cargando />;
-  if (progreso.isError) return <p className="rounded-tarjeta bg-lavanda-100 p-6 text-cuerpo text-indigo-700">No pudimos cargar tus logros. Intenta de nuevo.</p>;
+  if (progreso.isPending) return <SkeletonLista filas={3} texto="Cargando tus logros…" />;
+  if (progreso.isError) return <EstadoError mensaje="No pudimos cargar tus logros. Intenta de nuevo." onReintentar={() => void progreso.refetch()} />;
   return <MisLogrosVista progreso={progreso.data} nivel={nivel} perfiles={perfiles.data ?? []} />;
 }

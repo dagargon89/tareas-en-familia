@@ -1,21 +1,33 @@
-import { BookOpen, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { BookOpen, Camera, ChevronLeft, ChevronRight, PartyPopper, Plus, Send } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import type { Dia, Instancia, NivelUx } from '../../api/ApiClient.ts';
 import { useMarcarHecha, useMiDia } from '../../hooks/useMiDia.ts';
 import { useSesion } from '../../hooks/useSesion.ts';
+import { comprimirImagen } from '../../lib/comprimirImagen.ts';
 import { detalleError } from '../../lib/errores.ts';
 import { diasEntre, fechaLarga, fechaLocal, sumarDias } from '../../lib/fechas.ts';
 import { sonar } from '../../lib/sonidos.ts';
 import { VOCABULARIO } from '../../niveles/vocabulario.ts';
 import { useSesionStore } from '../../stores/sesionStore.ts';
-import { Cargando } from '../../ui/Cargando.tsx';
+import { Boton } from '../../ui/Boton.tsx';
+import { SkeletonLista } from '../../ui/Cargando.tsx';
+import { EstadoError } from '../../ui/EstadoError.tsx';
+import { LightboxFoto } from '../../ui/LightboxFoto.tsx';
+import { Toast } from '../../ui/Toast.tsx';
 import { celebrar } from './Celebracion.ts';
 import { puedeCrearTareas } from '../mis-tareas/escolarPropia.ts';
 import { TaskCard } from './TaskCard.tsx';
 
 /** RF-04: se puede ir hasta 7 días atrás y 7 adelante. */
 export const RANGO_DIAS = 7;
+
+const ORDEN_ESTADO: Record<Instancia['estado'], number> = {
+  devuelta: 0,
+  pendiente: 1,
+  hecha: 2,
+  aprobada: 3,
+};
 
 interface VistaProps {
   dia: Dia;
@@ -24,18 +36,21 @@ interface VistaProps {
   nivel: NivelUx;
   marcando: number | null;
   aviso: string | null;
+  onCerrarAviso?: () => void;
   onCambiarDia: (fecha: string) => void;
   onListo: (i: Instancia, origen: { x: number; y: number }) => void;
 }
 
 /** Vista de "Mi día" (RF-04, RF-05, RF-13). */
-export function MiDiaVista({ dia, hoy, apodo, nivel, marcando, aviso, onCambiarDia, onListo }: VistaProps) {
+export function MiDiaVista({ dia, hoy, apodo, nivel, marcando, aviso, onCerrarAviso, onCambiarDia, onListo }: VistaProps) {
   const v = VOCABULARIO[nivel];
   const desplazamiento = diasEntre(hoy, dia.fecha);
   const esFuturo = desplazamiento > 0;
   const titulo = dia.es_hoy ? `¡Hola, ${apodo}!` : desplazamiento === -1 ? 'Ayer' : desplazamiento === 1 ? 'Mañana' : fechaLarga(dia.fecha);
   const { total, hechas } = dia.resumen;
-  const flecha = 'inline-flex size-tactil items-center justify-center rounded-full bg-superficie text-indigo-700 disabled:opacity-30';
+  const diaCompleto = total > 0 && hechas >= total;
+  const ordenadas = [...dia.instancias].sort((a, b) => ORDEN_ESTADO[a.estado] - ORDEN_ESTADO[b.estado]);
+  const flecha = 'inline-flex size-tactil items-center justify-center rounded-full bg-superficie text-indigo-700 transition-colors hover:bg-lavanda-100 disabled:opacity-30';
 
   return (
     <section className="flex flex-col gap-5">
@@ -60,7 +75,7 @@ export function MiDiaVista({ dia, hoy, apodo, nivel, marcando, aviso, onCambiarD
 
       {puedeCrearTareas(nivel) && (
         <div className="flex flex-wrap gap-2">
-          <Link to="/mis-tareas/nueva" className="inline-flex min-h-tactil flex-1 items-center justify-center gap-2 rounded-boton bg-lavanda-100 px-5 text-etiqueta text-indigo-700">
+          <Link to="/mis-tareas/nueva" className="inline-flex min-h-tactil flex-1 items-center justify-center gap-2 rounded-boton bg-lavanda-100 px-5 text-etiqueta text-indigo-700 transition hover:brightness-95">
             <Plus className="size-5" aria-hidden="true" /> Agregar tarea de la escuela
           </Link>
           <Link to="/mis-tareas" className="inline-flex min-h-tactil items-center justify-center gap-2 rounded-boton px-4 text-etiqueta text-indigo-700 hover:bg-lavanda-100">
@@ -80,19 +95,28 @@ export function MiDiaVista({ dia, hoy, apodo, nivel, marcando, aviso, onCambiarD
         </div>
       )}
 
+      {diaCompleto && (
+        <div className="flex items-center gap-3 rounded-tarjeta bg-menta-200 p-4 text-cuerpo text-tinta-900">
+          <PartyPopper className="size-6 shrink-0 text-indigo-700" aria-hidden="true" />
+          <span>
+            {nivel === 'pro'
+              ? 'Todas las tareas de este día están listas.'
+              : '¡Increíble! Terminaste todas tus misiones de hoy.'}
+          </span>
+        </div>
+      )}
+
       {esFuturo && total > 0 && (
         <p className="m-0 text-etiqueta text-tinta-600">Estas {v.tareas.toLowerCase()} se pueden marcar cuando llegue el día.</p>
       )}
 
-      <p aria-live="polite" className="m-0 empty:hidden rounded-tarjeta-interna bg-lavanda-100 p-3 text-cuerpo text-indigo-700">
-        {aviso}
-      </p>
+      <Toast mensaje={aviso} sobreNav onCerrar={onCerrarAviso} />
 
       {total === 0 ? (
         <p className="m-0 rounded-tarjeta bg-superficie p-8 text-center text-cuerpo">{v.diaVacio}</p>
       ) : (
         <div className="flex flex-col gap-4">
-          {dia.instancias.map((i) => (
+          {ordenadas.map((i) => (
             <TaskCard key={i.id} instancia={i} nivel={nivel} puedeMarcar={!esFuturo} cargando={marcando === i.id} onListo={onListo} />
           ))}
         </div>
@@ -115,6 +139,14 @@ export function MiDia() {
   const [aviso, setAviso] = useState<string | null>(null);
   const entradaFoto = useRef<HTMLInputElement>(null);
   const pendienteFoto = useRef<{ i: Instancia; origen: { x: number; y: number } } | null>(null);
+  const [vistaPrevia, setVistaPrevia] = useState<{ i: Instancia; origen: { x: number; y: number }; archivo: File; url: string } | null>(null);
+
+  useEffect(() => {
+    const url = vistaPrevia?.url;
+    return () => {
+      if (url && typeof URL.revokeObjectURL === 'function') URL.revokeObjectURL(url);
+    };
+  }, [vistaPrevia?.url]);
 
   function enviar(i: Instancia, origen: { x: number; y: number }, foto?: File) {
     setAviso(null);
@@ -140,8 +172,8 @@ export function MiDia() {
     enviar(i, origen);
   }
 
-  if (dia.isPending) return <Cargando />;
-  if (dia.isError) return <p className="rounded-tarjeta bg-lavanda-100 p-6 text-cuerpo text-indigo-700">No pudimos cargar tu día. Revisa el internet e intenta de nuevo.</p>;
+  if (dia.isPending) return <SkeletonLista filas={3} texto="Cargando tu día…" />;
+  if (dia.isError) return <EstadoError mensaje="No pudimos cargar tu día. Revisa el internet e intenta de nuevo." onReintentar={() => void dia.refetch()} />;
 
   return (
     <>
@@ -152,6 +184,7 @@ export function MiDia() {
         nivel={nivel}
         marcando={marcar.isPending ? (marcar.variables?.instancia.id ?? null) : null}
         aviso={aviso}
+        onCerrarAviso={() => setAviso(null)}
         onCambiarDia={(f) => {
           setAviso(null);
           setParams(f === hoy ? {} : { fecha: f }, { replace: true });
@@ -162,20 +195,62 @@ export function MiDia() {
         ref={entradaFoto}
         type="file"
         accept="image/jpeg,image/png,image/webp"
-        capture="environment"
         className="hidden"
-        onChange={(e) => {
-          const archivo = e.target.files?.[0];
+        onChange={async (e) => {
+          const original = e.target.files?.[0];
           const p = pendienteFoto.current;
           e.target.value = '';
           pendienteFoto.current = null;
-          if (!archivo || !p) return;
+          if (!original || !p) return;
+          const archivo = await comprimirImagen(original);
           if (archivo.size > 3 * 1024 * 1024) {
             setAviso('La foto es muy grande (máximo 3 MB). Prueba con otra.');
             return;
           }
-          enviar(p.i, p.origen, archivo);
+          if (typeof URL.createObjectURL === 'function') {
+            setVistaPrevia({ ...p, archivo, url: URL.createObjectURL(archivo) });
+          } else {
+            enviar(p.i, p.origen, archivo);
+          }
         }}
+      />
+      <LightboxFoto
+        abierto={vistaPrevia !== null}
+        titulo={vistaPrevia?.i.titulo ?? ''}
+        subtitulo="¿Se ve bien tu foto?"
+        src={vistaPrevia?.url ?? ''}
+        alt={`Vista previa de ${vistaPrevia?.i.titulo ?? 'evidencia'}`}
+        onCerrar={() => setVistaPrevia(null)}
+        acciones={
+          vistaPrevia && (
+            <>
+              <Boton
+                variante="secundario"
+                tamano="compacto"
+                icono={<Camera className="size-4" aria-hidden="true" />}
+                onClick={() => {
+                  pendienteFoto.current = { i: vistaPrevia.i, origen: vistaPrevia.origen };
+                  setVistaPrevia(null);
+                  entradaFoto.current?.click();
+                }}
+              >
+                Elegir otra
+              </Boton>
+              <Boton
+                variante="primario"
+                tamano="compacto"
+                icono={<Send className="size-4" aria-hidden="true" />}
+                onClick={() => {
+                  const actual = vistaPrevia;
+                  setVistaPrevia(null);
+                  enviar(actual.i, actual.origen, actual.archivo);
+                }}
+              >
+                Enviar foto
+              </Boton>
+            </>
+          )
+        }
       />
     </>
   );

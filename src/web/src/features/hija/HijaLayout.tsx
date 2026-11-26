@@ -7,6 +7,7 @@ import { useSesionStore } from '../../stores/sesionStore.ts';
 import { FONDO_COLOR, avatarDe } from '../../lib/avatares.ts';
 import { VOCABULARIO } from '../../niveles/vocabulario.ts';
 import { FormasVivas } from '../../ui/FormasVivas.tsx';
+import { SaltarContenido } from '../../ui/SaltarContenido.tsx';
 
 /** Navegación por nivel (doc 08 §3): 3 botones, 4 pestañas o 5 pestañas. */
 function seccionesDe(nivel: NivelUx) {
@@ -45,6 +46,7 @@ export function HijaLayoutVista({ perfil, onCambiar, onSonidos, onTema }: VistaP
   const amplia = useMatch('/calendario') !== null;
   return (
     <div className="relative flex min-h-dvh flex-col">
+      <SaltarContenido />
       <FormasVivas />
       <header className="flex items-center gap-3 px-4 pt-4 sm:px-8">
         <span className={`flex size-12 items-center justify-center rounded-full ${FONDO_COLOR[perfil.color]}`}>
@@ -68,21 +70,21 @@ export function HijaLayoutVista({ perfil, onCambiar, onSonidos, onTema }: VistaP
           Cambiar de perfil
         </button>
       </header>
-      <main className={`mx-auto w-full flex-1 px-4 pt-4 pb-32 sm:px-8 ${amplia ? 'max-w-3xl lg:max-w-6xl' : 'max-w-3xl'}`}>
+      <main id="contenido-principal" className={`mx-auto w-full flex-1 px-4 pt-4 pb-32 sm:px-8 ${amplia ? 'max-w-3xl lg:max-w-6xl' : 'max-w-3xl'}`}>
         <Outlet />
       </main>
-      <nav aria-label="Secciones" className="fixed inset-x-0 bottom-0 border-t border-superficie bg-fondo px-2 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+      <nav aria-label="Secciones" className="fixed inset-x-0 bottom-0 z-20 border-t border-superficie bg-fondo px-2 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
         <ul className="mx-auto flex max-w-3xl justify-around gap-1">
           {secciones.map(({ a, texto, Icono }) => (
-            <li key={a} className="flex-1">
+            <li key={a} className="min-w-0 flex-1">
               <NavLink
                 to={a}
                 className={({ isActive }) =>
-                  `flex min-h-tactil flex-col items-center justify-center gap-1 rounded-tarjeta-interna px-2 py-1 text-etiqueta ${isActive ? 'bg-lavanda-100 text-indigo-700' : 'text-tinta-600'}`
+                  `flex min-h-tactil flex-col items-center justify-center gap-1 rounded-tarjeta-interna px-1.5 py-1 text-etiqueta transition-colors ${isActive ? 'bg-lavanda-100 text-indigo-700' : 'text-tinta-600 hover:bg-superficie'}`
                 }
               >
                 <Icono style={{ width: 'calc(var(--tf-icono) * 0.75)', height: 'calc(var(--tf-icono) * 0.75)' }} aria-hidden="true" />
-                {texto}
+                <span className="max-w-full truncate">{texto}</span>
               </NavLink>
             </li>
           ))}

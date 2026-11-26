@@ -6,8 +6,10 @@ import { useCategorias, useDesactivarTarea, useGuardarTarea, useTareasAdmin } fr
 import { detalleError } from '../../lib/errores.ts';
 import { fechaLocal } from '../../lib/fechas.ts';
 import { Boton } from '../../ui/Boton.tsx';
-import { Cargando } from '../../ui/Cargando.tsx';
+import { SkeletonLista } from '../../ui/Cargando.tsx';
 import { Chip } from '../../ui/Chip.tsx';
+import { DialogoConfirmacion } from '../../ui/DialogoConfirmacion.tsx';
+import { EstadoError } from '../../ui/EstadoError.tsx';
 import { Icono } from '../../ui/Icono.tsx';
 import { FormTarea } from './FormTarea.tsx';
 import { cuandoToca } from './validarTarea.ts';
@@ -31,7 +33,7 @@ export function TareasVista({ tareas, perfiles, perfilId, verInactivas, soloDeEl
   const visibles = soloDeEllas ? tareas.filter((t) => t.creada_por === 'perfil') : tareas;
   const deEllas = tareas.filter((t) => t.creada_por === 'perfil' && t.activa).length;
   const apodo = (id: number) => perfiles.find((p) => p.id === id)?.apodo ?? '—';
-  const filtro = (activo: boolean) => `min-h-tactil rounded-boton px-4 text-etiqueta ${activo ? 'bg-indigo-600 text-blanco' : 'bg-superficie'}`;
+  const filtro = (activo: boolean) => `min-h-tactil rounded-boton px-4 text-etiqueta transition-colors ${activo ? 'bg-indigo-600 text-blanco' : 'bg-superficie hover:bg-lavanda-100 hover:text-indigo-700'}`;
   return (
     <section className="flex flex-col gap-4">
       <div className="flex items-center justify-between gap-4">
@@ -53,8 +55,8 @@ export function TareasVista({ tareas, perfiles, perfilId, verInactivas, soloDeEl
           <Sparkles className="mr-1 inline size-4" aria-hidden="true" />
           Creadas por ellas{deEllas > 0 ? ` (${deEllas})` : ''}
         </button>
-        <label className="ml-auto flex items-center gap-2 text-etiqueta text-tinta-600">
-          <input type="checkbox" checked={verInactivas} onChange={(e) => onVerInactivas(e.target.checked)} /> Ver desactivadas
+        <label className="ml-auto flex min-h-tactil cursor-pointer items-center gap-2 text-etiqueta text-tinta-600">
+          <input type="checkbox" className="size-5 accent-[var(--tf-indigo-600)]" checked={verInactivas} onChange={(e) => onVerInactivas(e.target.checked)} /> Ver desactivadas
         </label>
       </div>
       {visibles.length === 0 ? (
@@ -97,6 +99,7 @@ export function Tareas() {
   const [verInactivas, setVerInactivas] = useState(false);
   const [soloDeEllas, setSoloDeEllas] = useState(false);
   const [editando, setEditando] = useState<Tarea | 'nueva' | null>(null);
+  const [porDesactivar, setPorDesactivar] = useState<Tarea | null>(null);
 
   const tareas = useTareasAdmin({ perfil_id: perfilId ?? undefined, activa: verInactivas ? undefined : true });
   const perfiles = usePerfilesAdmin();
@@ -104,9 +107,18 @@ export function Tareas() {
   const guardar = useGuardarTarea();
   const desactivar = useDesactivarTarea();
 
-  if (tareas.isPending || perfiles.isPending || categorias.isPending) return <Cargando />;
+  if (tareas.isPending || perfiles.isPending || categorias.isPending) return <SkeletonLista filas={4} texto="Cargando tareas…" />;
   if (tareas.isError || perfiles.isError || categorias.isError) {
-    return <p className="text-cuerpo text-indigo-700">No se pudieron cargar las tareas. Intenta de nuevo.</p>;
+    return (
+      <EstadoError
+        mensaje="No se pudieron cargar las tareas. Intenta de nuevo."
+        onReintentar={() => {
+          void tareas.refetch();
+          void perfiles.refetch();
+          void categorias.refetch();
+        }}
+      />
+    );
   }
 
   const activos = perfiles.data.filter((p) => p.activo);
@@ -136,23 +148,36 @@ export function Tareas() {
   }
 
   return (
-    <TareasVista
-      tareas={tareas.data}
-      perfiles={activos}
-      perfilId={perfilId}
-      verInactivas={verInactivas}
-      soloDeEllas={soloDeEllas}
-      colorDeCategoria={(id) => categorias.data.find((c) => c.id === id)?.color ?? 'lavanda'}
-      onFiltrar={setPerfilId}
-      onVerInactivas={setVerInactivas}
-      onSoloDeEllas={setSoloDeEllas}
-      onNueva={() => setEditando('nueva')}
-      onEditar={setEditando}
-      onDesactivar={(t) => {
-        if (window.confirm(`¿Desactivar "${t.titulo}"? Se quitan los días pendientes que vienen; el historial se conserva.`)) {
+    <>
+      <TareasVista
+        tareas={tareas.data}
+        perfiles={activos}
+        perfilId={perfilId}
+        verInactivas={verInactivas}
+        soloDeEllas={soloDeEllas}
+        colorDeCategoria={(id) => categorias.data.find((c) => c.id === id)?.color ?? 'lavanda'}
+        onFiltrar={setPerfilId}
+        onVerInactivas={setVerInactivas}
+        onSoloDeEllas={setSoloDeEllas}
+        onNueva={() => setEditando('nueva')}
+        onEditar={setEditando}
+        onDesactivar={(t) => setPorDesactivar(t)}
+      />
+      <DialogoConfirmacion
+        abierto={porDesactivar !== null}
+        titulo={porDesactivar ? `¿Desactivar "${porDesactivar.titulo}"?` : ''}
+        mensaje="Se quitan los días pendientes que vienen; el historial ya completado se conserva."
+        textoConfirmar="Desactivar"
+        textoCancelar="Cancelar"
+        ocupado={desactivar.isPending}
+        onCancelar={() => setPorDesactivar(null)}
+        onConfirmar={() => {
+          if (!porDesactivar) return;
+          const t = porDesactivar;
+          setPorDesactivar(null);
           desactivar.mutate(t.id);
-        }
-      }}
-    />
+        }}
+      />
+    </>
   );
 }

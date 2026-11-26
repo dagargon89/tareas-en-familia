@@ -3,13 +3,15 @@ import { useState, type FormEvent, type ReactNode } from 'react';
 import type { Canje, PerfilPublico, Recompensa, RecompensaEntrada } from '../../api/ApiClient.ts';
 import { useCanjesAdmin, useGuardarRecompensa, useRecompensasAdmin, useRevisarCanje } from '../../hooks/usePremios.ts';
 import { usePerfilesAdmin } from '../../hooks/usePerfilesAdmin.ts';
-import { FONDO_COLOR } from '../../lib/avatares.ts';
 import { detalleError } from '../../lib/errores.ts';
 import { fechaCorta } from '../../lib/fechas.ts';
-import { ICONOS, iconoDe } from '../../lib/iconos.ts';
+import { iconoDe } from '../../lib/iconos.ts';
 import { Boton } from '../../ui/Boton.tsx';
 import { Campo } from '../../ui/Campo.tsx';
-import { Cargando } from '../../ui/Cargando.tsx';
+import { SkeletonLista } from '../../ui/Cargando.tsx';
+import { EstadoError } from '../../ui/EstadoError.tsx';
+import { SelectorIcono } from '../../ui/SelectorIcono.tsx';
+import { Toast } from '../../ui/Toast.tsx';
 import { COSTO_MAXIMO, validarRecompensa } from './validarJuego.ts';
 
 // ===== Formulario de recompensa =====
@@ -32,13 +34,12 @@ export function FormRecompensa({ recompensa, enviando, onGuardar, onCancelar }: 
       <Campo etiqueta="Costo en puntos" type="number" min={1} max={COSTO_MAXIMO} value={Number.isNaN(r.costo) ? '' : r.costo} onChange={(e) => setR({ ...r, costo: e.target.valueAsNumber })} error={ver('costo')} />
       <fieldset className="m-0 flex flex-col gap-2 border-0 p-0">
         <legend className="mb-2 text-etiqueta">Ícono</legend>
-        <div className="grid grid-cols-8 gap-2 sm:grid-cols-12">
-          {Object.entries(ICONOS).map(([clave, I]) => (
-            <button key={clave} type="button" aria-label={clave} aria-pressed={r.icono === clave} onClick={() => setR({ ...r, icono: clave })} className={`flex aspect-square items-center justify-center rounded-icono ${r.icono === clave ? FONDO_COLOR.indigo : 'bg-tarjeta text-tinta-900'}`}>
-              <I className="size-1/2" aria-hidden="true" />
-            </button>
-          ))}
-        </div>
+        <SelectorIcono
+          valor={r.icono}
+          fondoInactivo="tarjeta"
+          sugeridos={['regalo', 'helado', 'pizza', 'palomitas', 'cine', 'videojuego', 'tele', 'tableta', 'bici', 'trofeo', 'estrella', 'boleto']}
+          onCambiar={(clave) => setR({ ...r, icono: clave })}
+        />
       </fieldset>
       <label className="flex min-h-tactil items-center gap-3 text-cuerpo">
         <input type="checkbox" className="size-6 accent-[var(--tf-indigo-600)]" checked={r.activa} onChange={(e) => setR({ ...r, activa: e.target.checked })} />
@@ -64,6 +65,7 @@ interface VistaProps {
   perfiles: PerfilPublico[];
   ocupado: boolean;
   aviso: string | null;
+  onCerrarAviso?: () => void;
   editando: Recompensa | 'nueva' | null;
   guardando: boolean;
   onRevisar: (c: Canje, decision: 'aprobado' | 'rechazado' | 'entregado') => void;
@@ -72,11 +74,11 @@ interface VistaProps {
 }
 
 /** Premios en modo padre (RF-09): primero lo que espera respuesta, luego el catálogo. */
-export function RecompensasVista({ canjes, recompensas, perfiles, ocupado, aviso, editando, guardando, onRevisar, onEditar, onGuardar }: VistaProps) {
+export function RecompensasVista({ canjes, recompensas, perfiles, ocupado, aviso, onCerrarAviso, editando, guardando, onRevisar, onEditar, onGuardar }: VistaProps) {
   const apodo = (id: number) => perfiles.find((p) => p.id === id)?.apodo ?? '—';
   const porRevisar = canjes.filter((c) => c.estado === 'solicitado');
   const porEntregar = canjes.filter((c) => c.estado === 'aprobado');
-  const accion = 'inline-flex min-h-tactil items-center gap-1 rounded-boton px-4 text-etiqueta';
+  const accion = 'inline-flex min-h-tactil items-center gap-1 rounded-boton px-4 text-etiqueta transition hover:brightness-95 active:scale-95 motion-reduce:active:scale-100';
 
   const fila = (c: Canje, botones: ReactNode) => {
     const I = iconoDe(c.recompensa.icono);
@@ -99,9 +101,7 @@ export function RecompensasVista({ canjes, recompensas, perfiles, ocupado, aviso
   return (
     <section className="flex flex-col gap-6">
       <h1 className="m-0 text-display">Premios</h1>
-      <p aria-live="polite" className="m-0 empty:hidden rounded-tarjeta-interna bg-menta-200 p-3 text-cuerpo">
-        {aviso}
-      </p>
+      <Toast mensaje={aviso} tono="menta" onCerrar={onCerrarAviso} />
 
       <div className="flex flex-col gap-3">
         <h2 className="m-0 text-titulo">Por revisar ({porRevisar.length})</h2>
@@ -203,8 +203,19 @@ export function Recompensas() {
   const [aviso, setAviso] = useState<string | null>(null);
   const [editando, setEditando] = useState<Recompensa | 'nueva' | null>(null);
 
-  if (canjes.isPending || recompensas.isPending || perfiles.isPending) return <Cargando />;
-  if (canjes.isError || recompensas.isError || perfiles.isError) return <p className="text-cuerpo text-indigo-700">No se pudieron cargar los premios. Intenta de nuevo.</p>;
+  if (canjes.isPending || recompensas.isPending || perfiles.isPending) return <SkeletonLista filas={3} texto="Cargando premios…" />;
+  if (canjes.isError || recompensas.isError || perfiles.isError) {
+    return (
+      <EstadoError
+        mensaje="No se pudieron cargar los premios. Intenta de nuevo."
+        onReintentar={() => {
+          void canjes.refetch();
+          void recompensas.refetch();
+          void perfiles.refetch();
+        }}
+      />
+    );
+  }
 
   return (
     <RecompensasVista
@@ -213,6 +224,7 @@ export function Recompensas() {
       perfiles={perfiles.data}
       ocupado={revisar.isPending}
       aviso={aviso}
+      onCerrarAviso={() => setAviso(null)}
       editando={editando}
       guardando={guardar.isPending}
       onRevisar={(c, decision) =>

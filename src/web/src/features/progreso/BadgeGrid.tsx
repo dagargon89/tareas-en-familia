@@ -1,6 +1,7 @@
 import { Lock } from 'lucide-react';
 import type { Insignia } from '../../api/ApiClient.ts';
 import { FONDO_COLOR } from '../../lib/avatares.ts';
+import { fechaCorta } from '../../lib/fechas.ts';
 import { iconoDe } from '../../lib/iconos.ts';
 
 /** Rejilla de insignias: obtenidas a color, bloqueadas con borde punteado y candado (RF-11). */
@@ -10,8 +11,9 @@ export function BadgeGrid({ insignias }: { insignias: Insignia[] }) {
       {insignias.map((ins) => {
         const obtenida = ins.obtenida_en !== null;
         const Icono = obtenida ? iconoDe(ins.icono) : Lock;
+        const fecha = ins.obtenida_en && /^\d{4}-\d{2}-\d{2}/.test(ins.obtenida_en) ? fechaCorta(ins.obtenida_en.slice(0, 10)) : null;
         return (
-          <li key={ins.codigo} className="flex flex-col items-center gap-2 text-center">
+          <li key={ins.codigo} className="flex flex-col items-center gap-1.5 rounded-tarjeta-interna bg-superficie/60 p-3 text-center">
             <span
               className={`flex size-20 items-center justify-center rounded-full ${
                 obtenida ? FONDO_COLOR[ins.color] : 'border-2 border-dashed border-tinta-600 text-tinta-600'
@@ -19,8 +21,9 @@ export function BadgeGrid({ insignias }: { insignias: Insignia[] }) {
             >
               <Icono className="size-9" aria-hidden="true" />
             </span>
-            <span className="text-etiqueta">{ins.nombre}</span>
-            {!obtenida && <span className="text-etiqueta text-tinta-600">{ins.descripcion}</span>}
+            <span className="text-etiqueta text-tinta-900">{ins.nombre}</span>
+            {ins.descripcion && <span className="text-etiqueta text-tinta-600">{ins.descripcion}</span>}
+            {obtenida && fecha && <span className="text-etiqueta text-indigo-700">Ganada el {fecha}</span>}
           </li>
         );
       })}

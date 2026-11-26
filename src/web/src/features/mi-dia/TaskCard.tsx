@@ -28,7 +28,15 @@ export function TaskCard({ instancia: i, nivel, puedeMarcar, cargando = false, o
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0, scale: i.estado === 'hecha' ? [1, 1.04, 1] : 1 }}
       transition={{ duration: 0.3, ease: [0.34, 1.56, 0.64, 1] }}
-      className={`flex flex-col gap-4 rounded-tarjeta p-5 ${i.estado === 'aprobada' ? 'bg-menta-200' : 'bg-superficie'}`}
+      className={`flex flex-col gap-4 rounded-tarjeta p-5 ${
+        i.estado === 'aprobada'
+          ? 'bg-menta-200'
+          : i.estado === 'devuelta'
+            ? 'border-2 border-indigo-600/35 bg-superficie'
+            : i.estado === 'hecha'
+              ? 'bg-superficie opacity-90'
+              : 'bg-superficie'
+      }`}
     >
       <div className="flex items-center gap-4">
         <Icono clave={i.icono} color={i.color} />

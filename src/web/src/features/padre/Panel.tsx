@@ -5,7 +5,8 @@ import type { Panel as PanelDatos, PanelHija, PerfilPublico } from '../../api/Ap
 import { api } from '../../api/HttpApiClient.ts';
 import { FONDO_COLOR, avatarDe } from '../../lib/avatares.ts';
 import { fechaCorta } from '../../lib/fechas.ts';
-import { Cargando } from '../../ui/Cargando.tsx';
+import { SkeletonRejilla } from '../../ui/Cargando.tsx';
+import { EstadoError } from '../../ui/EstadoError.tsx';
 import { FamilyGoalBar } from '../progreso/FamilyGoalBar.tsx';
 
 function TarjetaHija({ h }: { h: PanelHija }) {
@@ -126,7 +127,7 @@ export function PanelVista({ panel, perfiles }: { panel: PanelDatos; perfiles: P
 
 export function Panel() {
   const panel = useQuery({ queryKey: ['admin', 'panel'], queryFn: () => api.panel(), refetchInterval: 60_000 });
-  if (panel.isPending) return <Cargando />;
-  if (panel.isError) return <p className="text-cuerpo text-indigo-700">No se pudo cargar el panel. Intenta de nuevo.</p>;
+  if (panel.isPending) return <SkeletonRejilla tarjetas={2} texto="Cargando panel…" />;
+  if (panel.isError) return <EstadoError mensaje="No se pudo cargar el panel. Intenta de nuevo." onReintentar={() => void panel.refetch()} />;
   return <PanelVista panel={panel.data} perfiles={panel.data.hijas.map((h) => h.perfil)} />;
 }

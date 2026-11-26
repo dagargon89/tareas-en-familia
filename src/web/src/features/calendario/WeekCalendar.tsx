@@ -82,7 +82,7 @@ function carriles(semana: Semana, perfiles?: PerfilPublico[]): (PerfilPublico | 
 
 function TarjetaTablero({ i, perfil }: { i: Instancia; perfil?: PerfilPublico }) {
   return (
-    <li className={`flex flex-col gap-1.5 rounded-tarjeta-interna p-2 shadow-[0_1px_2px_rgb(22_22_26/0.06)] ${fondoEstado(i.estado)}`} aria-label={etiqueta(i, perfil)} title={i.titulo}>
+    <li className={`flex flex-col gap-1.5 rounded-tarjeta-interna border border-tinta-900/10 p-2 ${fondoEstado(i.estado)}`} aria-label={etiqueta(i, perfil)} title={i.titulo}>
       <span className="flex items-center gap-2">
         <IconoTarea i={i} tamano="size-7" />
         {i.hora && <span className="text-etiqueta text-tinta-600">{i.hora}</span>}
@@ -277,7 +277,7 @@ function Agenda({ semana, hoy, perfiles }: Pick<Props, 'semana' | 'hoy' | 'perfi
  */
 export function WeekCalendar({ semana, hoy, perfiles, onSemana, puedeAtras = true, puedeAdelante = true }: Props) {
   const escritorio = useMediaQuery(ESCRITORIO);
-  const flecha = 'inline-flex size-11 items-center justify-center rounded-full bg-superficie text-indigo-700 disabled:opacity-30';
+  const flecha = 'inline-flex size-11 items-center justify-center rounded-full bg-superficie text-indigo-700 transition-colors hover:bg-lavanda-100 disabled:opacity-30';
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between gap-3">

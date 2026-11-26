@@ -1,9 +1,8 @@
-import { useState, type FormEvent, type ReactNode } from 'react';
+import { useRef, useState, type FormEvent, type ReactNode } from 'react';
 import type { Categoria, DiaSemana, Frecuencia, PerfilPublico, Tarea, TareaEntrada, TipoTarea } from '../../api/ApiClient.ts';
-import { FONDO_COLOR } from '../../lib/avatares.ts';
-import { ICONOS } from '../../lib/iconos.ts';
 import { Boton } from '../../ui/Boton.tsx';
 import { Campo } from '../../ui/Campo.tsx';
+import { SelectorIcono } from '../../ui/SelectorIcono.tsx';
 import { aEntrada, validarTarea, type BorradorTarea } from './validarTarea.ts';
 
 const TIPOS: { valor: TipoTarea; texto: string }[] = [
@@ -63,7 +62,7 @@ function Opcion({ activa, onClick, children, etiqueta }: { activa: boolean; onCl
       aria-pressed={activa}
       aria-label={etiqueta}
       onClick={onClick}
-      className={`min-h-tactil rounded-boton px-4 text-etiqueta ${activa ? 'bg-indigo-600 text-blanco' : 'bg-superficie text-tinta-900'}`}
+      className={`min-h-tactil rounded-boton px-4 text-etiqueta transition-colors ${activa ? 'bg-indigo-600 text-blanco' : 'bg-superficie text-tinta-900 hover:bg-lavanda-100 hover:text-indigo-700'}`}
     >
       {children}
     </button>
@@ -84,6 +83,7 @@ interface Props {
 
 /** Formulario de tarea del padre (RF-03, RF-13). Editar solo afecta instancias futuras pendientes. */
 export function FormTarea({ tarea, perfiles, categorias, hoy, perfilInicial = null, enviando, erroresServidor = {}, onGuardar, onCancelar }: Props) {
+  const formRef = useRef<HTMLFormElement>(null);
   const [b, setB] = useState<BorradorTarea>(() => borradorDe(tarea, hoy, perfilInicial));
   const [tocado, setTocado] = useState(false);
   const errores = validarTarea(b, hoy);
@@ -93,12 +93,19 @@ export function FormTarea({ tarea, perfiles, categorias, hoy, perfilInicial = nu
   function enviar(e: FormEvent) {
     e.preventDefault();
     setTocado(true);
-    if (Object.keys(errores).length > 0) return;
+    if (Object.keys(errores).length > 0) {
+      window.requestAnimationFrame(() => {
+        const primero = formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]');
+        primero?.scrollIntoView?.({ behavior: 'smooth', block: 'center' });
+        primero?.focus();
+      });
+      return;
+    }
     onGuardar(aEntrada(b, hoy));
   }
 
   return (
-    <form onSubmit={enviar} noValidate className="flex flex-col gap-6">
+    <form ref={formRef} onSubmit={enviar} noValidate className="flex flex-col gap-6">
       <Campo etiqueta="Título" maxLength={80} value={b.titulo} onChange={(e) => cambiar('titulo', e.target.value)} error={ver('titulo')} />
 
       <Grupo titulo="¿Para quién?" error={ver('perfil_id')}>
@@ -132,20 +139,7 @@ export function FormTarea({ tarea, perfiles, categorias, hoy, perfilInicial = nu
       </Grupo>
 
       <Grupo titulo="Ícono">
-        <div className="grid grid-cols-8 gap-2 sm:grid-cols-10">
-          {Object.entries(ICONOS).map(([clave, Icono]) => (
-            <button
-              key={clave}
-              type="button"
-              aria-label={clave}
-              aria-pressed={b.icono === clave}
-              onClick={() => cambiar('icono', clave)}
-              className={`flex aspect-square items-center justify-center rounded-icono ${b.icono === clave ? FONDO_COLOR.indigo : 'bg-superficie text-tinta-900'}`}
-            >
-              <Icono className="size-1/2" aria-hidden="true" />
-            </button>
-          ))}
-        </div>
+        <SelectorIcono valor={b.icono} onCambiar={(clave) => cambiar('icono', clave)} />
       </Grupo>
 
       <Campo

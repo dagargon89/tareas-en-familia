@@ -28,6 +28,29 @@ export function PinPad({ titulo, onCompleto, error = null, fallos = 0, bloqueado
     return () => window.clearTimeout(t);
   }, [fallos]);
 
+  useEffect(() => {
+    if (deshabilitado) return;
+    function alTecla(e: KeyboardEvent) {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const tag = (e.target as HTMLElement | null)?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+      if (/^[0-9]$/.test(e.key)) {
+        e.preventDefault();
+        setPin((actual) => {
+          if (actual.length >= 4) return actual;
+          const nuevo = actual + e.key;
+          if (nuevo.length === 4) window.setTimeout(() => onCompleto(nuevo), 0);
+          return nuevo;
+        });
+      } else if (e.key === 'Backspace') {
+        e.preventDefault();
+        setPin((actual) => actual.slice(0, -1));
+      }
+    }
+    window.addEventListener('keydown', alTecla);
+    return () => window.removeEventListener('keydown', alTecla);
+  }, [deshabilitado, onCompleto]);
+
   function teclear(d: string) {
     if (deshabilitado || pin.length >= 4) return;
     const nuevo = pin + d;
@@ -36,12 +59,12 @@ export function PinPad({ titulo, onCompleto, error = null, fallos = 0, bloqueado
   }
 
   const claseTecla =
-    'flex min-h-tactil items-center justify-center rounded-full bg-superficie text-display transition duration-150 ease-rebote active:scale-90 disabled:opacity-50';
+    'flex min-h-tactil items-center justify-center rounded-full bg-superficie text-display transition duration-150 ease-rebote hover:bg-lavanda-100 hover:text-indigo-700 active:scale-90 motion-reduce:active:scale-100 disabled:opacity-50 disabled:active:scale-100';
 
   return (
     <div className="mx-auto flex w-full max-w-xs flex-col items-center gap-6">
       <p className="text-titulo text-center">{titulo}</p>
-      <div className={`flex gap-4 ${sacudir ? 'sacudir' : ''}`} aria-label={`${pin.length} de 4 dígitos`} role="status">
+      <div className={`flex gap-4 ${sacudir ? 'sacudir' : ''} ${ocupado ? 'animate-pulse motion-reduce:animate-none' : ''}`} aria-label={`${pin.length} de 4 dígitos`} role="status">
         {[0, 1, 2, 3].map((i) => (
           <span
             key={i}

@@ -5,8 +5,11 @@ import type { NivelUx, Tarea } from '../../api/ApiClient.ts';
 import { useDesactivarTareaPropia, useGuardarTareaPropia, useMisTareas } from '../../hooks/useMisTareas.ts';
 import { detalleError } from '../../lib/errores.ts';
 import { fechaCorta, fechaLocal } from '../../lib/fechas.ts';
-import { Cargando } from '../../ui/Cargando.tsx';
+import { SkeletonLista } from '../../ui/Cargando.tsx';
+import { DialogoConfirmacion } from '../../ui/DialogoConfirmacion.tsx';
+import { EstadoError } from '../../ui/EstadoError.tsx';
 import { Icono } from '../../ui/Icono.tsx';
+import { Toast } from '../../ui/Toast.tsx';
 import { useSesionStore } from '../../stores/sesionStore.ts';
 import { cuandoToca } from '../padre/validarTarea.ts';
 import { FormEscolarPropia } from './FormEscolarPropia.tsx';
@@ -17,12 +20,13 @@ interface VistaProps {
   hoy: string;
   nivel?: NivelUx;
   aviso: string | null;
+  onCerrarAviso?: () => void;
   onEditar: (t: Tarea) => void;
   onDesactivar: (t: Tarea) => void;
 }
 
 /** Lista de tareas creadas por la hija (RF-19; en Pro también RF-15). */
-export function MisTareasVista({ tareas, hoy, nivel = 'aventureras', aviso, onEditar, onDesactivar }: VistaProps) {
+export function MisTareasVista({ tareas, hoy, nivel = 'aventureras', aviso, onCerrarAviso, onEditar, onDesactivar }: VistaProps) {
   const esPro = nivel === 'pro';
   const activas = tareas.filter((t) => t.activa);
   const proximas = activas.filter((t) => !t.fecha_entrega || t.fecha_entrega >= hoy);
@@ -63,9 +67,7 @@ export function MisTareasVista({ tareas, hoy, nivel = 'aventureras', aviso, onEd
           <Plus className="size-5" aria-hidden="true" /> Agregar
         </Link>
       </div>
-      <p aria-live="polite" className="m-0 empty:hidden rounded-tarjeta-interna bg-lavanda-100 p-3 text-cuerpo text-indigo-700">
-        {aviso}
-      </p>
+      <Toast mensaje={aviso} sobreNav onCerrar={onCerrarAviso} />
       {proximas.length === 0 ? (
         <p className="m-0 rounded-tarjeta bg-superficie p-6 text-cuerpo text-tinta-600">
           {esPro
@@ -91,26 +93,42 @@ export function MisTareas() {
   const desactivar = useDesactivarTareaPropia();
   const navegar = useNavigate();
   const [aviso, setAviso] = useState<string | null>(null);
+  const [porQuitar, setPorQuitar] = useState<Tarea | null>(null);
   const nivel = useSesionStore((s) => s.nivel);
 
-  if (tareas.isPending) return <Cargando />;
-  if (tareas.isError) return <p className="rounded-tarjeta bg-lavanda-100 p-6 text-cuerpo text-indigo-700">No pudimos cargar tus tareas. Intenta de nuevo.</p>;
+  if (tareas.isPending) return <SkeletonLista filas={3} texto="Cargando tus tareas…" />;
+  if (tareas.isError) return <EstadoError mensaje="No pudimos cargar tus tareas. Intenta de nuevo." onReintentar={() => void tareas.refetch()} />;
 
   return (
-    <MisTareasVista
-      tareas={tareas.data}
-      hoy={hoy}
-      nivel={nivel}
-      aviso={aviso}
-      onEditar={(t) => navegar(`/mis-tareas/${t.id}`)}
-      onDesactivar={(t) => {
-        if (!window.confirm(`¿Quitar "${t.titulo}"?`)) return;
-        setAviso(null);
-        desactivar.mutate(t.id, {
-          onError: (e) => setAviso(detalleError(e).codigo === 'ESTADO_INVALIDO' ? 'Esa tarea ya fue aprobada; ya no se puede quitar.' : 'No se pudo quitar. Intenta otra vez.'),
-        });
-      }}
-    />
+    <>
+      <MisTareasVista
+        tareas={tareas.data}
+        hoy={hoy}
+        nivel={nivel}
+        aviso={aviso}
+        onCerrarAviso={() => setAviso(null)}
+        onEditar={(t) => navegar(`/mis-tareas/${t.id}`)}
+        onDesactivar={(t) => setPorQuitar(t)}
+      />
+      <DialogoConfirmacion
+        abierto={porQuitar !== null}
+        titulo={porQuitar ? `¿Quitar "${porQuitar.titulo}"?` : ''}
+        mensaje="Ya no aparecerá en tu lista de pendientes."
+        textoConfirmar="Sí, quitar"
+        textoCancelar="Conservar"
+        ocupado={desactivar.isPending}
+        onCancelar={() => setPorQuitar(null)}
+        onConfirmar={() => {
+          if (!porQuitar) return;
+          const t = porQuitar;
+          setPorQuitar(null);
+          setAviso(null);
+          desactivar.mutate(t.id, {
+            onError: (e) => setAviso(detalleError(e).codigo === 'ESTADO_INVALIDO' ? 'Esa tarea ya fue aprobada; ya no se puede quitar.' : 'No se pudo quitar. Intenta otra vez.'),
+          });
+        }}
+      />
+    </>
   );
 }
 
@@ -124,7 +142,7 @@ export function EditarTareaPropia() {
   const nivel = useSesionStore((s) => s.nivel);
   const esNueva = id === undefined;
 
-  if (!esNueva && tareas.isPending) return <Cargando />;
+  if (!esNueva && tareas.isPending) return <SkeletonLista filas={2} texto="Cargando tarea…" />;
   const tarea = esNueva ? null : (tareas.data?.find((t) => t.id === Number(id)) ?? null);
   if (!esNueva && !tarea) {
     return (

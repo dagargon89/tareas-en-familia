@@ -4,7 +4,9 @@ import { useConfiguracion, useGuardarConfiguracion } from '../../hooks/useMetasC
 import { detalleError } from '../../lib/errores.ts';
 import { Boton } from '../../ui/Boton.tsx';
 import { Campo } from '../../ui/Campo.tsx';
-import { Cargando } from '../../ui/Cargando.tsx';
+import { SkeletonLista } from '../../ui/Cargando.tsx';
+import { EstadoError } from '../../ui/EstadoError.tsx';
+import { Toast } from '../../ui/Toast.tsx';
 import { PadresFamilia } from './PadresFamilia.tsx';
 import { validarAjustes, type AjustesBorrador } from './validarJuego.ts';
 
@@ -12,12 +14,13 @@ interface VistaProps {
   config: ConfiguracionDatos;
   enviando: boolean;
   aviso: string | null;
+  onCerrarAviso?: () => void;
   erroresServidor?: Record<string, string>;
   onGuardar: (c: ConfiguracionEntrada) => void;
 }
 
 /** Ajustes de la familia (RF-18). El PIN que se cambia es el del padre de esta sesión. */
-export function ConfiguracionVista({ config, enviando, aviso, erroresServidor = {}, onGuardar }: VistaProps) {
+export function ConfiguracionVista({ config, enviando, aviso, onCerrarAviso, erroresServidor = {}, onGuardar }: VistaProps) {
   const [a, setA] = useState<AjustesBorrador>({ racha_umbral: config.racha_umbral, sonidos_default: config.sonidos_default, pin: '', confirmar: '' });
   const [tocado, setTocado] = useState(false);
   const errores = validarAjustes(a);
@@ -33,9 +36,7 @@ export function ConfiguracionVista({ config, enviando, aviso, erroresServidor = 
   return (
     <form onSubmit={enviar} noValidate className="flex flex-col gap-6">
       <h1 className="m-0 text-display">Ajustes</h1>
-      <p aria-live="polite" className="m-0 empty:hidden rounded-tarjeta-interna bg-menta-200 p-3 text-cuerpo">
-        {aviso}
-      </p>
+      <Toast mensaje={aviso} tono="menta" onCerrar={onCerrarAviso} />
 
       <fieldset className="m-0 flex flex-col gap-3 rounded-tarjeta border-0 bg-superficie p-5">
         <legend className="sr-only">Racha</legend>
@@ -103,8 +104,8 @@ export function Configuracion() {
   // Al guardar con éxito se remonta la vista: el PIN escrito se borra y se toman los valores nuevos.
   const [version, setVersion] = useState(0);
 
-  if (config.isPending) return <Cargando />;
-  if (config.isError) return <p className="text-cuerpo text-indigo-700">No se pudieron cargar los ajustes. Intenta de nuevo.</p>;
+  if (config.isPending) return <SkeletonLista filas={3} texto="Cargando ajustes…" />;
+  if (config.isError) return <EstadoError mensaje="No se pudieron cargar los ajustes. Intenta de nuevo." onReintentar={() => void config.refetch()} />;
 
   const d = guardar.error ? detalleError(guardar.error) : null;
   return (
@@ -114,6 +115,7 @@ export function Configuracion() {
         config={config.data}
         enviando={guardar.isPending}
         aviso={aviso}
+        onCerrarAviso={() => setAviso(null)}
         erroresServidor={d?.campos ?? {}}
         onGuardar={(c) =>
           guardar.mutate(c, {

@@ -9,15 +9,16 @@ interface Props {
   urlFoto?: string | null;
   seleccionada?: boolean;
   onSeleccionar?: (id: number, valor: boolean) => void;
+  onVerFoto?: (item: InstanciaRevision, url: string) => void;
   onAprobar?: (id: number) => void;
   onDevolver?: (id: number) => void;
 }
 
 /** Fila de la bandeja de aprobación (RF-07, doc 08 §4). */
-export function ParentApprovalItem({ item, urlFoto, seleccionada = false, onSeleccionar, onAprobar, onDevolver }: Props) {
+export function ParentApprovalItem({ item, urlFoto, seleccionada = false, onSeleccionar, onVerFoto, onAprobar, onDevolver }: Props) {
   const Avatar = avatarDe(item.perfil.avatar);
   return (
-    <li className="flex flex-wrap items-center gap-4 rounded-tarjeta bg-superficie p-4">
+    <div className="flex flex-wrap items-center gap-4 rounded-tarjeta bg-superficie p-4">
       {onSeleccionar && (
         <input
           type="checkbox"
@@ -38,26 +39,37 @@ export function ParentApprovalItem({ item, urlFoto, seleccionada = false, onSele
         </span>
       </div>
       {urlFoto && (
-        <a href={urlFoto} target="_blank" rel="noreferrer" className="shrink-0">
-          <img src={urlFoto} alt={`Foto de ${item.titulo}`} className="size-14 rounded-icono object-cover" />
-        </a>
+        onVerFoto ? (
+          <button
+            type="button"
+            onClick={() => onVerFoto(item, urlFoto)}
+            className="shrink-0 overflow-hidden rounded-icono transition hover:opacity-85"
+            aria-label={`Ampliar foto de ${item.titulo}`}
+          >
+            <img src={urlFoto} alt={`Foto de ${item.titulo}`} className="size-14 rounded-icono object-cover" />
+          </button>
+        ) : (
+          <a href={urlFoto} target="_blank" rel="noreferrer" className="shrink-0">
+            <img src={urlFoto} alt={`Foto de ${item.titulo}`} className="size-14 rounded-icono object-cover" />
+          </a>
+        )
       )}
       <div className="flex gap-2">
         <button
           type="button"
           onClick={() => onDevolver?.(item.id)}
-          className="inline-flex min-h-tactil items-center gap-1 rounded-boton bg-lavanda-100 px-4 text-etiqueta text-indigo-700"
+          className="inline-flex min-h-tactil items-center gap-1 rounded-boton bg-lavanda-100 px-4 text-etiqueta text-indigo-700 transition hover:brightness-95 active:scale-95 motion-reduce:active:scale-100"
         >
           <Undo2 className="size-4" aria-hidden="true" /> Devolver
         </button>
         <button
           type="button"
           onClick={() => onAprobar?.(item.id)}
-          className="inline-flex min-h-tactil items-center gap-1 rounded-boton bg-indigo-600 px-4 text-etiqueta text-blanco"
+          className="inline-flex min-h-tactil items-center gap-1 rounded-boton bg-indigo-600 px-4 text-etiqueta text-blanco transition hover:bg-indigo-hover active:scale-95 motion-reduce:active:scale-100"
         >
           <Check className="size-4" aria-hidden="true" /> Aprobar
         </button>
       </div>
-    </li>
+    </div>
   );
 }

@@ -8,7 +8,10 @@ import { fechaCorta } from '../../lib/fechas.ts';
 import { sonar } from '../../lib/sonidos.ts';
 import { VOCABULARIO } from '../../niveles/vocabulario.ts';
 import { useSesionStore } from '../../stores/sesionStore.ts';
-import { Cargando } from '../../ui/Cargando.tsx';
+import { SkeletonRejilla } from '../../ui/Cargando.tsx';
+import { DialogoConfirmacion } from '../../ui/DialogoConfirmacion.tsx';
+import { EstadoError } from '../../ui/EstadoError.tsx';
+import { Toast } from '../../ui/Toast.tsx';
 import { StatTile } from '../progreso/StatTile.tsx';
 import { RewardCard } from './RewardCard.tsx';
 
@@ -27,6 +30,7 @@ interface VistaProps {
   nivel: NivelUx;
   pidiendo: number | null;
   aviso: string | null;
+  onCerrarAviso?: () => void;
   onCanjear: (r: RecompensaParaPerfil) => void;
 }
 
@@ -40,7 +44,7 @@ function Lista({ titulo, children }: { titulo: string; children: ReactNode }) {
 }
 
 /** Premios de la hija (RF-09): lo que ya le alcanza primero, y sus canjes. */
-export function PremiosVista({ recompensas, canjes, disponible, nivel, pidiendo, aviso, onCanjear }: VistaProps) {
+export function PremiosVista({ recompensas, canjes, disponible, nivel, pidiendo, aviso, onCerrarAviso, onCanjear }: VistaProps) {
   const v = VOCABULARIO[nivel];
   const pendientes = new Set(canjes.filter((c) => c.estado === 'solicitado').map((c) => c.recompensa.id));
   const ordenadas = [...recompensas].sort((a, b) => Number(b.alcanza) - Number(a.alcanza) || a.costo - b.costo);
@@ -57,9 +61,7 @@ export function PremiosVista({ recompensas, canjes, disponible, nivel, pidiendo,
         )}
       </div>
 
-      <p aria-live="polite" className="m-0 empty:hidden rounded-tarjeta-interna bg-lavanda-100 p-3 text-cuerpo text-indigo-700">
-        {aviso}
-      </p>
+      <Toast mensaje={aviso} sobreNav onCerrar={onCerrarAviso} />
 
       {ordenadas.length === 0 ? (
         <p className="m-0 rounded-tarjeta bg-superficie p-6 text-cuerpo text-tinta-600">Todavía no hay premios. Pídele a papá o mamá que agreguen algunos.</p>
@@ -103,36 +105,68 @@ export function PremiosVista({ recompensas, canjes, disponible, nivel, pidiendo,
 export function Premios() {
   const nivel = useSesionStore((s) => s.nivel);
   const sonidos = useSesionStore((s) => s.sonidos);
+  const v = VOCABULARIO[nivel];
   const recompensas = useRecompensasPerfil();
   const canjes = useMisCanjes();
   const progreso = useProgreso();
   const solicitar = useSolicitarCanje();
   const [aviso, setAviso] = useState<string | null>(null);
+  const [porConfirmar, setPorConfirmar] = useState<RecompensaParaPerfil | null>(null);
 
-  if (recompensas.isPending || canjes.isPending) return <Cargando />;
+  if (recompensas.isPending || canjes.isPending) return <SkeletonRejilla tarjetas={4} texto="Cargando premios…" />;
   if (recompensas.isError || canjes.isError) {
-    return <p className="rounded-tarjeta bg-lavanda-100 p-6 text-cuerpo text-indigo-700">No pudimos cargar los premios. Intenta de nuevo.</p>;
+    return (
+      <EstadoError
+        mensaje="No pudimos cargar los premios. Intenta de nuevo."
+        onReintentar={() => {
+          void recompensas.refetch();
+          void canjes.refetch();
+        }}
+      />
+    );
   }
 
+  const disponible = progreso.data?.disponible ?? null;
+
   return (
-    <PremiosVista
-      recompensas={recompensas.data}
-      canjes={canjes.data}
-      disponible={progreso.data?.disponible ?? null}
-      nivel={nivel}
-      pidiendo={solicitar.isPending ? (solicitar.variables ?? null) : null}
-      aviso={aviso}
-      onCanjear={(r) => {
-        setAviso(null);
-        solicitar.mutate(r.id, {
-          onSuccess: () => {
-            sonar('canje', sonidos);
-            setAviso(`¡Listo! Pediste "${r.titulo}". Papá o mamá lo revisan.`);
-          },
-          onError: (e) =>
-            setAviso(detalleError(e).codigo === 'SALDO_INSUFICIENTE' ? 'Todavía no te alcanza. ¡Sigue con tus misiones!' : 'No se pudo pedir. Intenta otra vez.'),
-        });
-      }}
-    />
+    <>
+      <PremiosVista
+        recompensas={recompensas.data}
+        canjes={canjes.data}
+        disponible={disponible}
+        nivel={nivel}
+        pidiendo={solicitar.isPending ? (solicitar.variables ?? null) : null}
+        aviso={aviso}
+        onCerrarAviso={() => setAviso(null)}
+        onCanjear={(r) => setPorConfirmar(r)}
+      />
+      <DialogoConfirmacion
+        abierto={porConfirmar !== null}
+        titulo={porConfirmar ? `¿Pedir "${porConfirmar.titulo}"?` : ''}
+        mensaje={
+          porConfirmar
+            ? `Cuesta ${porConfirmar.costo} ${v.unidadPuntos}.${disponible !== null ? ` Te quedarían ${Math.max(0, disponible - porConfirmar.costo)} ${v.unidadPuntos}.` : ''}`
+            : ''
+        }
+        textoConfirmar="Sí, pedir premio"
+        textoCancelar="Todavía no"
+        ocupado={solicitar.isPending}
+        onCancelar={() => setPorConfirmar(null)}
+        onConfirmar={() => {
+          if (!porConfirmar) return;
+          const elegido = porConfirmar;
+          setPorConfirmar(null);
+          setAviso(null);
+          solicitar.mutate(elegido.id, {
+            onSuccess: () => {
+              sonar('canje', sonidos);
+              setAviso(`¡Listo! Pediste "${elegido.titulo}". Papá o mamá lo revisan.`);
+            },
+            onError: (e) =>
+              setAviso(detalleError(e).codigo === 'SALDO_INSUFICIENTE' ? 'Todavía no te alcanza. ¡Sigue con tus misiones!' : 'No se pudo pedir. Intenta otra vez.'),
+          });
+        }}
+      />
+    </>
   );
 }
