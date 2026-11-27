@@ -2,6 +2,8 @@
 
 namespace Config;
 
+use App\Libraries\GeminiCliente;
+use App\Libraries\GeminiClienteInterface;
 use App\Services\EvidenciasService;
 use CodeIgniter\Config\BaseService;
 
@@ -31,6 +33,18 @@ class Services extends BaseService
         }
 
         return new EvidenciasService(db_connect());
+    }
+
+    /**
+     * Cliente de Gemini Developer API (ADR-012). Registrado como servicio para sustituirlo en PHPUnit.
+     */
+    public static function geminiCliente(bool $getShared = true): GeminiClienteInterface
+    {
+        if ($getShared) {
+            return static::getSharedInstance('geminiCliente');
+        }
+
+        return new GeminiCliente();
     }
 
     /*

@@ -30,6 +30,9 @@ $routes->group('api/v1', $opciones, static function (RouteCollection $routes) us
         $routes->post('modo-padre', 'ModoPadreController::entrar');             // E-09
         $routes->delete('modo-padre', 'ModoPadreController::salir');            // E-10
         $routes->get('evidencias/(:num)', 'EvidenciasController::ver/$1');      // E-36 (dueña o modo padre)
+        $routes->get('chat/participantes', 'ChatController::participantes');    // E-54 (ADR-011)
+        $routes->post('chat/token', 'ChatController::token');                   // E-55 (ADR-011)
+        $routes->post('asistente/mensaje', 'AsistenteController::mensaje');     // E-56 (ADR-012)
     });
 
     // Hija con perfil activo (filtros `sesion` + `perfilActivo`)

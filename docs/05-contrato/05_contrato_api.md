@@ -235,6 +235,24 @@ export interface UsuarioAdmin { id: number; nombre: string; email: string; es_ac
 export interface UsuarioEntrada { nombre: string; email: string; password: string; pin: string; }      // ADR-009
 export interface CambioPasswordEntrada { password: string; password_actual?: string; }                  // ADR-010: la actual solo para la propia
 
+// ===== Chat familiar (ADR-011) y Asistente IA (ADR-012) =====
+export type RolActorChat = 'padre' | 'hija';
+export interface ActorChat {
+  actor_id: string; tipo: RolActorChat; id: number; apodo: string;
+  avatar: string; color: ColorToken; nivel_ux: NivelUx | null;
+}
+export interface ParticipantesChat { actual: ActorChat; participantes: ActorChat[]; }
+export interface ConfigFirebaseCliente {
+  projectId: string; apiKey: string; emulador: boolean;
+  authEmulatorUrl: string | null; firestoreEmulatorHost: string | null; firestoreEmulatorPort: number | null;
+}
+export interface TokenChatRespuesta {
+  token: string; expira_en: number; actor: ActorChat;
+  participantes: ActorChat[]; configuracion: ConfigFirebaseCliente;
+}
+export interface MensajeAsistenteHistorial { rol: 'usuario' | 'asistente'; texto: string; }
+export interface RespuestaAsistente { respuesta: string; sugerencias: string[]; modo_demo: boolean; }
+
 // ===== Cliente único =====
 export interface ApiClient {
   // Sistema y acceso
@@ -292,6 +310,10 @@ export interface ApiClient {
   adminUsuarios(): Promise<UsuarioAdmin[]>;                                    // E-51 (ADR-009)
   crearUsuario(u: UsuarioEntrada): Promise<UsuarioAdmin>;                      // E-52 (ADR-009)
   cambiarPassword(usuarioId: number, datos: CambioPasswordEntrada): Promise<UsuarioAdmin>; // E-53 (ADR-010)
+  // Chat familiar y Asistente IA (ADR-011, ADR-012)
+  participantesChat(): Promise<ParticipantesChat>;                                         // E-54
+  tokenChat(): Promise<TokenChatRespuesta>;                                                // E-55
+  preguntarAsistente(mensaje: string, historial?: MensajeAsistenteHistorial[]): Promise<RespuestaAsistente>; // E-56
 }
 ```
 

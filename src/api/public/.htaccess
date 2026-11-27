@@ -60,7 +60,7 @@ DirectoryIndex index.php
 # "set" reemplaza, no duplica. HSTS solo sobre HTTPS.
 # ----------------------------------------------------------------------
 <IfModule mod_headers.c>
-	Header always set Content-Security-Policy "default-src 'self'; img-src 'self' blob: data:; media-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+	Header always set Content-Security-Policy "default-src 'self'; img-src 'self' blob: data:; media-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firestore.googleapis.com https://*.googleapis.com wss://*.firebaseio.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
 	Header always set X-Content-Type-Options "nosniff"
 	Header always set X-Frame-Options "DENY"
 	Header always set Referrer-Policy "same-origin"

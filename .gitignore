@@ -29,3 +29,6 @@ Thumbs.db
 
 # Configuración local de PHPUnit (p. ej. otra base de pruebas)
 src/api/phpunit.xml
+
+# Emulador de Firebase
+firebase/.firebase/

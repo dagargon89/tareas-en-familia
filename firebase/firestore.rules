@@ -1,0 +1,434 @@
+rules_version = '2';
+
+// ===============================================================
+// Assumed Data Model — "Tareas en Familia" Family Chat
+// ===============================================================
+//
+// Authentication (Firebase Custom Tokens minted by CodeIgniter 4):
+//   - request.auth.uid: "padre:<digits>" or "hija:<digits>" (1..32 chars)
+//   - request.auth.token.familia: true (boolean, required for all access)
+//   - request.auth.token.rol: 'padre' | 'hija' (string, required)
+//   - request.auth.token.apodo: string (display nickname)
+//
+// Collection: salas/{salaId}
+// Document ID:
+//   - 'familia' (when tipo == 'grupal')
+//   - 'dm_<actorA>__<actorB>' matching ^dm_[a-z]+-[0-9]+__[a-z]+-[0-9]+$
+//     where actor slugs replace ':' with '-' (when tipo == 'individual')
+// Fields (all required, strict hasOnly + exact field count):
+//   - tipo: string ('grupal' | 'individual') — immutable
+//   - nombre: string (1..80 chars) — immutable
+//   - participantes: list<string> — valid actor IDs;
+//       1..20 items for 'grupal', exactly 2 distinct items matching salaId
+//       for 'individual' (immutable for 'individual')
+//   - ultimo_mensaje: null | map {
+//       texto: string (0..500 chars),
+//       autor_id: string (1..32 chars, actor ID),
+//       autor_apodo: string (1..60 chars),
+//       creado_en: timestamp
+//     }
+//   - lecturas: map<actorId, timestamp> (max 25 entries)
+//   - actualizado_en: timestamp
+//
+// Subcollection: salas/{salaId}/mensajes/{mensajeId}
+// Document ID: auto-generated message ID
+// Fields (all required, strict hasOnly + exact field count):
+//   - autor_id: string (1..32 chars, actor ID) — immutable, == request.auth.uid on create
+//   - autor_tipo: string ('padre' | 'hija') — immutable, == request.auth.token.rol on create
+//   - autor_apodo: string (1..60 chars) — immutable
+//   - autor_avatar: string (1..30 chars) — immutable
+//   - autor_color: string (1..20 chars) — immutable
+//   - texto: string (1..500 chars when eliminado == false; '' when eliminado == true)
+//   - reacciones: map<emoji(1..16 chars), list<actorId>(0..20 items)> (max 10 keys)
+//   - eliminado: bool (false on create; one-way transition false -> true on soft-delete)
+//   - creado_en: timestamp — immutable, == request.time on create
+//
+// ===============================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Helper Functions — Authentication & Authorization
+    // ===============================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isValidActorId(id) {
+      return id is string &&
+        id.size() >= 1 &&
+        id.size() <= 32 &&
+        id.matches('^(padre|hija):[0-9]+$');
+    }
+
+    function isFamilia() {
+      return isAuthenticated() &&
+        'familia' in request.auth.token &&
+        request.auth.token.familia == true &&
+        'rol' in request.auth.token &&
+        request.auth.token.rol in ['padre', 'hija'] &&
+        isValidActorId(request.auth.uid);
+    }
+
+    function isPadre() {
+      return isAuthenticated() &&
+        'familia' in request.auth.token &&
+        request.auth.token.familia == true &&
+        'rol' in request.auth.token &&
+        request.auth.token.rol == 'padre';
+    }
+
+    function isOwner(actorId) {
+      return isFamilia() && request.auth.uid == actorId;
+    }
+
+    function actorSlug() {
+      return request.auth.uid.replace(':', '-');
+    }
+
+    // Allows checking existence (get) on non-existent 'familia' or own DM room IDs
+    // without leaking existence of third-party DMs.
+    function isOwnOrGroupSalaId(salaId) {
+      let slug = actorSlug();
+      return salaId == 'familia' ||
+        salaId.matches('^dm_' + slug + '__[a-z]+-[0-9]+$') ||
+        salaId.matches('^dm_[a-z]+-[0-9]+__' + slug + '$');
+    }
+
+    function salaPath(salaId) {
+      return /databases/$(database)/documents/salas/$(salaId);
+    }
+
+    function salaExists(salaId) {
+      return exists(salaPath(salaId));
+    }
+
+    function isSalaParticipant(salaId) {
+      return salaExists(salaId) &&
+        request.auth.uid in get(salaPath(salaId)).data.participantes;
+    }
+
+    // ===============================================================
+    // Helper Functions — Schema & Immutability
+    // ===============================================================
+
+    function hasExactFields(data, fields) {
+      return data.keys().hasOnly(fields) && data.size() == fields.size();
+    }
+
+    function areImmutableFieldsUnchanged(fields) {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny(fields);
+    }
+
+    function matchesIndividualSalaId(salaId, p0, p1) {
+      let slug0 = p0.replace(':', '-');
+      let slug1 = p1.replace(':', '-');
+      return salaId == 'dm_' + slug0 + '__' + slug1 ||
+        salaId == 'dm_' + slug1 + '__' + slug0;
+    }
+
+    // ===============================================================
+    // Domain Validators (Used in BOTH create and update)
+    // ===============================================================
+
+    function isValidUltimoMensaje(um) {
+      return um == null || (
+        um is map &&
+        hasExactFields(um, ['texto', 'autor_id', 'autor_apodo', 'creado_en']) &&
+        um.texto is string && um.texto.size() >= 0 && um.texto.size() <= 500 &&
+        isValidActorId(um.autor_id) &&
+        um.autor_apodo is string && um.autor_apodo.size() >= 1 && um.autor_apodo.size() <= 60 &&
+        um.creado_en is timestamp
+      );
+    }
+
+    function isValidSala(data, salaId) {
+      return hasExactFields(data, [
+          'tipo',
+          'nombre',
+          'participantes',
+          'ultimo_mensaje',
+          'lecturas',
+          'actualizado_en'
+        ]) &&
+        data.tipo in ['grupal', 'individual'] &&
+        data.nombre is string && data.nombre.size() >= 1 && data.nombre.size() <= 80 &&
+        data.participantes is list &&
+        (
+          (
+            data.tipo == 'grupal' &&
+            salaId == 'familia' &&
+            data.participantes.size() >= 1 &&
+            data.participantes.size() <= 20 &&
+            isValidActorId(data.participantes[0])
+          ) ||
+          (
+            data.tipo == 'individual' &&
+            salaId.size() <= 70 &&
+            salaId.matches('^dm_[a-z]+-[0-9]+__[a-z]+-[0-9]+$') &&
+            data.participantes.size() == 2 &&
+            isValidActorId(data.participantes[0]) &&
+            isValidActorId(data.participantes[1]) &&
+            data.participantes[0] != data.participantes[1] &&
+            matchesIndividualSalaId(salaId, data.participantes[0], data.participantes[1])
+          )
+        ) &&
+        isValidUltimoMensaje(data.ultimo_mensaje) &&
+        data.lecturas is map &&
+        data.lecturas.size() <= 25 &&
+        data.actualizado_en is timestamp;
+    }
+
+    function isValidLecturasSelfUpdate(oldL, newL) {
+      return newL.diff(oldL).affectedKeys().hasOnly([request.auth.uid]) &&
+        request.auth.uid in newL &&
+        newL[request.auth.uid] == request.time;
+    }
+
+    function isValidSalaUpdate(salaId) {
+      let req = request.resource.data;
+      let res = resource.data;
+      let changed = req.diff(res).affectedKeys();
+      let esPadre = isPadre();
+      let esParticipante = request.auth.uid in res.participantes;
+      let actualizadoOk = !changed.hasAny(['actualizado_en']) || req.actualizado_en == request.time;
+
+      return isValidSala(req, salaId) &&
+        req.tipo == res.tipo &&
+        (res.tipo != 'individual' || !changed.hasAny(['participantes', 'nombre'])) &&
+        (
+          // 1. Marking read: participant or supervising padre updates only own lecturas entry
+          (
+            (esPadre || esParticipante) &&
+            changed.hasOnly(['lecturas']) &&
+            isValidLecturasSelfUpdate(res.lecturas, req.lecturas)
+          ) ||
+          // 2. Sending a message: participant updates ultimo_mensaje, actualizado_en, and optionally own lecturas
+          (
+            esParticipante &&
+            changed.hasOnly(['ultimo_mensaje', 'actualizado_en', 'lecturas']) &&
+            req.ultimo_mensaje != null &&
+            req.ultimo_mensaje.autor_id == request.auth.uid &&
+            req.actualizado_en == request.time &&
+            (!changed.hasAny(['lecturas']) || isValidLecturasSelfUpdate(res.lecturas, req.lecturas))
+          ) ||
+          // 3. Syncing group room participants on 'familia'
+          (
+            salaId == 'familia' &&
+            res.tipo == 'grupal' &&
+            (esPadre || esParticipante) &&
+            (esPadre || request.auth.uid in req.participantes) &&
+            changed.hasOnly(['participantes', 'actualizado_en']) &&
+            actualizadoOk
+          ) ||
+          // 4. Moderation by padre (clearing or adjusting ultimo_mensaje after moderating a message)
+          (
+            esPadre &&
+            changed.hasOnly(['ultimo_mensaje', 'actualizado_en']) &&
+            actualizadoOk
+          )
+        );
+    }
+
+    function isValidMensaje(data) {
+      return hasExactFields(data, [
+          'autor_id',
+          'autor_tipo',
+          'autor_apodo',
+          'autor_avatar',
+          'autor_color',
+          'texto',
+          'reacciones',
+          'eliminado',
+          'creado_en'
+        ]) &&
+        isValidActorId(data.autor_id) &&
+        data.autor_tipo in ['padre', 'hija'] &&
+        data.autor_apodo is string && data.autor_apodo.size() >= 1 && data.autor_apodo.size() <= 60 &&
+        data.autor_avatar is string && data.autor_avatar.size() >= 1 && data.autor_avatar.size() <= 30 &&
+        data.autor_color is string && data.autor_color.size() >= 1 && data.autor_color.size() <= 20 &&
+        data.eliminado is bool &&
+        data.texto is string &&
+        (
+          (data.eliminado == false && data.texto.size() >= 1 && data.texto.size() <= 500) ||
+          (data.eliminado == true && data.texto == '')
+        ) &&
+        data.reacciones is map &&
+        data.reacciones.size() <= 10 &&
+        data.creado_en is timestamp;
+    }
+
+    function isValidAddedReaction(newR, addedKey) {
+      return addedKey is string &&
+        addedKey.size() >= 1 &&
+        addedKey.size() <= 16 &&
+        newR[addedKey] == [request.auth.uid];
+    }
+
+    function isValidRemovedReaction(oldR, removedKey) {
+      return oldR[removedKey] == [request.auth.uid] || oldR[removedKey] == [];
+    }
+
+    function isValidReactionToggleList(oldList, newList) {
+      let uid = request.auth.uid;
+      return oldList is list &&
+        newList is list &&
+        newList.size() <= 20 &&
+        (
+          (
+            !(uid in oldList) &&
+            uid in newList &&
+            newList.size() == oldList.size() + 1 &&
+            newList.hasAll(oldList) &&
+            newList.hasOnly(oldList.concat([uid]))
+          ) ||
+          (
+            uid in oldList &&
+            !(uid in newList) &&
+            newList.size() == oldList.size() - 1 &&
+            oldList.hasAll(newList) &&
+            newList.hasAll(oldList.removeAll([uid]))
+          )
+        );
+    }
+
+    function isValidChangedReactionAt(oldR, newR, changed, keysList, idx) {
+      return keysList.size() <= idx ||
+        !changed.hasOnly([keysList[idx]]) ||
+        isValidReactionToggleList(oldR[keysList[idx]], newR[keysList[idx]]);
+    }
+
+    function isValidReactionMapUpdate(oldR, newR) {
+      let diffR = newR.diff(oldR);
+      let affected = diffR.affectedKeys();
+      let added = diffR.addedKeys();
+      let removed = diffR.removedKeys();
+      let changed = diffR.changedKeys();
+      let newKeys = newR.keys();
+
+      return oldR is map &&
+        newR is map &&
+        newR.size() <= 10 &&
+        affected.size() <= 1 &&
+        (
+          affected.size() == 0 ||
+          (added.size() == 1 && isValidAddedReaction(newR, newKeys.removeAll(oldR.keys())[0])) ||
+          (removed.size() == 1 && isValidRemovedReaction(oldR, oldR.keys().removeAll(newKeys)[0])) ||
+          (
+            changed.size() == 1 &&
+            isValidChangedReactionAt(oldR, newR, changed, newKeys, 0) &&
+            isValidChangedReactionAt(oldR, newR, changed, newKeys, 1) &&
+            isValidChangedReactionAt(oldR, newR, changed, newKeys, 2) &&
+            isValidChangedReactionAt(oldR, newR, changed, newKeys, 3) &&
+            isValidChangedReactionAt(oldR, newR, changed, newKeys, 4) &&
+            isValidChangedReactionAt(oldR, newR, changed, newKeys, 5) &&
+            isValidChangedReactionAt(oldR, newR, changed, newKeys, 6) &&
+            isValidChangedReactionAt(oldR, newR, changed, newKeys, 7) &&
+            isValidChangedReactionAt(oldR, newR, changed, newKeys, 8) &&
+            isValidChangedReactionAt(oldR, newR, changed, newKeys, 9)
+          )
+        );
+    }
+
+    // ===============================================================
+    // Collection: salas/{salaId}
+    // ===============================================================
+
+    match /salas/{salaId} {
+      // Parents can read/supervise ALL family rooms (including daughter-to-daughter DMs).
+      // Daughters can ONLY read rooms where their actor ID is in participantes.
+      // For get on non-existent docs, allow probing only 'familia' or own DM IDs so
+      // clients can safely check existence before creating a room.
+      allow get: if isFamilia() && (
+        isPadre() ||
+        (resource == null && isOwnOrGroupSalaId(salaId)) ||
+        (resource != null && request.auth.uid in resource.data.participantes)
+      );
+
+      allow list: if isFamilia() && (
+        isPadre() ||
+        request.auth.uid in resource.data.participantes
+      );
+
+      allow create: if isFamilia() &&
+        isValidSala(request.resource.data, salaId) &&
+        request.auth.uid in request.resource.data.participantes &&
+        request.resource.data.ultimo_mensaje == null &&
+        request.resource.data.actualizado_en == request.time &&
+        (
+          request.resource.data.lecturas.size() == 0 ||
+          (
+            request.resource.data.lecturas.size() == 1 &&
+            request.auth.uid in request.resource.data.lecturas &&
+            request.resource.data.lecturas[request.auth.uid] == request.time
+          )
+        );
+
+      allow update: if isFamilia() && isValidSalaUpdate(salaId);
+
+      allow delete: if false;
+
+      // ===============================================================
+      // Subcollection: salas/{salaId}/mensajes/{mensajeId}
+      // ===============================================================
+
+      match /mensajes/{mensajeId} {
+        allow read: if isFamilia() && (
+          isPadre() ||
+          isSalaParticipant(salaId)
+        );
+
+        allow create: if isFamilia() &&
+          isSalaParticipant(salaId) &&
+          isValidMensaje(request.resource.data) &&
+          request.resource.data.autor_id == request.auth.uid &&
+          request.resource.data.autor_tipo == request.auth.token.rol &&
+          request.resource.data.eliminado == false &&
+          request.resource.data.reacciones.size() == 0 &&
+          request.resource.data.creado_en == request.time;
+
+        allow update: if isFamilia() &&
+          isValidMensaje(request.resource.data) &&
+          areImmutableFieldsUnchanged([
+            'autor_id',
+            'autor_tipo',
+            'autor_apodo',
+            'autor_avatar',
+            'autor_color',
+            'creado_en'
+          ]) &&
+          resource.data.eliminado == false &&
+          (
+            // Case A: Participant toggles own reaction on an active message
+            (
+              isSalaParticipant(salaId) &&
+              request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reacciones']) &&
+              isValidReactionMapUpdate(resource.data.reacciones, request.resource.data.reacciones)
+            ) ||
+            // Case B: Author (if participant) or supervising padre soft-deletes message
+            (
+              (
+                (isPadre() && salaExists(salaId)) ||
+                (isOwner(resource.data.autor_id) && isSalaParticipant(salaId))
+              ) &&
+              request.resource.data.diff(resource.data).affectedKeys().hasOnly(['eliminado', 'texto']) &&
+              request.resource.data.eliminado == true &&
+              request.resource.data.texto == ''
+            )
+          );
+
+        allow delete: if false;
+      }
+    }
+
+    // ===============================================================
+    // Default Deny All Other Paths
+    // ===============================================================
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

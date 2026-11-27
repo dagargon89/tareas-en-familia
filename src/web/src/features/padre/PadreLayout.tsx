@@ -1,10 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
-import { CalendarDays, ChartColumn, Gift, Inbox, ListChecks, LogOut, MonitorSmartphone, Moon, Settings, SunMedium, Target, Users } from 'lucide-react';
+import { CalendarDays, ChartColumn, Gift, Inbox, ListChecks, LogOut, MessageCircle, MonitorSmartphone, Moon, Settings, SunMedium, Target, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useMatch, useNavigate } from 'react-router';
 import { api } from '../../api/HttpApiClient.ts';
+import { useNoLeidosChat } from '../../hooks/useNoLeidosChat.ts';
 import { useLogout, useSalirModoPadre, useSesion } from '../../hooks/useSesion.ts';
+import { cerrarSesionChat } from '../../lib/chatSesion.ts';
 import { aplicarNivel, aplicarTema } from '../../niveles/nivel.ts';
+import { BotonAsistente } from '../asistente/BotonAsistente.tsx';
 import { DialogoConfirmacion } from '../../ui/DialogoConfirmacion.tsx';
 import { SaltarContenido } from '../../ui/SaltarContenido.tsx';
 
@@ -24,6 +27,7 @@ const SECCIONES = [
   { a: '/padre/perfiles', texto: 'Perfiles', Icono: Users },
   { a: '/padre/premios', texto: 'Premios', Icono: Gift, badge: 'premios' as const },
   { a: '/padre/metas', texto: 'Metas', Icono: Target },
+  { a: '/padre/chat', texto: 'Chat', Icono: MessageCircle, badge: 'chat' as const },
   { a: '/padre/ajustes', texto: 'Ajustes', Icono: Settings },
 ];
 
@@ -37,20 +41,26 @@ export function PadreLayout() {
   const logout = useLogout();
   const [confirmarCierre, setConfirmarCierre] = useState(false);
   const [tema, setTema] = useState<TemaPadre>('sistema');
-  // La semana usa el ancho del escritorio para su tablero; las demás pantallas, una columna cómoda.
-  const amplia = useMatch('/padre/semana') !== null;
+  // La semana y el chat usan el ancho del escritorio; las demás pantallas, una columna cómoda.
+  const esSemana = useMatch('/padre/semana') !== null;
+  const esChat = useMatch('/padre/chat') !== null;
+  const amplia = esSemana || esChat;
+
+  const sesionQuery = useSesion(60_000);
+  const usuario = sesionQuery.data?.usuario ?? null;
+  const noLeidosChat = useNoLeidosChat(usuario ? `padre:${usuario.id}` : null);
 
   const panel = useQuery({ queryKey: ['admin', 'panel'], queryFn: () => api.panel(), staleTime: 60_000 });
   const conteos = {
     aprobaciones: panel.data?.hijas.reduce((n, h) => n + h.por_aprobar, 0) ?? 0,
     premios: panel.data?.canjes_pendientes.length ?? 0,
+    chat: noLeidosChat,
   };
 
   useEffect(() => {
     aplicarNivel('pro');
     aplicarTema(tema);
   }, [tema]);
-  useSesion(60_000);
 
   const infoTema = INFO_TEMA[tema];
 
@@ -91,6 +101,12 @@ export function PadreLayout() {
           })}
         </nav>
         <div className="ml-auto flex items-center gap-2">
+          <BotonAsistente
+            claveActor={`padre:${usuario?.id ?? 0}`}
+            nombreActor={usuario?.nombre ?? 'Papá'}
+            nivel={null}
+            conTexto
+          />
           <button
             type="button"
             title={infoTema.texto}
@@ -102,7 +118,10 @@ export function PadreLayout() {
           </button>
           <button
             type="button"
-            onClick={() => salir.mutate(undefined, { onSuccess: () => navegar('/', { replace: true }) })}
+            onClick={() => {
+              void cerrarSesionChat();
+              salir.mutate(undefined, { onSuccess: () => navegar('/', { replace: true }) });
+            }}
             className="min-h-tactil rounded-boton bg-lavanda-100 px-4 text-etiqueta text-indigo-700 transition hover:brightness-95"
           >
             Salir de modo padre
@@ -131,6 +150,7 @@ export function PadreLayout() {
         onCancelar={() => setConfirmarCierre(false)}
         onConfirmar={() => {
           setConfirmarCierre(false);
+          void cerrarSesionChat();
           logout.mutate(undefined, { onSuccess: () => navegar('/login', { replace: true }) });
         }}
       />

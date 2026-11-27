@@ -54,6 +54,7 @@ export default defineConfig({
           if (/\/node_modules\/(react|react-dom|scheduler)\//.test(id)) return 'react';
           if (id.includes('/node_modules/react-router')) return 'router';
           if (id.includes('/node_modules/@tanstack/')) return 'query';
+          if (id.includes('/node_modules/firebase/') || id.includes('/node_modules/@firebase/')) return 'firebase';
           return undefined;
         },
       },

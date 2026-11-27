@@ -1,4 +1,5 @@
 import type {
+  ActorChat,
   ApiClient,
   ApiError,
   CambioPasswordEntrada,
@@ -15,9 +16,11 @@ import type {
   Instancia,
   InstalacionEntrada,
   InstanciaRevision,
+  MensajeAsistenteHistorial,
   Meta,
   MetaEntrada,
   Panel,
+  ParticipantesChat,
   PerfilAdmin,
   PerfilEntrada,
   PerfilPublico,
@@ -25,12 +28,14 @@ import type {
   Recompensa,
   RecompensaEntrada,
   RecompensaParaPerfil,
+  RespuestaAsistente,
   ResultadoRevision,
   Semana,
   Sesion,
   Tarea,
   TareaEntrada,
   TareaPropiaEntrada,
+  TokenChatRespuesta,
 } from './ApiClient.ts';
 
 /** Error lanzado por HttpApiClient con el cuerpo de error del doc 05 §1. */
@@ -305,7 +310,18 @@ export class HttpApiClient implements ApiClient {
   cambiarPassword(usuarioId: number, datos: CambioPasswordEntrada) {
     return this.peticion<UsuarioAdmin>('PUT', `/admin/usuarios/${usuarioId}/password`, datos);
   }
+  participantesChat() {
+    return this.peticion<ParticipantesChat>('GET', '/chat/participantes');
+  }
+  tokenChat() {
+    return this.peticion<TokenChatRespuesta>('POST', '/chat/token');
+  }
+  preguntarAsistente(mensaje: string, historial?: MensajeAsistenteHistorial[]) {
+    return this.peticion<RespuestaAsistente>('POST', '/asistente/mensaje', { mensaje, historial });
+  }
 }
+
+export type { ActorChat };
 
 /** Instancia compartida por toda la SPA. */
 export const api: ApiClient = new HttpApiClient();

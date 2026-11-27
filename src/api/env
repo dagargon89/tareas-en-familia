@@ -39,3 +39,17 @@ cookie.secure = false
 instalacion.token =
 
 encryption.key =
+
+# Chat familiar con Firebase (ADR-011). En desarrollo usa el emulador local.
+firebase.habilitado = true
+firebase.emulador = true
+firebase.projectId = tareas-en-familia-local
+firebase.apiKey = demo-tareas-api-key
+# En producción: credenciales de Service Account (nunca subir al repo).
+# firebase.clientEmail =
+# firebase.privateKey =
+
+# Asistente IA con Gemini Developer API (ADR-012). En desarrollo, si queda vacía
+# usa un modo demostración local con los datos reales de MariaDB.
+gemini.apiKey =
+gemini.model = gemini-3.5-flash-lite

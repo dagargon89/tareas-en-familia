@@ -26,6 +26,7 @@ export const router = createBrowserRouter(
         { path: '/premios', lazy: async () => ({ Component: (await import('./features/premios/Premios.tsx')).Premios }) },
         { path: '/logros', lazy: async () => ({ Component: (await import('./features/progreso/MisLogros.tsx')).MisLogros }) },
         { path: '/calendario', lazy: async () => ({ Component: (await import('./features/calendario/Calendario.tsx')).Calendario }) },
+        { path: '/chat', lazy: async () => ({ Component: (await import('./features/chat/ChatPage.tsx')).ChatPage }) },
         {
           // RF-19: Aventureras y Pro crean sus escolares; las Exploradoras regresan a Mi día.
           element: <RequierePerfil puedeCrear><Outlet /></RequierePerfil>,
@@ -48,6 +49,7 @@ export const router = createBrowserRouter(
         { path: 'perfiles', lazy: async () => ({ Component: (await import('./features/padre/Perfiles.tsx')).Perfiles }) },
         { path: 'premios', lazy: async () => ({ Component: (await import('./features/padre/Recompensas.tsx')).Recompensas }) },
         { path: 'metas', lazy: async () => ({ Component: (await import('./features/padre/Metas.tsx')).Metas }) },
+        { path: 'chat', lazy: async () => ({ Component: (await import('./features/chat/ChatPage.tsx')).ChatPage }) },
         { path: 'ajustes', lazy: async () => ({ Component: (await import('./features/padre/Configuracion.tsx')).Configuracion }) },
       ],
     },
